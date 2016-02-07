@@ -1,0 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+<head>
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+  <link rel="stylesheet" type="text/css" href="http://www.boost.org/doc/libs/1_46_1/boost.css">
+
+  <title>Block Pointer - Tutorial - Boost 1.46.1</title>
+<link rel="icon" href="http://www.boost.org/favicon.ico" type="image/ico"><link rel="stylesheet" type="text/css" href="http://www.boost.org/style-v2/section-basic.css"></head>
+
+<body link="#0000FF" vlink="#800080">  <div id="boost-common-heading-doc">
+    <div class="heading-inner">
+  <div class="heading-placard"></div>
+
+  <h1 class="heading-title">
+  <a href="http://www.boost.org/">
+  <img src="http://www.boost.org/gfx/space.png" alt= "Boost C++ Libraries" class="heading-logo" />
+  <span class="heading-boost">Boost</span>
+  <span class="heading-cpplibraries">C++ Libraries</span>
+  </a></h1>
+
+  <p class="heading-quote">
+  <q>...one of the most highly
+  regarded and expertly designed C++ library projects in the
+  world.</q> <span class="heading-attribution">&mdash; <a href=
+  "http://www.gotw.ca/" class="external">Herb Sutter</a> and <a href=
+  "http://en.wikipedia.org/wiki/Andrei_Alexandrescu" class="external">Andrei
+  Alexandrescu</a>, <a href=
+  "http://safari.awprofessional.com/?XmlId=0321113586" class="external">C++
+  Coding Standards</a></span></p>
+
+  <div class="heading-sections">
+    <ul>
+      <li class="welcome-section-tab"><a href="/">Welcome</a></li>
+
+      <li class="boost-section-tab"><a href="/users/">Introduction</a></li>
+
+      <li class="community-section-tab"><a href="/community/">Community</a></li>
+
+      <li class="development-section-tab"><a href=
+      "/development/">Development</a></li>
+
+      <li class="support-section-tab"><a href="/support/">Support</a></li>
+
+      <li class="doc-section-tab"><a href="/doc/">Documentation</a></li>
+
+      <li class="map-section-tab"><a href="/map.html">Index</a></li>
+    </ul>
+  </div>
+</div>
+  </div>
+
+  <div id="boost-common-heading-doc-spacer"></div>
+
+  
+        <h1 align="center">Block Pointer</h1>
+
+        <h2 align="center">Tutorial</h2>
+      <dl class="index">
+    <dt><a href="#basic">Basic</a></dt>
+
+    <dt><a href="#advanced">Advanced</a></dt>
+
+    <dt><a href="#caveat">Caveat</a></dt>
+  </dl>
+
+  <h2><a name="basic" id="basic"></a>Basic</h2>
+  
+  <p>Block Pointer was designed to be easy to use and to be versatile in terms of object variants it can refer to.  Its only requirement is limited to the usage 
+  of a special type needed to instantiate objects referred to.  For example:</p>
+
+  <pre>  
+  block_ptr&#60;int&#62; p = make_block&#60;int&#62;(11);
+  </pre>
+
+  <p>Will instantiate a special object <i>block&#60;int&#62;</i> having an integer as one of its member.  The pointer to the object is then passed to the 
+  <i>block_ptr&#60;int&#62;</i> that will manage its existence and later destroy and deallocate it when it is found to be no longer referenced.<p>
+
+  <p>Variants of the object type can also be used.  In order to instantiate an array of integer for example, all that will be needed is to change the 
+  type to the following:<p>
+
+  <pre>  
+  block_ptr&#60;int[10]&#62; p = make_block&#60;int[10]&#62;();
+  </pre>
+
+  See the following <a href="../example/block_ptr_test1.cpp">example</a> for different cases of its usage.
+  
+  <h2><a name="advanced" id="advanced"></a>Advanced</h2>
+
+  <p>Firstly when STL containers are made out of objects having members of type <i>block_ptr&#60;T&#62;</i> then it will be desirable to have all of the allocated nodes 
+  and its members part of the same <i>set</i>.  This way all of the newly allocated <i>block_ptr&#60;T&#62;</i> will be referring to the same <i>set</i> header.
+  In order to do so, we must tell the container in question a new allocator that will be used to instantiate the nodes.  This allocator is called: 
+  <i>block_allocator&#60;T&#62;</i>.  For example:</p>
+
+  <pre>  
+  list&#60; block_ptr&#60;int&#62;, block_allocator&#60; block_ptr&#60;int&#62; &#62; &#62; c;
+  c.push_back(make_block&#60;int&#62;(11));
+  </pre>
+
+  <p>Secondly in the case where a cyclic set is being destroyed, in order to prevent <i>block_ptr</i>s member pointers from accessing an object that has already been 
+  destroyed the function <i>cyclic()</i> is provided to explicitly check the state of the pointee object:</p>
+
+  <pre>  
+  struct A
+  {
+      block_ptr&#60;A&#62; p;
+  
+      void foo() {}
+      
+      ~A()
+      {
+          if (! p.cyclic())
+              p->foo();
+      }
+  };
+  
+  block_ptr&#60;A&#62; p;
+  p = make_block&#60;A&#62;();
+  p-&#62;p = p;
+  </pre>
+
+  <table>
+  <tr>
+  <td width="20"></td>
+  <td><i>Note: This function should only be used in a destructor.</i></td>
+  </tr>
+  </table>
+
+  <p>Thirdly creating pointee objects in a faster way is possible by calling <i>operator new</i> directly with an object of type <i>block&#60;T&#62;</i>:</p>
+  
+  <pre>
+  block_ptr&#60;int&#62; p = new block&#60;int&#62;(10);
+  </pre>
+
+  <table>
+  <tr>
+  <td width="20"></td>
+  <td><i>Note: The assignment of a raw pointer needs to be the immediate next step after the allocation of the object.</i></td>
+  </tr>
+  </table>
+
+  <h2><a name="caveat" id="caveat"></a>Caveat</h2>
+  
+  <p>Hierarchies with multiple inheritance without virtual tables will cause undefined behavior if a pointer to a derived class is assigned to a pointer of one 
+  of its base class.  For example:</p>
+
+  <pre>  
+  struct M { int i; };
+  struct N { int i; };
+  struct O : N, M { int i; };
+
+  block_ptr&#60;O&#62; po = make_block&#60;O&#62;();
+  block_ptr&#60;N&#62; pn = po; // incorrect
+  block_ptr&#60;M&#62; pm = po; // incorrect
+  </pre>
+  
+  <p>A way to bypass any problem that might be created by the example above is to add virtual destructors to the classes:</p>
+
+  <pre>  
+  struct M { int i; virtual ~M() {} };
+  struct N { int i; virtual ~N() {} };
+  struct O : N, M { int i; };
+
+  block_ptr&#60;O&#62; po = make_block&#60;O&#62;();
+  block_ptr&#60;N&#62; pn = po; // correct
+  block_ptr&#60;M&#62; pm = po; // correct
+  </pre>
+
+  <hr>
+
+  <p><a href="http://validator.w3.org/check?uri=referer"><img border="0" src=
+  "http://www.boost.org/doc/libs/1_46_1/doc/images/valid-html401.png" alt="Valid HTML 4.01 Transitional"
+  height="31" width="88"></a></p>
+
+  <p>Revised 
+  <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->22
+  April, 2011<!--webbot bot="Timestamp" endspan i-checksum="38514" --></p>
+
+  <p><i>Copyright &copy; 2011 <a href=
+  "mailto:philippeb8@gmail.com">Phil Bouchard</a></i></p>
+
+  <p><i>Distributed under the Boost Software License, Version 1.0. (See
+  accompanying file <a href="http://www.boost.org/doc/libs/1_46_1/LICENSE_1_0.txt">LICENSE_1_0.txt</a> or
+  copy at <a href=
+  "http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></p>
+</body>
+</html>
