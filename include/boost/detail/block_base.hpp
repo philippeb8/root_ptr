@@ -193,6 +193,7 @@ public:
 protected:
     virtual void dispose() 				                    {} 				/**< dublocky */
     virtual void * get_deleter( std::type_info const & ti ) { return 0; } 	/**< dublocky */
+    virtual void * get_untyped_deleter() 					{ return 0; } 	/**< dublocky */
 };
 
 
