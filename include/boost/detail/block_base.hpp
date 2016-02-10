@@ -23,17 +23,23 @@
 # pragma once
 #endif
 
+#include <list>
 #include <stack>
 #include <limits>
 
+#ifndef BOOST_DISABLE_THREADS
 #include <boost/thread.hpp>
 #include <boost/thread/tss.hpp>
+#else
+#include <memory>
+#endif
 #include <boost/pool/pool.hpp>
 #include <boost/pool/pool_alloc.hpp>
 #include <boost/numeric/interval.hpp>
 #include <boost/type_traits/is_array.hpp>
 #include <boost/type_traits/remove_extent.hpp>
 #include <boost/type_traits/has_trivial_destructor.hpp>
+#include <boost/smart_ptr/detail/sp_counted_base.hpp>
 #include <boost/preprocessor/control/expr_if.hpp>
 #include <boost/preprocessor/arithmetic/inc.hpp>
 #include <boost/preprocessor/punctuation/comma_if.hpp>

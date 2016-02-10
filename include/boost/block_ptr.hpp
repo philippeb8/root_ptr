@@ -32,8 +32,10 @@
 #include <iostream>
 #include <boost/pool/pool_alloc.hpp>
 #include <boost/type_traits/add_pointer.hpp>
+#ifndef BOOST_DISABLE_THREADS
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
+#endif
 
 #include <boost/detail/intrusive_list.hpp>
 #include <boost/detail/intrusive_stack.hpp>
@@ -71,12 +73,14 @@ struct block_header
     intrusive_list includes_;						/**< List of all sets of an union. */
     intrusive_list elements_;						/**< List of all pointee objects belonging to a @c block_header . */
 
+#ifndef BOOST_DISABLE_THREADS
 	static mutex & static_mutex()					/**< Main global mutex used for thread safety */
 	{
 		static mutex mutex_;
 		
 		return mutex_;
 	}
+#endif
 
 	static fast_pool_allocator<block_header> & static_pool() /**< Pool where all sets are allocated. */
 	{
