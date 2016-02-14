@@ -49,11 +49,11 @@ template <typename T>
         typedef T                       element_type;
 
     public:
-        typedef block<T>              value_type;
+        typedef element_type            value_type;
         typedef size_t                  size_type;
         typedef ptrdiff_t               difference_type;
-        typedef T *                     pointer;
-        typedef const T *               const_pointer;
+        typedef element_type *          pointer;
+        typedef const element_type *    const_pointer;
         typedef element_type &          reference;
         typedef const element_type &    const_reference;
 
@@ -80,7 +80,7 @@ template <typename T>
         pointer allocate(size_type s, const void * = 0)
         {
             //value_type * p = (value_type *) value_type::operator new(sizeof(value_type));
-            value_type * p = new value_type();
+            block<value_type> * p = new block<value_type>();
 
             return p->element();
         }
