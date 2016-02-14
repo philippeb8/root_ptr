@@ -16,7 +16,7 @@ OBJECTS         := $(patsubst %.cpp,%.o,$(SOURCES))
 .PHONY : all depend clean
 
 
-all : block_ptr_test1 block_ptr_test2 block_ptr_test3 local_pool_test1 local_pool_test2 t100_test1
+all : block_ptr_test1 block_ptr_test2 block_ptr_test3 t100_test1
 
 block_ptr_test1: block_ptr_test1.o
 	$(LINK) -o $@ $^ $(LFLAGS)
@@ -41,8 +41,8 @@ Makefile.dep: $(SOURCES)
 	$(CXX) ${INCPATH} -MM $^ > $@
 
 clean:
-	$(RM) block_ptr_test1 block_ptr_test2 block_ptr_test3 local_pool_test1 local_pool_test2 t100_test1
-	$(RM) $(OBJECTS)
-	$(RM) *~ core
+	$(RM) -f block_ptr_test1 block_ptr_test2 block_ptr_test3 local_pool_test1 local_pool_test2 t100_test1
+	$(RM) -f $(OBJECTS)
+	$(RM) -f *~ core
 
 -include Makefile.dep
