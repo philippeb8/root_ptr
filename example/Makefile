@@ -1,8 +1,8 @@
 CXX             := g++
 CXXFLAGS        := -O3
-INCPATH         := -I../../.. -I../../../../../include
+INCPATH         := -I../include
 LINK            := g++
-LFLAGS          := -L../../../../../lib -lboost_thread
+LFLAGS          := -lboost_thread -lboost_system
 RM              := rm
 HEADERS         := $(wildcard *.h)
 SOURCES         := $(wildcard *.cpp)
@@ -19,22 +19,22 @@ OBJECTS         := $(patsubst %.cpp,%.o,$(SOURCES))
 all : block_ptr_test1 block_ptr_test2 block_ptr_test3 local_pool_test1 local_pool_test2 t100_test1
 
 block_ptr_test1: block_ptr_test1.o
-	$(LINK) $(LFLAGS) -o $@ $^
+	$(LINK) -o $@ $^ $(LFLAGS)
 
 block_ptr_test2: block_ptr_test2.o
-	$(LINK) $(LFLAGS) -o $@ $^
+	$(LINK) -o $@ $^ $(LFLAGS)
 
 block_ptr_test3: block_ptr_test3.o
-	$(LINK) $(LFLAGS) -o $@ $^ -lboost_unit_test_framework
+	$(LINK) -o $@ $^ $(LFLAGS) -lboost_unit_test_framework
 
 local_pool_test1: local_pool_test1.o
-	$(LINK) $(LFLAGS) -o $@ $^
+	$(LINK) -o $@ $^ $(LFLAGS)
 
 local_pool_test2: local_pool_test2.o
-	$(LINK) $(LFLAGS) -o $@ $^
+	$(LINK) -o $@ $^ $(LFLAGS)
 
 t100_test1: t100_test1.o
-	$(LINK) $(LFLAGS) -o $@ $^ -lboost_regex
+	$(LINK) -o $@ $^ $(LFLAGS) -lboost_regex
 
 
 Makefile.dep: $(SOURCES)
