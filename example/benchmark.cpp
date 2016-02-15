@@ -17,6 +17,7 @@
 #include <sched.h>
 
 #include <memory>
+#include <iomanip>
 #include <iostream>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
