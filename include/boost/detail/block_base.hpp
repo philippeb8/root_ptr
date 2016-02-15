@@ -61,14 +61,14 @@ namespace bp
 {
 
 
-class block_header;
+struct block_proxy;
 class block_base;
 
 
 /**
     Allocator wrapper tracking allocations.
     
-    Pool where all pointee objects are allocated and tracks memory blocks for later enlisting & marking the @c block_header the pointee object belongs to.
+    Pool where all pointee objects are allocated and tracks memory blocks for later enlisting & marking the @c block_proxy the pointee object belongs to.
 */
 
 struct pool
@@ -183,12 +183,12 @@ struct pool
 class block_base : public sp_counted_base
 {
 public:
-    bool init_;										/**< Flag marking initialization of the pointee object to its @c block_header . */
+    bool init_;										/**< Flag marking initialization of the pointee object to its @c block_proxy . */
 
-    intrusive_stack ptrs_;							/**< Stack of all @c block_ptr s on the heap that will later need to be initlialized to a specific @c block_header . */
-    intrusive_list inits_;							/**< List of all pointee objects that will later need to be initlialized to a specific @c block_header .*/
+    intrusive_stack ptrs_;							/**< Stack of all @c block_ptr s on the heap that will later need to be initlialized to a specific @c block_proxy . */
+    intrusive_list inits_;							/**< List of all pointee objects that will later need to be initlialized to a specific @c block_proxy .*/
 
-    intrusive_list::node block_tag_;					/**< Tag used to enlist to @c block_header::elements_ . */
+    intrusive_list::node block_tag_;					/**< Tag used to enlist to @c block_proxy::elements_ . */
     intrusive_list::node init_tag_;					/**< Tag used to enlist to @c block_base::inits_ . */
 
     block_base() : init_(false)

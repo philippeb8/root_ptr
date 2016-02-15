@@ -59,19 +59,19 @@ class block_base;
 /**
     Set header.
     
-    Proxy object used to count the number of pointers from the stack are referencing pointee objects belonging to the same @c block_header .
+    Proxy object used to count the number of pointers from the stack are referencing pointee objects belonging to the same @c block_proxy .
 */
 
-struct block_header
+struct block_proxy
 {
-    long count_;								/**< Count of the number of pointers from the stack referencing the same @c block_header .*/
-    mutable block_header * redir_;					/**< Redirection in the case of an union multiple sets.*/
+    long count_;								/**< Count of the number of pointers from the stack referencing the same @c block_proxy .*/
+    mutable block_proxy * redir_;					/**< Redirection in the case of an union multiple sets.*/
 
     bool destroy_;									/**< Destruction sequence initiated. */
-    intrusive_list::node tag_;						/**< Tag used to enlist to @c block_header::includes_ . */
+    intrusive_list::node tag_;						/**< Tag used to enlist to @c block_proxy::includes_ . */
 
     intrusive_list includes_;						/**< List of all sets of an union. */
-    intrusive_list elements_;						/**< List of all pointee objects belonging to a @c block_header . */
+    intrusive_list elements_;						/**< List of all pointee objects belonging to a @c block_proxy . */
 
 #ifndef BOOST_DISABLE_THREADS
     static mutex & static_mutex()					/**< Main global mutex used for thread safety */
@@ -82,27 +82,27 @@ struct block_header
     }
 #endif
 
-    static fast_pool_allocator<block_header> & static_pool() /**< Pool where all sets are allocated. */
+    static fast_pool_allocator<block_proxy> & static_pool() /**< Pool where all sets are allocated. */
     {
-        static fast_pool_allocator<block_header> pool_;
+        static fast_pool_allocator<block_proxy> pool_;
         
         return pool_;
     }
 
     /**
-        Initialization of a single @c block_header .
+        Initialization of a single @c block_proxy .
     */
     
-    block_header() : count_(1), redir_(this), destroy_(false)
+    block_proxy() : count_(1), redir_(this), destroy_(false)
     {
         includes_.push_back(& tag_);
     }
 
     
     /**
-        Release of a @c block_header with possible destruction of all its elements and other sets unified to it.
+        Release of a @c block_proxy with possible destruction of all its elements and other sets unified to it.
         
-        @return		True if the @c block_header was released.
+        @return		True if the @c block_proxy was released.
     */
     
     bool release()
@@ -116,7 +116,7 @@ struct block_header
                 
             destroy_ = false;
             
-            for (intrusive_list::iterator<block_header, & block_header::tag_> i = includes_.begin(), j; j = i, i != includes_.end(); i = j)
+            for (intrusive_list::iterator<block_proxy, & block_proxy::tag_> i = includes_.begin(), j; j = i, i != includes_.end(); i = j)
             { 
                 ++ j;
                 
@@ -132,12 +132,12 @@ struct block_header
 
     
     /**
-        Search for the @c block_header header of an union.
+        Search for the @c block_proxy header of an union.
         
-        @return		@c block_header responsible for managing the counter of an union.
+        @return		@c block_proxy responsible for managing the counter of an union.
     */
     
-    block_header * redir() const
+    block_proxy * redir() const
     {
         while (redir_ != redir_->redir_)
             redir_ = redir_->redir_;
@@ -147,12 +147,12 @@ struct block_header
     
     
     /**
-        Unification with a new @c block_header .
+        Unification with a new @c block_proxy .
         
-        @param	p	New @c block_header to unify with.
+        @param	p	New @c block_proxy to unify with.
     */
 
-    void redir(block_header * p)
+    void redir(block_proxy * p)
     {
         if (redir_ != p)
         {
@@ -165,9 +165,9 @@ struct block_header
 
     
     /**
-        Allocates a new @c block_header using the fast pool allocator.
+        Allocates a new @c block_proxy using the fast pool allocator.
         
-        @param	s	Size of the @c block_header .
+        @param	s	Size of the @c block_proxy .
         @return		Pointer of the new memory block.
     */
     
@@ -180,26 +180,26 @@ struct block_header
     /**
         Placement new.
         
-        @param	s	Size of the @c block_header .
-        @param	p	Address to construct the @c block_header on.
-        @return		Address to construct the @c block_header on.
+        @param	s	Size of the @c block_proxy .
+        @param	p	Address to construct the @c block_proxy on.
+        @return		Address to construct the @c block_proxy on.
     */
     
-    void * operator new (size_t s, block_header * p)
+    void * operator new (size_t s, block_proxy * p)
     {
         return p;
     }
 
     
     /**
-        Deallocates a @c block_header from the fast pool allocator.
+        Deallocates a @c block_proxy from the fast pool allocator.
         
-        @param	p	Address of the @c block_header to deallocate.
+        @param	p	Address of the @c block_proxy to deallocate.
     */
     
     void operator delete (void * p)
     {
-        static_pool().deallocate(static_cast<block_header *>(p), sizeof(block_header));
+        static_pool().deallocate(static_cast<block_proxy *>(p), sizeof(block_proxy));
     }
 };
 
@@ -238,8 +238,8 @@ template <typename T>
 
         union
         {
-            block_header * ps_;						/**< Pointer to the @c block_header node @c block_ptr<> belongs to. */
-            intrusive_stack::node pn_;				/**< Tag used for enlisting a pointer on the heap to later share the @c block_header it belongs to. */
+            block_proxy * ps_;						/**< Pointer to the @c block_proxy node @c block_ptr<> belongs to. */
+            intrusive_stack::node pn_;				/**< Tag used for enlisting a pointer on the heap to later share the @c block_proxy it belongs to. */
         };
 
     public:
@@ -254,7 +254,7 @@ template <typename T>
             {
                 if (! pool::is_from(this))
                 {
-                    ps_ = new block_header();
+                    ps_ = new block_proxy();
 
                     init(p);
                 }
@@ -267,7 +267,7 @@ template <typename T>
 
         
         /**
-            Assignment & union of 2 sets if the pointee resides a different @c block_header.
+            Assignment & union of 2 sets if the pointee resides a different @c block_proxy.
             
             @param	p	New pointee object to manage.
         */
@@ -276,7 +276,7 @@ template <typename T>
             block_ptr & operator = (block<V> * p)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(block_header::static_mutex());
+                mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
 
                 release(false);
@@ -311,7 +311,7 @@ template <typename T>
         block_ptr() : ps_(0)
         {
             if (!pool::is_from(this))
-                ps_ = new block_header();
+                ps_ = new block_proxy();
             else
                 pool::top(this)->ptrs_.push(&pn_);
         }
@@ -341,7 +341,7 @@ template <typename T>
 
 
         /**
-            Assignment & union of 2 sets if the pointee resides a different @c block_header.
+            Assignment & union of 2 sets if the pointee resides a different @c block_proxy.
             
             @param	p	New pointer to manage.
         */
@@ -350,7 +350,7 @@ template <typename T>
             block_ptr & operator = (block_ptr<V> const & p)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(block_header::static_mutex());
+                mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
 
                 if (ps_->redir() != p.ps_->redir())
@@ -365,7 +365,7 @@ template <typename T>
 
 
         /**
-            Assignment & union of 2 sets if the pointee resides a different @c block_header.
+            Assignment & union of 2 sets if the pointee resides a different @c block_proxy.
             
             @param	p	New pointer to manage.
         */
@@ -378,7 +378,7 @@ template <typename T>
         void reset()
         {
 #ifndef BOOST_DISABLE_THREADS
-            mutex::scoped_lock scoped_lock(block_header::static_mutex());
+            mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
 
             release(false);
@@ -405,9 +405,9 @@ template <typename T>
 
     private:
         /**
-            Release of the pointee object with or without destroying the entire @c block_header it belongs to.
+            Release of the pointee object with or without destroying the entire @c block_proxy it belongs to.
             
-            @param	d	Destroy (true) or reuse (false) the @c block_header it is releasing.
+            @param	d	Destroy (true) or reuse (false) the @c block_proxy it is releasing.
         */
         
         void release(bool d)
@@ -416,25 +416,25 @@ template <typename T>
             
             if (! pool::is_from(this))
             {
-                block_header * p = ps_->redir();
+                block_proxy * p = ps_->redir();
 
                 if (p->release())
                     if (! d)
                     {
-                        p->~block_header();
-                        ps_ = new (p) block_header();
+                        p->~block_proxy();
+                        ps_ = new (p) block_proxy();
                     }
                     else
                         delete p;
                 else 
                     if (! d)
-                        ps_ = new block_header();
+                        ps_ = new block_proxy();
             }
         }
 
         
         /**
-            Enlist & initialize pointee objects belonging to the same @c block_header .  This initialization occurs when a pointee object is affected to the first pointer living on the stack it encounters.
+            Enlist & initialize pointee objects belonging to the same @c block_proxy .  This initialization occurs when a pointee object is affected to the first pointer living on the stack it encounters.
             
             @param	p	Pointee object to initialize.
         */
@@ -444,7 +444,7 @@ template <typename T>
             if (p->init_)
                 return;
 
-            block_header * q = ps_->redir();
+            block_proxy * q = ps_->redir();
         
             // iterate memory blocks
             for (intrusive_list::iterator<block_base, & block_base::init_tag_> i = p->inits_.begin(); i != p->inits_.end(); ++ i)
