@@ -324,17 +324,8 @@ template <typename T>
         */
 
         template <typename V>
-            block_ptr(block_ptr<V> const & p) : base(p)
+            block_ptr(block_ptr<V> const & p) : base(p), ps_(p.ps_->redir())
             {
-                if (! pool::is_from(this))
-                {
-                    ps_ = new block_header();
-                    ps_->redir()->redir(p.ps_->redir());
-                }
-                else
-                {
-                    ps_ = p.ps_->redir();
-                }
             }
 
         
@@ -344,17 +335,8 @@ template <typename T>
             @param	p	New pointer to manage.
         */
 
-            block_ptr(block_ptr<T> const & p) : base(p)
+            block_ptr(block_ptr<T> const & p) : base(p), ps_(p.ps_->redir())
             {
-                if (! pool::is_from(this))
-                {
-                    ps_ = new block_header();
-                    ps_->redir()->redir(p.ps_->redir());
-                }
-                else
-                {
-                    ps_ = p.ps_->redir();
-                }
             }
 
 
