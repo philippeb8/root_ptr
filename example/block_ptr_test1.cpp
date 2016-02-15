@@ -3,7 +3,7 @@
 	block_ptr_test2.cpp
 
 	@note
-	Copyright (c) 2008 Phil Bouchard <phil@fornux.com>.
+	Copyright (c) 2008 Phil Bouchard <pbouchard8@gmail.com>.
 
 	Distributed under the Boost Software License, Version 1.0.
 
