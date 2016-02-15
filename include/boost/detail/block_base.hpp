@@ -193,7 +193,7 @@ public:
 
     block_base() : init_(false)
     {
-        inits_.push_back(& init_tag_); 
+		inits_.push_back(& init_tag_);
     }
 
 protected:

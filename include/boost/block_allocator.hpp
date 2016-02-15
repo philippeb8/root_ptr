@@ -24,6 +24,7 @@
 #endif
 
 #include <boost/block_ptr.hpp>
+#include <boost/detail/block_base.hpp>
 
 
 namespace boost
@@ -79,7 +80,7 @@ template <typename T>
 
         pointer allocate(size_type s, const void * = 0)
         {
-            //value_type * p = (value_type *) value_type::operator new(sizeof(value_type));
+            //block<value_type> * p = (block<value_type> *) block<value_type>::operator new(sizeof(block<value_type>));
             block<value_type> * p = new block<value_type>();
 
             return p->element();
@@ -87,7 +88,7 @@ template <typename T>
 
         void construct(pointer p, const T & x)
         {
-            //::new (p) owned_base;
+            //::new (p) block_base;
             //::new (p->element()) T(x);
         }
 
@@ -98,7 +99,7 @@ template <typename T>
 
         void deallocate(pointer p, size_type)
         {
-        }
+		}
     };
 
 template <typename T>

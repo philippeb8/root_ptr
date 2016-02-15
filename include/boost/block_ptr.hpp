@@ -254,7 +254,7 @@ template <typename T>
             {
                 if (! pool::is_from(this))
                 {
-                    ps_ = new block_header();
+					ps_ = new block_header();
 
                     init(p);
                 }
@@ -310,10 +310,10 @@ template <typename T>
         
         block_ptr() : ps_(0)
         {
-            if (! pool::is_from(this))
-                ps_ = new block_header();
-            else
-                pool::top(this)->ptrs_.push(& pn_);
+			if (!pool::is_from(this))
+				ps_ = new block_header();
+			else
+				pool::top(this)->ptrs_.push(&pn_);
         }
 
         
@@ -326,13 +326,15 @@ template <typename T>
         template <typename V>
             block_ptr(block_ptr<V> const & p) : base(p)
             {
-                if (! pool::is_from(this))
+				if (! pool::is_from(this))
                 {
-                    ps_ = new block_header();
+					ps_ = new block_header();
                     ps_->redir()->redir(p.ps_->redir());
                 }
-                else
-                    pool::top(this)->ptrs_.push(& pn_);
+				else
+				{
+					ps_ = p.ps_->redir();
+				}
             }
 
         
@@ -344,13 +346,15 @@ template <typename T>
 
             block_ptr(block_ptr<T> const & p) : base(p)
             {
-                if (! pool::is_from(this))
+				if (! pool::is_from(this))
                 {
-                    ps_ = new block_header();
+					ps_ = new block_header();
                     ps_->redir()->redir(p.ps_->redir());
                 }
-                else
-                    pool::top(this)->ptrs_.push(& pn_);
+				else
+				{
+					ps_ = p.ps_->redir();
+				}
             }
 
 
@@ -386,7 +390,7 @@ template <typename T>
 
         block_ptr & operator = (block_ptr<T> const & p)
         {
-            return operator = <T>(p);
+			return operator = <T>(p);
         }
 
         void reset()
@@ -411,7 +415,7 @@ template <typename T>
 
         ~block_ptr()
         {
-            if (cyclic())
+			if (cyclic())
                 base::po_ = 0;
             else
                 release(true);
@@ -455,7 +459,7 @@ template <typename T>
         
         void init(block_base * p)
         {
-            if (p->init_)
+			if (p->init_)
                 return;
 
             block_header * q = ps_->redir();
@@ -475,7 +479,7 @@ template <typename T>
             }
         }
 
-#if defined(BOOST_HAS_RVALUE_REFS)
+#if 0 //defined(BOOST_HAS_RVALUE_REFS)
     public:
         block_ptr(block_ptr<T> && p): base(p.po_), ps_(p.ps_)
         {
