@@ -326,6 +326,8 @@ template <typename T>
         template <typename V>
             block_ptr(block_ptr<V> const & p) : base(p), ps_(p.ps_->redir())
             {
+                if (!pool::is_from(this))
+                    ++ ps_->redir()->count_;
             }
 
         
@@ -337,6 +339,8 @@ template <typename T>
 
             block_ptr(block_ptr<T> const & p) : base(p), ps_(p.ps_->redir())
             {
+                if (!pool::is_from(this))
+                    ++ ps_->redir()->count_;
             }
 
 
