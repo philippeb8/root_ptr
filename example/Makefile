@@ -44,7 +44,7 @@ Makefile.dep: $(SOURCES)
 	$(CXX) ${INCPATH} -MM $^ > $@
 
 clean:
-	$(RM) -f block_ptr_test1 block_ptr_test2 block_ptr_test3 local_pool_test1 local_pool_test2 t100_test1
+	$(RM) -f benchmark block_ptr_test1 block_ptr_test2 block_ptr_test3 local_pool_test1 local_pool_test2 t100_test1
 	$(RM) -f $(OBJECTS)
 	$(RM) -f *~ core
 
