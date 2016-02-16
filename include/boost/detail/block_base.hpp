@@ -49,6 +49,7 @@
 #include <boost/detail/intrusive_list.hpp>
 #include <boost/detail/intrusive_stack.hpp>
 #include <boost/detail/roofof.hpp>
+#include <boost/detail/system_pool.hpp>
 
 
 namespace boost
@@ -62,7 +63,7 @@ namespace bp
 
 
 struct block_proxy;
-class block_base;
+struct block_base;
 
 
 /**
@@ -73,7 +74,7 @@ class block_base;
 
 struct pool
 {
-    typedef boost::singleton_pool<pool, sizeof(char)> pool_t;
+    typedef system_pool<pool, sizeof(char)> pool_t;
 
     typedef std::list< numeric::interval<long>, fast_pool_allocator< numeric::interval<long> > > pool_lii;	/**< Syntax helper. */
 
@@ -180,9 +181,8 @@ struct pool
     Root class of all pointee objects.
 */
 
-class block_base : public sp_counted_base
+struct block_base : public sp_counted_base
 {
-public:
     bool init_;										/**< Flag marking initialization of the pointee object to its @c block_proxy . */
 
     intrusive_stack ptrs_;							/**< Stack of all @c block_ptr s on the heap that will later need to be initlialized to a specific @c block_proxy . */

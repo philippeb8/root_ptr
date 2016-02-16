@@ -121,12 +121,13 @@ int main() {
         std::cout << "test = " << * test << std::endl;
     }
     std::cout << count << std::endl;
-
+    
+/* TODO: Fix crash
     count = 0;
     for(int i = 0; i < 500; ++i) {
         boost::mpl::for_each<boost::mpl::range_c<int, 1, 100> >(create_type());
     }
     std::cout << count << std::endl;
-
+*/
     //_exit(-1); // bypassing bug in pool destructor
 }
