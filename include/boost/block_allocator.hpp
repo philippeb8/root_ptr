@@ -100,7 +100,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
         void deallocate(pointer p, size_type)
         {
-            block<value_type, UserPool>::operator delete (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p)));
+            //block<value_type, UserPool>::operator delete (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p)));
             
             //delete static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p));
         }
