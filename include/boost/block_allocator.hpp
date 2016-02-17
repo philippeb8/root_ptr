@@ -44,7 +44,7 @@ namespace bp
     Default object contructor is called inside allocate() to save temporaries.
 */
 
-template <typename T>
+template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(char)> >
     class block_allocator
     {
         typedef T                       element_type;
@@ -61,13 +61,13 @@ template <typename T>
         template <typename U>
             struct rebind
             {
-                typedef block_allocator<U> other;
+                typedef block_allocator<U, UserPool> other;
             };
 
         block_allocator() throw()                                 {}
         block_allocator(const block_allocator &) throw()        {}
         template <typename U>
-            block_allocator(const block_allocator<U> &) throw() {}
+            block_allocator(const block_allocator<U, UserPool> &) throw() {}
 
         ~block_allocator() throw()                                {}
         pointer address(reference x) const                          { return & x; }
@@ -80,25 +80,27 @@ template <typename T>
 
         pointer allocate(size_type s, const void * = 0)
         {
-            //block<value_type> * p = (block<value_type> *) block<value_type>::operator new(sizeof(block<value_type>));
-            block<value_type> * p = new block<value_type>();
+            //block<value_type, UserPool> * p = (block<value_type, UserPool> *) block<value_type, UserPool>::operator new(sizeof(block<value_type, UserPool>));
+            block<value_type, UserPool> * p = new block<value_type, UserPool>();
 
             return p->element();
         }
 
         void construct(pointer p, const T & x)
         {
-            //::new (p) block_base;
-            //::new (p->element()) T(x);
+            //::new (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p))) block_base;
+            //::new (p) T(x);
         }
 
         void destroy(pointer p)
         {
-            //p->reset();
+            //static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p))->~block_base();
+            ////p->~T();
         }
 
         void deallocate(pointer p, size_type)
         {
+            //operator delete (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p)));
 		}
     };
 
