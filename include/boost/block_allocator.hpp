@@ -80,22 +80,20 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
         pointer allocate(size_type s, const void * = 0)
         {
-            //block<value_type, UserPool> * p = static_cast<block<value_type, UserPool> *>(block<value_type, UserPool>::operator new(sizeof(block<value_type, UserPool>)));
-            block<value_type, UserPool> * p = new block<value_type, UserPool>();
+            block<value_type, UserPool> * p = static_cast<block<value_type, UserPool> *>(block<value_type, UserPool>::operator new(sizeof(block<value_type, UserPool>)));
+            //block<value_type, UserPool> * p = new block<value_type, UserPool>();
 
             return p->element();
         }
 
         void construct(pointer p, const T & x)
         {
-            //::new (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p))) block_base;
-            //::new (p) T(x);
+            ::new (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p))) block<value_type, UserPool>(x);
         }
 
         void destroy(pointer p)
         {
-            //static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p))->~block_base();
-            //p->~T();
+            //static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p))->~block<value_type, UserPool>();
         }
 
         void deallocate(pointer p, size_type)
