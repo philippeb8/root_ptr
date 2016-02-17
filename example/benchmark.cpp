@@ -37,7 +37,7 @@ template <typename T, T (*P)()>
 	{         
 		T p;
 
-	    for (int i = 0; i < 100000; ++ i)
+	    for (int i = 0; i < 1000000; ++ i)
 	    	p = P();
 	}  
    
@@ -46,7 +46,7 @@ template <typename T, typename U>
 	{         
 		T p;
 
-	    for (int i = 0; i < 100000; ++ i)
+	    for (int i = 0; i < 1000000; ++ i)
 	    	p.reset(new U);
 	}  
    
