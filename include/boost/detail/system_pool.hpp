@@ -18,7 +18,10 @@
 #define BOOST_DETAIL_SYSTEM_POOL_HPP_INCLUDED
 
 
-#if defined( __GNUC__ ) && ( defined( __i386__ ) || defined( __x86_64__ ) ) && !defined(__PATHSCALE__)
+#if defined( BOOST_DISABLE_THREADS ) && !defined( BOOST_SP_ENABLE_THREADS ) && !defined( BOOST_DISABLE_WIN32 )
+# include <boost/detail/system_pool_nt.hpp>
+
+#elif defined( __GNUC__ ) && ( defined( __i386__ ) || defined( __x86_64__ ) ) && !defined(__PATHSCALE__)
 # include <boost/detail/system_pool_gcc_x86.hpp>
 
 #else

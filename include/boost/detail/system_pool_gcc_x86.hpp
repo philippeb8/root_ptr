@@ -48,8 +48,8 @@ template <typename Tag, unsigned RequestedSize, typename UserAllocator = default
     {
         typedef Tag tag;
         typedef UserAllocator user_allocator;
-        typedef typename pool<UserAllocator>::size_type size_type;
-        typedef typename pool<UserAllocator>::difference_type difference_type;
+        typedef typename boost::pool<UserAllocator>::size_type size_type;
+        typedef typename boost::pool<UserAllocator>::difference_type difference_type;
 
         static void * malloc BOOST_PREVENT_MACRO_SUBSTITUTION()
         {
