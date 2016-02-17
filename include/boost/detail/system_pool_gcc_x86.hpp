@@ -40,6 +40,9 @@ namespace bp
 {
 
 
+struct system_pool_tag { };
+    
+    
 template <typename Tag, unsigned RequestedSize, typename UserAllocator = default_user_allocator_new_delete>
     struct system_pool
     {

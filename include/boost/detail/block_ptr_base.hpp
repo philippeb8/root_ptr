@@ -39,17 +39,17 @@ namespace bp
     This class represents a basic smart pointer interface.
 */
 
-template <typename T>
+template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(char)> >
     class block_ptr_common
     {
-        template <typename> friend class block_ptr_common;
+        template <typename, typename> friend class block_ptr_common;
 
         // Borland 5.5.1 specific workaround
-        typedef block_ptr_common<T> this_type;
+        typedef block_ptr_common<T, UserPool> this_type;
 
     protected:
         typedef T value_type;
-        typedef block<value_type> element_type;
+        typedef block<value_type, UserPool> element_type;
 
         value_type * po_;
 
@@ -67,21 +67,21 @@ template <typename T>
         }
 
         template <typename V>
-            block_ptr_common(detail::bp::block<V> * p) : po_(p->element())
+            block_ptr_common(block<V, UserPool> * p) : po_(p->element())
             {
             }
 
         template <typename V>
-            block_ptr_common(block_ptr_common<V> const & p) : po_(p.share())
+            block_ptr_common(block_ptr_common<V, UserPool> const & p) : po_(p.share())
             {
             }
 
-            block_ptr_common(block_ptr_common<value_type> const & p) : po_(p.share())
+            block_ptr_common(block_ptr_common<value_type, UserPool> const & p) : po_(p.share())
             {
             }
 
         template <typename V>
-            block_ptr_common & operator = (detail::bp::block<V> * p)
+            block_ptr_common & operator = (block<V, UserPool> * p)
             {
                 reset(p->element());
 
@@ -89,7 +89,7 @@ template <typename T>
             }
 
         template <typename V>
-            block_ptr_common & operator = (block_ptr_common<V> const & p)
+            block_ptr_common & operator = (block_ptr_common<V, UserPool> const & p)
             {
                 if (p.po_ != po_)
                 {
@@ -98,7 +98,7 @@ template <typename T>
                 return * this;
             }
 
-            block_ptr_common & operator = (block_ptr_common<value_type> const & p)
+            block_ptr_common & operator = (block_ptr_common<value_type, UserPool> const & p)
             {
                 return operator = <value_type>(p);
             }
@@ -175,18 +175,18 @@ template <typename T>
         }
 
     protected:
-        detail::bp::block_base * header() const
+        block_base * header() const
         {
-            detail::bp::block_base * p = (block<value_type> *) (typename block<value_type>::roofof) static_cast<value_type *>(rootof<is_polymorphic<value_type>::value>::get(po_));
+            block_base * p = (block<value_type, UserPool> *) (typename block<value_type, UserPool>::roofof) static_cast<value_type *>(rootof<is_polymorphic<value_type>::value>::get(po_));
             return p;
         }
     };
 
 
-template <typename T>
-    class block_ptr_base : public block_ptr_common<T>
+template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(char)> >
+    class block_ptr_base : public block_ptr_common<T, UserPool>
     {
-        typedef block_ptr_common<T> base;
+        typedef block_ptr_common<T, UserPool> base;
         typedef typename base::value_type value_type;
         
     protected:
@@ -198,32 +198,32 @@ template <typename T>
         }
 
         template <typename V>
-            block_ptr_base(detail::bp::block<V> * p) : base(p)
+            block_ptr_base(block<V, UserPool> * p) : base(p)
             {
             }
 
         template <typename V>
-            block_ptr_base(block_ptr_base<V> const & p) : base(p)
+            block_ptr_base(block_ptr_base<V, UserPool> const & p) : base(p)
             {
             }
 
-            block_ptr_base(block_ptr_base<value_type> const & p) : base(p)
+            block_ptr_base(block_ptr_base<value_type, UserPool> const & p) : base(p)
             {
             }
 
         template <typename V>
-            block_ptr_base & operator = (detail::bp::block<V> * p)
+            block_ptr_base & operator = (block<V, UserPool> * p)
             {
                 return static_cast<block_ptr_base &>(base::operator = (p));
             }
 
         template <typename V>
-            block_ptr_base & operator = (block_ptr_base<V> const & p)
+            block_ptr_base & operator = (block_ptr_base<V, UserPool> const & p)
             {
                 return static_cast<block_ptr_base &>(base::operator = (p));
             }
 
-            block_ptr_base & operator = (block_ptr_base<value_type> const & p)
+            block_ptr_base & operator = (block_ptr_base<value_type, UserPool> const & p)
             {
                 return static_cast<block_ptr_base &>(base::operator = (p));
             }
@@ -241,10 +241,10 @@ template <typename T>
 
 
 #if !defined(_MSC_VER)
-template <typename T, size_t N>
-    class block_ptr_base<T [N]> : public block_ptr_common<T [N]>
+template <typename T, size_t N, typename UserPool>
+    class block_ptr_base<T [N], UserPool> : public block_ptr_common<T [N], UserPool>
     {
-        typedef block_ptr_common<T [N]> base;
+        typedef block_ptr_common<T [N], UserPool> base;
         typedef typename base::value_type value_type;
 
     protected:
@@ -256,32 +256,32 @@ template <typename T, size_t N>
         }
 
         template <typename V>
-            block_ptr_base(detail::bp::block<V> * p) : base(p)
+            block_ptr_base(block<V, UserPool> * p) : base(p)
             {
             }
 
         template <typename V>
-            block_ptr_base(block_ptr_base<V> const & p) : base(p)
+            block_ptr_base(block_ptr_base<V, UserPool> const & p) : base(p)
             {
             }
 
-            block_ptr_base(block_ptr_base<value_type> const & p) : base(p)
+            block_ptr_base(block_ptr_base<value_type, UserPool> const & p) : base(p)
             {
             }
 
         template <typename V>
-            block_ptr_base & operator = (detail::bp::block<V> * p)
+            block_ptr_base & operator = (block<V, UserPool> * p)
             {
                 return static_cast<block_ptr_base &>(base::operator = (p));
             }
 
         template <typename V>
-            block_ptr_base & operator = (block_ptr_base<V> const & p)
+            block_ptr_base & operator = (block_ptr_base<V, UserPool> const & p)
             {
                 return static_cast<block_ptr_base &>(base::operator = (p));
             }
 
-            block_ptr_base & operator = (block_ptr_base<value_type> const & p)
+            block_ptr_base & operator = (block_ptr_base<value_type, UserPool> const & p)
             {
                 return static_cast<block_ptr_base &>(base::operator = (p));
             }
@@ -299,11 +299,11 @@ template <typename T, size_t N>
 #endif
 
 
-template <>
-    class block_ptr_base<void> : public block_ptr_common<void>
+template <typename UserPool>
+    class block_ptr_base<void, UserPool> : public block_ptr_common<void, UserPool>
     {
-        typedef block_ptr_common<void> base;
-        typedef base::value_type value_type;
+        typedef block_ptr_common<void, UserPool> base;
+        typedef typename base::value_type value_type;
 
     protected:
         using base::po_;
@@ -314,32 +314,32 @@ template <>
         }
 
         template <typename V>
-            block_ptr_base(detail::bp::block<V> * p) : base(p)
+            block_ptr_base(block<V, UserPool> * p) : base(p)
             {
             }
 
         template <typename V>
-            block_ptr_base(block_ptr_base<V> const & p) : base(p)
+            block_ptr_base(block_ptr_base<V, UserPool> const & p) : base(p)
             {
             }
 
-            block_ptr_base(block_ptr_base<value_type> const & p) : base(p)
+            block_ptr_base(block_ptr_base<value_type, UserPool> const & p) : base(p)
             {
             }
 
         template <typename V>
-            block_ptr_base & operator = (detail::bp::block<V> * p)
+            block_ptr_base & operator = (block<V, UserPool> * p)
             {
                 return static_cast<block_ptr_base &>(base::operator = (p));
             }
 
         template <typename V>
-            block_ptr_base & operator = (block_ptr_base<V> const & p)
+            block_ptr_base & operator = (block_ptr_base<V, UserPool> const & p)
             {
                 return static_cast<block_ptr_base &>(base::operator = (p));
             }
 
-            block_ptr_base & operator = (block_ptr_base<value_type> const & p)
+            block_ptr_base & operator = (block_ptr_base<value_type, UserPool> const & p)
             {
                 return static_cast<block_ptr_base &>(base::operator = (p));
             }

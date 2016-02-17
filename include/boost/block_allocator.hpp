@@ -94,7 +94,7 @@ template <typename T>
 
         void destroy(pointer p)
         {
-            p->reset();
+            //p->reset();
         }
 
         void deallocate(pointer p, size_type)

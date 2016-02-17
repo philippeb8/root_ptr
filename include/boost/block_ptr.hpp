@@ -41,6 +41,7 @@
 #include <boost/detail/intrusive_stack.hpp>
 #include <boost/detail/roofof.hpp>
 #include <boost/detail/block_ptr_base.hpp>
+#include <boost/detail/system_pool.hpp>
 
 
 namespace boost
@@ -210,13 +211,13 @@ struct block_proxy
 
 #define BEFRIEND_MAKE_BLOCK(z, n, text)																			    	\
     template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>										                    \
-        friend block_ptr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0));
+        friend block_ptr<V, UserPool> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0));
 
 #define CONSTRUCT_MAKE_BLOCK(z, n, text)																			    \
-    template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>										                    \
-        block_ptr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))															\
+    template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename UserPool = system_pool<system_pool_tag, sizeof(char)> >										                    \
+        block_ptr<V, UserPool> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))															\
         {																												\
-            return block_ptr<V>(new block<V>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));									\
+            return block_ptr<V, UserPool>(new block<V, UserPool>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));									\
         }
 
 
@@ -226,12 +227,12 @@ struct block_proxy
     Complete memory management utility on top of standard reference counting.
 */
 
-template <typename T>
-    class block_ptr : public block_ptr_base<T>
+template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(char)> >
+    class block_ptr : public block_ptr_base<T, UserPool>
     {
-        template <typename> friend class block_ptr;
+        template <typename, typename> friend class block_ptr;
 
-        typedef block_ptr_base<T> base;
+        typedef block_ptr_base<T, UserPool> base;
         
         using base::share;
         using base::po_;
@@ -250,9 +251,9 @@ template <typename T>
         */
         
         template <typename V>
-            block_ptr(block<V> * p) : base(p)
+            block_ptr(block<V, UserPool> * p) : base(p)
             {
-                if (! pool::is_from(this))
+                if (! pool<UserPool>::is_from(this))
                 {
                     ps_ = new block_proxy();
 
@@ -260,8 +261,8 @@ template <typename T>
                 }
                 else
                 {
-                    pool::top(this)->ptrs_.push(& pn_);
-                    pool::top(this)->inits_.merge(p->inits_);
+                    pool<UserPool>::top(this)->ptrs_.push(& pn_);
+                    pool<UserPool>::top(this)->inits_.merge(p->inits_);
                 }
             }
 
@@ -273,7 +274,7 @@ template <typename T>
         */
         
         template <typename V>
-            block_ptr & operator = (block<V> * p)
+            block_ptr & operator = (block<V, UserPool> * p)
             {
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
@@ -289,19 +290,19 @@ template <typename T>
             }
 
         template <typename V>
-            void reset(block<V> * p)
+            void reset(block<V, UserPool> * p)
             {
                 operator = <T>(p);
             }
             
         template <typename V>
-            friend block_ptr<V> make_block();
+            friend block_ptr<V, UserPool> make_block();
 
         BOOST_PP_REPEAT_FROM_TO(1, 10, BEFRIEND_MAKE_BLOCK, make_block)
 
     public:
-        typedef T                       value_type;
-        typedef block<value_type>     element_type;
+        typedef T                           value_type;
+        typedef block<value_type, UserPool> element_type;
 
 
         /**
@@ -310,10 +311,10 @@ template <typename T>
         
         block_ptr() : ps_(0)
         {
-            if (!pool::is_from(this))
+            if (!pool<UserPool>::is_from(this))
                 ps_ = new block_proxy();
             else
-                pool::top(this)->ptrs_.push(&pn_);
+                pool<UserPool>::top(this)->ptrs_.push(&pn_);
         }
 
         
@@ -324,13 +325,13 @@ template <typename T>
         */
 
         template <typename V>
-            block_ptr(block_ptr<V> const & p) : base(p), ps_(p.ps_->redir())
+            block_ptr(block_ptr<V, UserPool> const & p) : base(p), ps_(p.ps_->redir())
             {
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
 
-                if (!pool::is_from(this))
+                if (!pool<UserPool>::is_from(this))
                     ++ ps_->redir()->count_;
             }
 
@@ -341,13 +342,13 @@ template <typename T>
             @param	p	New pointer to manage.
         */
 
-            block_ptr(block_ptr<T> const & p) : base(p), ps_(p.ps_->redir())
+            block_ptr(block_ptr<T, UserPool> const & p) : base(p), ps_(p.ps_->redir())
             {
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
 
-                if (!pool::is_from(this))
+                if (!pool<UserPool>::is_from(this))
                     ++ ps_->redir()->count_;
             }
 
@@ -359,7 +360,7 @@ template <typename T>
         */
             
         template <typename V>
-            block_ptr & operator = (block_ptr<V> const & p)
+            block_ptr & operator = (block_ptr<V, UserPool> const & p)
             {
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
@@ -382,7 +383,7 @@ template <typename T>
             @param	p	New pointer to manage.
         */
 
-        block_ptr & operator = (block_ptr<T> const & p)
+        block_ptr & operator = (block_ptr<T, UserPool> const & p)
         {
             return operator = <T>(p);
         }
@@ -397,7 +398,7 @@ template <typename T>
         }
         
         template <typename V>
-            void reset(block_ptr<V> const & p)
+            void reset(block_ptr<V, UserPool> const & p)
             {
                 operator = <T>(p);
             }
@@ -426,7 +427,7 @@ template <typename T>
         {
             base::reset();
             
-            if (! pool::is_from(this))
+            if (! pool<UserPool>::is_from(this))
             {
                 block_proxy * p = ps_->redir();
 
@@ -505,10 +506,10 @@ template <typename T>
 #endif
     };
 
-template <typename V>
-    block_ptr<V> make_block()
+template <typename V, typename UserPool = system_pool<system_pool_tag, sizeof(char)> >
+    block_ptr<V, UserPool> make_block()
     {
-        return block_ptr<V>(new block<V>());
+        return block_ptr<V, UserPool>(new block<V, UserPool>());
     }
 
 BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_BLOCK, make_block)

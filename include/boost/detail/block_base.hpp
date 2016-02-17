@@ -72,109 +72,110 @@ struct block_base;
     Pool where all pointee objects are allocated and tracks memory blocks for later enlisting & marking the @c block_proxy the pointee object belongs to.
 */
 
-struct pool
-{
-    typedef system_pool<pool, sizeof(char)> pool_t;
+template <typename UserPool>
+    struct pool
+    {
+        typedef UserPool pool_t;
 
-    typedef std::list< numeric::interval<long>, fast_pool_allocator< numeric::interval<long> > > pool_lii;	/**< Syntax helper. */
+        typedef std::list< numeric::interval<long>, fast_pool_allocator< numeric::interval<long> > > pool_lii;	/**< Syntax helper. */
 
 #ifndef BOOST_DISABLE_THREADS
-    static thread_specific_ptr<pool_lii> & static_plii()    /**< Thread specific list of memory boundaries. */
-    {
-        static thread_specific_ptr<pool_lii> plii_;
-        
-        return plii_;
-    }
+        static thread_specific_ptr<pool_lii> & static_plii()    /**< Thread specific list of memory boundaries. */
+        {
+            static thread_specific_ptr<pool_lii> plii_;
+            
+            return plii_;
+        }
 #else
-    static std::auto_ptr<pool_lii> & static_plii()          /**< List of memory boundaries. */
-    {
-        static std::auto_ptr<pool_lii> plii_;
-        
-        return plii_;
-    }
+        static std::auto_ptr<pool_lii> & static_plii()          /**< List of memory boundaries. */
+        {
+            static std::auto_ptr<pool_lii> plii_;
+            
+            return plii_;
+        }
 #endif
 
-    /**
-        Tells whether a pointer is part of the pool or not.
+        /**
+            Tells whether a pointer is part of the pool or not.
+            
+            @param	p	Pointer to object.
+            @return		Belongs to the pool.
+        */
         
-        @param	p	Pointer to object.
-        @return		Belongs to the pool.
-    */
-    
-    static bool is_from(void * p)
-    {
-        return pool_t::is_from(p);
-    }
-    
-    static void init()
-    {
-        if (static_plii().get() == 0)
-            static_plii().reset(new pool_lii());
-    }
-    
-    /**
-        Tracks the memory boundaries where a pointer belongs to.  Also gets rid of the boundaries that were allocated before the pointer was allocated.
+        static bool is_from(void * p)
+        {
+            return pool_t::is_from(p);
+        }
         
-        @param	p	Pointer that is being tracked.
-        @return		Pointer to the pointee object where @c p belongs to.
-    */
-    
-    static block_base * top(void * p)
-    {
-        init();
+        static void init()
+        {
+            if (static_plii().get() == 0)
+                static_plii().reset(new pool_lii());
+        }
         
-        pool_lii::reverse_iterator i;
+        /**
+            Tracks the memory boundaries where a pointer belongs to.  Also gets rid of the boundaries that were allocated before the pointer was allocated.
+            
+            @param	p	Pointer that is being tracked.
+            @return		Pointer to the pointee object where @c p belongs to.
+        */
         
-        for (i = static_plii()->rbegin(); i != static_plii()->rend(); i ++)
-            if (in((long)(p), * i))
-                break;
+        static block_base * top(void * p)
+        {
+            init();
+            
+            pool_lii::reverse_iterator i;
+            
+            for (i = static_plii()->rbegin(); i != static_plii()->rend(); i ++)
+                if (in((long)(p), * i))
+                    break;
 
-        static_plii()->erase(i.base(), static_plii()->end());
+            static_plii()->erase(i.base(), static_plii()->end());
+            
+            return (block_base *)(static_plii()->rbegin()->lower());
+        }
         
-        return (block_base *)(static_plii()->rbegin()->lower());
-    }
-    
-    
-    /**
-        Pointee object allocator and stacking of the newly allocated memory boundary.
         
-        @param	s	Size of the memory block to allocate.
-        @return		Address of the newly allocated block.
-    */
-    
-    static void * allocate(std::size_t s)
-    {
-        init();
+        /**
+            Pointee object allocator and stacking of the newly allocated memory boundary.
+            
+            @param	s	Size of the memory block to allocate.
+            @return		Address of the newly allocated block.
+        */
         
-        void * p = pool_t::ordered_malloc(s);
-        
-        static_plii()->push_back(numeric::interval<long>((long) p, long((char *)(p) + s)));
-        
-        return p;
-    }
+        static void * allocate(std::size_t s)
+        {
+            init();
+            
+            void * p = pool_t::ordered_malloc(s);
+            
+            static_plii()->push_back(numeric::interval<long>((long) p, long((char *)(p) + s)));
+            
+            return p;
+        }
 
-    
-    /**
-        Pointee object deallocator and removal of the boundaries that were allocated before the pointer was allocated.
         
-        @param	p	Address of the memory block to deallocate.
-        @param	s	Size of the memory block.
-    */
-    
-    static void deallocate(void * p, std::size_t s)
-    {
-        init();
+        /**
+            Pointee object deallocator and removal of the boundaries that were allocated before the pointer was allocated.
+            
+            @param	p	Address of the memory block to deallocate.
+            @param	s	Size of the memory block.
+        */
         
-        pool_lii::reverse_iterator i;
-        
-        for (i = static_plii()->rbegin(); i != static_plii()->rend(); i ++)
-            if (in((long)(p), * i))
-                break;
+        static void deallocate(void * p, std::size_t s)
+        {
+            init();
+            
+            pool_lii::reverse_iterator i;
+            
+            for (i = static_plii()->rbegin(); i != static_plii()->rend(); i ++)
+                if (in((long)(p), * i))
+                    break;
 
-        static_plii()->erase(i.base(), static_plii()->end());
-        pool_t::ordered_free(p, s);
-    }
-};
+            static_plii()->erase(i.base(), static_plii()->end());
+            pool_t::ordered_free(p, s);
+        }
+    };
 
 
 /**
@@ -215,7 +216,7 @@ protected:
     Object wrapper.
 */
 
-template <typename T>
+template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(char)> >
     class block : public block_base
     {
         typedef T data_type;
@@ -280,7 +281,7 @@ template <typename T>
         
         void * operator new (size_t s)
         {
-            return pool::allocate(s);
+            return pool<UserPool>::allocate(s);
         }
         
 
@@ -292,13 +293,13 @@ template <typename T>
         
         void operator delete (void * p)
         {
-            pool::deallocate(p, sizeof(block));
+            pool<UserPool>::deallocate(p, sizeof(block));
         }
     };
 
 
-template <>
-    class block<void> : public block_base
+template <typename UserPool>
+    class block<void, UserPool> : public block_base
     {
         typedef void data_type;
 

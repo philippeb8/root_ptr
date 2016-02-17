@@ -62,17 +62,17 @@ int main(int argc, char* argv[])
 	for (int i = 0; i < n; ++ i)
 	{
 		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-		worker_make< auto_ptr<int>, make_auto<int> >();
+		worker_make< std::auto_ptr<int>, make_auto<int> >();
 		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
 		median[i][0] = diff(ts[0], ts[1]).tv_nsec;
 
 		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-		worker_make< shared_ptr<int>, make_shared<int> >();
+		worker_make< boost::shared_ptr<int>, make_shared<int> >();
 		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
 		median[i][1] = diff(ts[0], ts[1]).tv_nsec;
 
 		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-		worker_make< block_ptr<int>, make_block<int> >();
+		worker_make< boost::block_ptr<int>, make_block<int> >();
 		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
 		median[i][2] = diff(ts[0], ts[1]).tv_nsec;
 	}
@@ -86,17 +86,17 @@ int main(int argc, char* argv[])
 	for (int i = 0; i < n; ++ i)
 	{
 		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-		worker_new< auto_ptr<int>, int >();
+		worker_new< std::auto_ptr<int>, int >();
 		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
 		median[i][0] = diff(ts[0], ts[1]).tv_nsec;
 
 		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-		worker_new< shared_ptr<int>, int >();
+		worker_new< boost::shared_ptr<int>, int >();
 		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
 		median[i][1] = diff(ts[0], ts[1]).tv_nsec;
 
 		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-		worker_new< block_ptr<int>, block<int> >();
+		worker_new< boost::block_ptr<int>, block<int> >();
 		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
 		median[i][2] = diff(ts[0], ts[1]).tv_nsec;
 	}

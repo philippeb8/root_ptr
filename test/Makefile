@@ -1,5 +1,5 @@
 CXX             := g++
-CXXFLAGS        := -O3
+CXXFLAGS        := -O3 -std=c++11
 INCPATH         := -I../include
 LINK            := g++
 LFLAGS          := -lboost_thread -lboost_system

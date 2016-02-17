@@ -1,5 +1,5 @@
 CXX             := g++
-CXXFLAGS        := -O3 -DBOOST_DISABLE_THREADS
+CXXFLAGS        := -O3 -DBOOST_DISABLE_THREADS -std=c++11
 INCPATH         := -I../include
 LINK            := g++
 LFLAGS          := -lboost_thread -lboost_system
