@@ -244,6 +244,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         { 
             dispose(); 
         }
+        virtual void dispose()              {}
 
     public:
         /**

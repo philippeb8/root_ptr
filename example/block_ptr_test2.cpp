@@ -80,23 +80,17 @@ struct create_type {
     }
 };
 
-int main() {
-    count = 0;
-	{
-	    list l;
-	    for(int j = 0; j < 2; ++j) {
-	        for(int i = 0; i < 1000; ++i) {
-	            l.insert();
-	        }
-	        l.clear();
-	    }
-	}
-    std::cout << count << std::endl;
-
+int main() 
+{
     count = 0;
     {
-        block_ptr<vector> v = make_block<vector>();
-        v->elements.push_back(v);
+        list l;
+        for(int j = 0; j < 2; ++j) {
+            for(int i = 0; i < 1000; ++i) {
+                l.insert();
+            }
+            l.clear();
+        }
     }
     std::cout << count << std::endl;
 
@@ -107,9 +101,17 @@ int main() {
     }
     std::cout << count << std::endl;
 
+    count = 0;
+    {
+        block_ptr<vector> v = make_block<vector>();
+        v->elements.push_back(v);
+    }
+    std::cout << count << std::endl;
+
+    count = 0;
     {
         vector v;
-        v.elements.push_back(make_block<vector>());
+        //v.elements.push_back(make_block<vector>()); //<- Heap block not referenced from the stack
     }
     std::cout << count << std::endl;
 
@@ -121,7 +123,7 @@ int main() {
         std::cout << "test = " << * test << std::endl;
     }
     std::cout << count << std::endl;
-    
+
 /* TODO: Fix crash
     count = 0;
     for(int i = 0; i < 500; ++i) {
