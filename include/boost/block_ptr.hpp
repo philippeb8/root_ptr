@@ -256,7 +256,6 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 if (! pool<UserPool>::is_from(this))
                 {
                     ps_ = new block_proxy();
-
                     init(p);
                 }
                 else
@@ -312,9 +311,13 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         block_ptr() : ps_(0)
         {
             if (!pool<UserPool>::is_from(this))
+            {
                 ps_ = new block_proxy();
+            }
             else
+            {
                 pool<UserPool>::top(this)->ptrs_.push(&pn_);
+            }
         }
 
         
@@ -330,7 +333,6 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
-
                 if (!pool<UserPool>::is_from(this))
                     ++ ps_->redir()->count_;
             }
@@ -347,7 +349,6 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
-
                 if (!pool<UserPool>::is_from(this))
                     ++ ps_->redir()->count_;
             }
@@ -432,6 +433,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 block_proxy * p = ps_->redir();
 
                 if (p->release())
+                {
                     if (! d)
                     {
                         p->~block_proxy();
@@ -439,9 +441,12 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                     }
                     else
                         delete p;
+                }
                 else 
+                {
                     if (! d)
                         ps_ = new block_proxy();
+                }
             }
         }
 

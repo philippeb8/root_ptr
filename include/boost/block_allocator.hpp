@@ -93,7 +93,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
         void destroy(pointer p)
         {
-            static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p))->~block<value_type, UserPool>();
+            //static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p))->~block<value_type, UserPool>();
         }
 
         void deallocate(pointer p, size_type)

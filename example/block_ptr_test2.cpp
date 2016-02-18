@@ -111,7 +111,8 @@ int main()
     count = 0;
     {
         vector v;
-        //v.elements.push_back(make_block<vector>()); //<- Heap block not referenced from the stack
+        v.elements.push_back(new block<vector>()); //<- Heap block not referenced from the stack
+        std::cout << "size = " << v.elements.back()->elements.size() << std::endl;
     }
     std::cout << count << std::endl;
 
