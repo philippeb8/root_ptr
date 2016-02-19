@@ -54,7 +54,7 @@ namespace bp
 {
 
 
-class block_base;
+struct block_base;
 
 
 /**
