@@ -121,6 +121,7 @@ template <typename T>
     }
 
 
+#if defined(_MSC_VER)
 template <typename UserPool>
 	class block_allocator<void, UserPool>
 	{
@@ -146,6 +147,7 @@ template <typename UserPool>
 
 		~block_allocator() throw() {}
 	};
+#endif
 
 
 } // namespace bp
