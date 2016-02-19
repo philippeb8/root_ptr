@@ -106,13 +106,14 @@ int main() {
         v->elements.push_back(v);
     }
     std::cout << count << std::endl;
-
-    {
+/*
+	count = 0;
+	{
         vector v;
-        v.elements.push_back(make_block<vector>());
+        v.elements.push_back(make_block<vector>()); //<- Heap block not referenced from the stack
     }
     std::cout << count << std::endl;
-
+*/
     count = 0;
     {
         block_ptr<int> test = make_block<int>(5);
