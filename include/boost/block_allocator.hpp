@@ -132,8 +132,6 @@ template <typename UserPool>
 		typedef ptrdiff_t                       difference_type;
 		typedef block_ptr<element_type>         pointer;
 		typedef block_ptr<const element_type>   const_pointer;
-		typedef char &                          reference;
-		typedef const char &                    const_reference;
 
 		template <typename U>
 		struct rebind
@@ -147,8 +145,6 @@ template <typename UserPool>
 		block_allocator(const block_allocator<U, UserPool> &) throw() {}
 
 		~block_allocator() throw() {}
-		//pointer address(reference x) const                          { return & x; }
-		//const_pointer address(const_reference x) const              { return & x; }
 	};
 
 
