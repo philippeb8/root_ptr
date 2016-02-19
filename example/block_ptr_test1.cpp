@@ -48,7 +48,7 @@ int main()
 		block_ptr<A> q = make_block<A>(8);
 		block_ptr<A> r = make_block<A>(9);
 
-		block_ptr<void> t = make_block<A>(10);
+		//block_ptr<void> t = make_block<A>(10);
 		block_ptr<int const volatile> v = make_block<int const volatile>(11);
 
 		p->p = p;

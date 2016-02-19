@@ -24,6 +24,7 @@
 #include <boost/mpl/range_c.hpp>
 #include <boost/mpl/for_each.hpp>
 #include <boost/array.hpp>
+#include <boost/container/vector.hpp>
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MAIN
@@ -73,7 +74,7 @@ struct vector {
     vector() { ++count; }
     ~vector() { --count; }
     vector(const vector& other) : elements(other.elements) { ++count; }
-    std::vector<block_ptr<vector>, block_allocator<block_ptr<vector> > > elements;
+    boost::container::vector<block_ptr<vector>, block_allocator<block_ptr<vector> > > elements;
 };
 
 struct create_type {

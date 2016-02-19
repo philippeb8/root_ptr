@@ -47,16 +47,16 @@ namespace bp
 template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(char)> >
     class block_allocator
     {
-        typedef T                       element_type;
+        typedef T                               element_type;
 
     public:
-        typedef element_type            value_type;
-        typedef size_t                  size_type;
-        typedef ptrdiff_t               difference_type;
-        typedef element_type *          pointer;
-        typedef const element_type *    const_pointer;
-        typedef element_type &          reference;
-        typedef const element_type &    const_reference;
+        typedef element_type                    value_type;
+        typedef size_t                          size_type;
+        typedef ptrdiff_t                       difference_type;
+        typedef block_ptr<element_type>         pointer;
+        typedef block_ptr<const element_type>   const_pointer;
+        typedef element_type &                  reference;
+        typedef const element_type &            const_reference;
 
         template <typename U>
             struct rebind
@@ -70,8 +70,8 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             block_allocator(const block_allocator<U, UserPool> &) throw() {}
 
         ~block_allocator() throw()                                {}
-        pointer address(reference x) const                          { return & x; }
-        const_pointer address(const_reference x) const              { return & x; }
+        //pointer address(reference x) const                          { return & x; }
+        //const_pointer address(const_reference x) const              { return & x; }
 
         size_type max_size() const throw()
         {
@@ -80,15 +80,17 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
         pointer allocate(size_type s, const void * = 0)
         {
-            block<value_type, UserPool> * p = static_cast<block<value_type, UserPool> *>(block<value_type, UserPool>::operator new(sizeof(block<value_type, UserPool>)));
+            //block<value_type, UserPool> * p = static_cast<block<value_type, UserPool> *>(block<value_type, UserPool>::operator new(sizeof(block<value_type, UserPool>)));
             //block<value_type, UserPool> * p = new block<value_type, UserPool>();
 
-            return p->element();
+            //return p->element();
+            
+            return new block<value_type, UserPool>();
         }
 
         void construct(pointer p, const T & x)
         {
-            ::new (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p))) block<value_type, UserPool>(x);
+            //::new (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p))) block<value_type, UserPool>(x);
         }
 
         void destroy(pointer p)
@@ -96,11 +98,13 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             //static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p))->~block<value_type, UserPool>();
         }
 
-        void deallocate(pointer p, size_type)
+        void deallocate(const pointer & p, size_type)
         {
-            block<value_type, UserPool>::operator delete (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p)));
+            //block<value_type, UserPool>::operator delete (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p)));
             
             //delete static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p));
+            
+            const_cast<pointer &>(p).reset();
         }
     };
 

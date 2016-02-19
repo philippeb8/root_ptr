@@ -242,7 +242,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             block_proxy * ps_;						/**< Pointer to the @c block_proxy node @c block_ptr<> belongs to. */
             intrusive_stack::node pn_;				/**< Tag used for enlisting a pointer on the heap to later share the @c block_proxy it belongs to. */
         };
-
+        
     public:
         /**
             Initialization of a pointer living on the stack or proper enlistment if living on the heap.
