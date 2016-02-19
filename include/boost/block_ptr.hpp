@@ -389,7 +389,14 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             return operator = <T>(p);
         }
 
-        void reset()
+		block_ptr & operator = (int i)
+		{
+			reset();
+
+			return *this;
+		}
+
+		void reset()
         {
 #ifndef BOOST_DISABLE_THREADS
             mutex::scoped_lock scoped_lock(block_proxy::static_mutex());

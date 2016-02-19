@@ -24,7 +24,6 @@
 #include <boost/mpl/range_c.hpp>
 #include <boost/mpl/for_each.hpp>
 #include <boost/array.hpp>
-#include <boost/container/list.hpp>
 
 
 static int count;
@@ -71,7 +70,7 @@ struct vector {
     ~vector() { --count; }
     vector(const vector& other) : elements(other.elements) { ++count; }
     //std::vector<block_ptr<vector> > elements;
-    boost::container::list<block_ptr<vector>, block_allocator< block_ptr<vector> > > elements; //! works fine
+    std::list<block_ptr<vector>, block_allocator< block_ptr<vector> > > elements; //! works fine
 };
 
 struct create_type {
@@ -81,18 +80,17 @@ struct create_type {
     }
 };
 
-int main() 
-{
+int main() {
     count = 0;
-    {
-        list l;
-        for(int j = 0; j < 2; ++j) {
-            for(int i = 0; i < 1000; ++i) {
-                l.insert();
-            }
-            l.clear();
-        }
-    }
+	{
+	    list l;
+	    for(int j = 0; j < 2; ++j) {
+	        for(int i = 0; i < 1000; ++i) {
+	            l.insert();
+	        }
+	        l.clear();
+	    }
+	}
     std::cout << count << std::endl;
 
     count = 0;
@@ -109,11 +107,9 @@ int main()
     }
     std::cout << count << std::endl;
 
-    count = 0;
     {
         vector v;
-        v.elements.push_back(new block<vector>()); //<- Heap block not referenced from the stack
-        //std::cout << "size = " << v.elements.back()->elements.size() << std::endl;
+        v.elements.push_back(make_block<vector>());
     }
     std::cout << count << std::endl;
 
@@ -125,13 +121,12 @@ int main()
         std::cout << "test = " << * test << std::endl;
     }
     std::cout << count << std::endl;
-
-/* TODO: Fix crash
+    
     count = 0;
     for(int i = 0; i < 500; ++i) {
         boost::mpl::for_each<boost::mpl::range_c<int, 1, 100> >(create_type());
     }
     std::cout << count << std::endl;
-*/
+
     //_exit(-1); // bypassing bug in pool destructor
 }

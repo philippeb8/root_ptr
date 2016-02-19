@@ -121,6 +121,37 @@ template <typename T>
     }
 
 
+template <typename UserPool>
+	class block_allocator<void, UserPool>
+	{
+		typedef void                            element_type;
+
+	public:
+		typedef element_type                    value_type;
+		typedef size_t                          size_type;
+		typedef ptrdiff_t                       difference_type;
+		typedef block_ptr<element_type>         pointer;
+		typedef block_ptr<const element_type>   const_pointer;
+		typedef char &                          reference;
+		typedef const char &                    const_reference;
+
+		template <typename U>
+		struct rebind
+		{
+			typedef block_allocator<U, UserPool> other;
+		};
+
+		block_allocator() throw() {}
+		block_allocator(const block_allocator &) throw() {}
+		template <typename U>
+		block_allocator(const block_allocator<U, UserPool> &) throw() {}
+
+		~block_allocator() throw() {}
+		//pointer address(reference x) const                          { return & x; }
+		//const_pointer address(const_reference x) const              { return & x; }
+	};
+
+
 } // namespace bp
 
 } // namespace detail
