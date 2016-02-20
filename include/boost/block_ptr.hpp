@@ -253,7 +253,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         template <typename V>
             block_ptr(block<V, UserPool> * p) : base(p)
             {
-                if (! pool<UserPool>::is_from(this))
+				if (! pool<UserPool>::is_from(this))
                 {
                     ps_ = new block_proxy();
                     init(p);
@@ -333,7 +333,8 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
-                if (!pool<UserPool>::is_from(this))
+
+				if (!pool<UserPool>::is_from(this))
                     ++ ps_->redir()->count_;
             }
 
@@ -349,7 +350,8 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
-                if (!pool<UserPool>::is_from(this))
+
+				if (!pool<UserPool>::is_from(this))
                     ++ ps_->redir()->count_;
             }
 
@@ -366,9 +368,9 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
-
-                if (ps_->redir() != p.ps_->redir())
-                {
+				
+				if (ps_->redir() != p.ps_->redir())
+				{
                     release(false);
 
 					// order proxies
@@ -377,7 +379,8 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 					else
 						p.ps_->redir()->redir(ps_->redir());
 				}
-                base::operator = (p);
+
+				base::operator = (p);
 
                 return * this;
             }
@@ -529,6 +532,19 @@ template <typename V, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         return block_ptr<V, UserPool>(new block<V, UserPool>());
     }
 
+template <typename T, typename UserPool>
+	bool operator == (block_ptr<T, UserPool> const &a1, block_ptr<T, UserPool> const &a2)
+	{
+		return a1.get() == a2.get();
+	}
+
+template <typename T, typename UserPool>
+	bool operator != (block_ptr<T, UserPool> const &a1, block_ptr<T, UserPool> const &a2)
+	{
+		return a1.get() != a2.get();
+	}
+
+
 BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_BLOCK, make_block)
 
 } // namespace bp
@@ -538,6 +554,8 @@ BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_BLOCK, make_block)
 using detail::bp::block_ptr;
 using detail::bp::block;
 using detail::bp::make_block;
+using detail::bp::operator ==;
+using detail::bp::operator !=;
 
 } // namespace boost
 
