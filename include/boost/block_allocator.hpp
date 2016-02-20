@@ -84,7 +84,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             //block<value_type, UserPool> * p = new block<value_type, UserPool>();
 
             //return p->element();
-            
+
             return new block<value_type, UserPool>();
         }
 
@@ -98,13 +98,13 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             //static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p))->~block<value_type, UserPool>();
         }
 
-        void deallocate(pointer & p, size_type)
+        void deallocate(pointer p, size_type)
         {
             //block<value_type, UserPool>::operator delete (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p)));
             
             //delete static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p));
             
-            p.reset();
+            //p.reset();
         }
     };
 
