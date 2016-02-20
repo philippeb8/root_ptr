@@ -96,7 +96,7 @@ struct block_proxy
     
     block_proxy() : count_(1), redir_(this), destroy_(false)
     {
-        includes_.push_back(& tag_);
+		includes_.push_back(& tag_);
     }
 
     
@@ -441,14 +441,8 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
                 if (p->release())
                 {
-                    if (! d)
-                    {
-                        p->~block_proxy();
-                        ps_ = new (p) block_proxy();
-                    }
-                    else
-                        delete p;
-                }
+					delete p;
+				}
                 else 
                 {
                     if (! d)

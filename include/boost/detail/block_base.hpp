@@ -229,7 +229,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
         block() : elem_() 
         {
-        }
+		}
 
         BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_BLOCK, block)
 
@@ -242,7 +242,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
         virtual ~block()					
         { 
-            dispose(); 
+			dispose();
         }
         virtual void dispose()              {}
 
