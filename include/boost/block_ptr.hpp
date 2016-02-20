@@ -370,8 +370,13 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 if (ps_->redir() != p.ps_->redir())
                 {
                     release(false);
-                    ps_->redir()->redir(p.ps_->redir());
-                }
+
+					// order proxies
+					if (ps_->redir() < p.ps_->redir())
+						ps_->redir()->redir(p.ps_->redir());
+					else
+						p.ps_->redir()->redir(ps_->redir());
+				}
                 base::operator = (p);
 
                 return * this;
