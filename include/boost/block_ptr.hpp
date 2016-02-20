@@ -441,8 +441,14 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
                 if (p->release())
                 {
-					delete p;
-				}
+					if (! d)
+                    {
+                        p->~block_proxy();
+                        ps_ = new (p) block_proxy();
+                    }
+                    else
+                        delete p;
+                }
                 else 
                 {
                     if (! d)
