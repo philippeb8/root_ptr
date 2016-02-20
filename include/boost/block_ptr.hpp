@@ -363,21 +363,32 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         */
             
         template <typename V>
-            block_ptr & operator = (block_ptr<V, UserPool> const & p)
+            block_ptr & operator = (block_ptr<V, UserPool> & p)
             {
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
 				
-				if (ps_->redir() != p.ps_->redir())
+				if (!pool<UserPool>::is_from(this) && pool<UserPool>::is_from(& p))
 				{
-                    release(false);
-
-					// order proxies
-					if (ps_->redir() < p.ps_->redir())
-						ps_->redir()->redir(p.ps_->redir());
-					else
-						p.ps_->redir()->redir(ps_->redir());
+					if (ps_->redir() != p.ps_->redir())
+						release(false);
+				}
+				else if (pool<UserPool>::is_from(this) && !pool<UserPool>::is_from(& p))
+				{
+					if (ps_->redir() != p.ps_->redir())
+						p.release(false);
+				}
+				else
+				{
+					if (ps_->redir() != p.ps_->redir())
+					{
+						// unify & order proxies
+						if (ps_->redir() < p.ps_->redir())
+							ps_->redir()->redir(p.ps_->redir());
+						else
+							p.ps_->redir()->redir(ps_->redir());
+					}
 				}
 
 				base::operator = (p);
@@ -392,7 +403,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             @param	p	New pointer to manage.
         */
 
-        block_ptr & operator = (block_ptr<T, UserPool> const & p)
+        block_ptr & operator = (block_ptr<T, UserPool> & p)
         {
             return operator = <T>(p);
         }
