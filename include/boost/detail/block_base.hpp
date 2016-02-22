@@ -102,9 +102,9 @@ template <typename UserPool>
             @return		Belongs to the pool.
         */
         
-        static bool is_from(void * p)
+        static bool is_from(void const * p)
         {
-            return pool_t::is_from(p);
+            return pool_t::is_from(const_cast<void *>(p));
         }
         
         static void init()
