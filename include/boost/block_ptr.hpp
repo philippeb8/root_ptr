@@ -96,8 +96,13 @@ struct block_proxy
     
     block_proxy() : count_(1), redir_(this), destroy_(false)
     {
+		//std::cout << __FUNCTION__ << "(): " << this << std::endl;
 		includes_.push_back(& tag_);
     }
+	~block_proxy()
+	{
+		//std::cout << __FUNCTION__ << "(): " << this << std::endl;
+	}
 
     
     /**
@@ -108,6 +113,8 @@ struct block_proxy
     
     bool release()
     {
+		//std::cout << __FUNCTION__ << ": " << this << ", " << count_ << std::endl;
+
         if (-- count_ == 0)
         {
             destroy_ = true;
@@ -253,7 +260,9 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         template <typename V>
             block_ptr(block<V, UserPool> * p) : base(p)
             {
-				if (! pool<UserPool>::is_from(this))
+				//std::cout << __FUNCTION__ << "(block<V, UserPool> * p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
+
+				if (true) //! pool<UserPool>::is_from(this))
                 {
                     ps_ = new block_proxy();
                     init(p);
@@ -278,6 +287,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
+				//std::cout << __FUNCTION__ << "(block<V, UserPool> * p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
 
                 release(false);
                 init(p);
@@ -309,7 +319,9 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         
         block_ptr() : ps_(0)
         {
-            if (!pool<UserPool>::is_from(this))
+			//std::cout << __FUNCTION__ << "(): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
+
+            if (true)//!pool<UserPool>::is_from(this))
             {
                 ps_ = new block_proxy();
             }
@@ -332,6 +344,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
+				//std::cout << __FUNCTION__ << "(block_ptr<V, UserPool> const & p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
 
 				if (!pool<UserPool>::is_from(this))
                     ++ ps_->redir()->count_;
@@ -349,6 +362,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
+				//std::cout << __FUNCTION__ << "(block_ptr<T, UserPool> const & p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << &p << (pool<UserPool>::is_from(&p) ? " (heap)" : " (stack)") << std::endl;
 
 				if (!pool<UserPool>::is_from(this))
                     ++ ps_->redir()->count_;
@@ -367,20 +381,17 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
-				
-				if (!pool<UserPool>::is_from(this) && pool<UserPool>::is_from(& p))
-				{
-					if (ps_->redir() != p.ps_->redir())
+				//std::cout << __FUNCTION__ << "(block_ptr<V, UserPool> const & p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << &p << std::endl;
+
+				if (ps_->redir() != p.ps_->redir())
+					if (!pool<UserPool>::is_from(this))
 						release(false);
-				}
-				else if (ps_->redir() != p.ps_->redir())
-				{
-					// unify & order proxies
-					if (ps_->redir() < p.ps_->redir())
-						ps_->redir()->redir(p.ps_->redir());
 					else
-						p.ps_->redir()->redir(ps_->redir());
-				}
+						// unify & order proxies
+						if (ps_->redir() < p.ps_->redir())
+							ps_->redir()->redir(p.ps_->redir());
+						else
+							p.ps_->redir()->redir(ps_->redir());
 
 				base::operator = (p);
 
@@ -428,7 +439,9 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
         ~block_ptr()
         {
-            if (cyclic())
+			//std::cout << __FUNCTION__ << "(): " << this << (pool<UserPool>::is_from(this) ? " (heap)" :  " (stack)") << std::endl;
+			
+			if (cyclic())
                 base::po_ = 0;
             else
                 release(true);

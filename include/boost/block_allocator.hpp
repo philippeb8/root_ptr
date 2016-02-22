@@ -90,7 +90,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
         void construct(pointer p, const T & x)
         {
-            //::new (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p))) block<value_type, UserPool>(x);
+            //::new (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p.get()))) block<value_type, UserPool>(x);
         }
 
         void destroy(pointer p)
