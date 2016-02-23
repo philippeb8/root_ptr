@@ -167,7 +167,7 @@ struct block_proxy
             redir_ = p;
             redir_->includes_.merge(includes_);
             redir_->elements_.merge(elements_);
-            redir_->count_ += count_;
+            //redir_->count_ += count_;
         }
     }
 
@@ -262,16 +262,16 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             {
 				//std::cout << __FUNCTION__ << "(block<V, UserPool> * p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
 
-				if (true) //! pool<UserPool>::is_from(this))
+				//if (! pool<UserPool>::is_from(this))
                 {
                     ps_ = new block_proxy();
                     init(p);
                 }
-                else
-                {
-                    pool<UserPool>::top(this)->ptrs_.push(& pn_);
-                    pool<UserPool>::top(this)->inits_.merge(p->inits_);
-                }
+                //else
+                //{
+                //    pool<UserPool>::top(this)->ptrs_.push(& pn_);
+                //    pool<UserPool>::top(this)->inits_.merge(p->inits_);
+                //}
             }
 
         
@@ -321,14 +321,14 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         {
 			//std::cout << __FUNCTION__ << "(): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
 
-            if (true)//!pool<UserPool>::is_from(this))
+            //if (! pool<UserPool>::is_from(this))
             {
                 ps_ = new block_proxy();
             }
-            else
-            {
-                pool<UserPool>::top(this)->ptrs_.push(&pn_);
-            }
+            //else
+            //{
+            //    pool<UserPool>::top(this)->ptrs_.push(&pn_);
+            //}
         }
 
         
@@ -381,18 +381,22 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
-				//std::cout << __FUNCTION__ << "(block_ptr<V, UserPool> const & p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << &p << std::endl;
+				//std::cout << __FUNCTION__ << "(block_ptr<V, UserPool> const & p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << &p << (pool<UserPool>::is_from(&p) ? " (heap)" : " (stack)") << std::endl;
 
 				if (ps_->redir() != p.ps_->redir())
+				{
 					if (!pool<UserPool>::is_from(this))
 						release(false);
-					else
-						// unify & order proxies
-						if (ps_->redir() < p.ps_->redir())
-							ps_->redir()->redir(p.ps_->redir());
-						else
-							p.ps_->redir()->redir(ps_->redir());
 
+					// unify & order proxies
+					if (ps_->redir() < p.ps_->redir())
+						ps_->redir()->redir(p.ps_->redir());
+					else
+						p.ps_->redir()->redir(ps_->redir());
+
+					if (!pool<UserPool>::is_from(this))
+						++ps_->redir()->count_;
+				}
 				base::operator = (p);
 
                 return * this;
