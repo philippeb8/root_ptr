@@ -171,10 +171,10 @@ template <typename T, typename UserPool>
 	{
 		using Alloc = boost::block_allocator<T, UserPool>;
 
-		template <class T>
+		template <class V>
 			struct portable_rebind_alloc
 			{
-				typedef typename boost::intrusive::pointer_rebind<Alloc, T>::type type;
+				typedef typename boost::intrusive::pointer_rebind<Alloc, V>::type type;
 			};
 
 		static Alloc select_on_container_copy_construction(const Alloc &a)
