@@ -24,6 +24,7 @@
 #include <boost/mpl/range_c.hpp>
 #include <boost/mpl/for_each.hpp>
 #include <boost/array.hpp>
+#include <boost/container/list.hpp>
 
 
 static int count;
@@ -66,11 +67,11 @@ private:
 };
 
 struct vector {
-    vector() { ++count; }
-    ~vector() { --count; }
+    vector() { ++count; std::cout << __FUNCTION__ << "(): " << this << std::endl; }
+    ~vector() { --count; std::cout << __FUNCTION__ << "(): " << this << std::endl; }
     vector(const vector& other) : elements(other.elements) { ++count; }
     //std::vector<block_ptr<vector> > elements;
-    std::list<block_ptr<vector>, block_allocator< block_ptr<vector> > > elements; //! works fine
+    boost::container::list<block_ptr<vector>, block_allocator< block_ptr<vector> > > elements; //! works fine
 };
 
 struct create_type {
@@ -81,6 +82,7 @@ struct create_type {
 };
 
 int main() {
+#if 0
     count = 0;
 	{
 	    list l;
@@ -93,16 +95,24 @@ int main() {
 	}
     std::cout << count << std::endl;
 
-    count = 0;
+	count = 0;
+	{
+		block_ptr<node> v = new block<node>();
+		v->next = v;
+	}
+	std::cout << count << std::endl;
+#endif
+#if 1
+	count = 0;
     {
-        block_ptr<vector> v = make_block<vector>();
+        block_ptr<vector> v = new block<vector>();
         v->elements.push_back(v);
     }
     std::cout << count << std::endl;
 
-    count = 0;
+	count = 0;
     {
-        block_ptr<vector> v = make_block<vector>();
+        block_ptr<vector> v = new block<vector>();
         v->elements.push_back(v);
     }
     std::cout << count << std::endl;
@@ -110,10 +120,11 @@ int main() {
 	count = 0;
 	{
         vector v;
-        v.elements.push_back(make_block<vector>()); //<- Heap block not referenced from the stack
+        v.elements.push_back(new block<vector>()); //<- Heap block not referenced from the stack
     }
     std::cout << count << std::endl;
 */
+#endif
     count = 0;
     {
         block_ptr<int> test = make_block<int>(5);
