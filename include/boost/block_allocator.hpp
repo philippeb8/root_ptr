@@ -79,7 +79,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             return size_t(-1) / sizeof(T);
         }
 
-        pointer allocate(size_type s, const void * = 0)
+        static pointer allocate(size_type s, const void * = 0)
         {
             //block<value_type, UserPool> * p = static_cast<block<value_type, UserPool> *>(block<value_type, UserPool>::operator new(sizeof(block<value_type, UserPool>)));
             //block<value_type, UserPool> * p = new block<value_type, UserPool>();
@@ -88,18 +88,20 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
             return new block<value_type, UserPool>();
         }
+		
+		template <typename V, typename... Args>
+			static void construct(block_allocator &a, V * p, Args &&... x)
+			{
+				//::new (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p.get()))) block<value_type, UserPool>(x);
+			}
 
-        void construct(block_allocator &a, pointer * p, const T & x)
-        {
-            //::new (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p.get()))) block<value_type, UserPool>(x);
-        }
+		template <typename V, typename... Args>
+			static void destroy(block_allocator &a, V * p)
+			{
+				//static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p))->~block<value_type, UserPool>();
+			}
 
-        void destroy(pointer p)
-        {
-            //static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p))->~block<value_type, UserPool>();
-        }
-
-        void deallocate(pointer p, size_type)
+        static void deallocate(pointer p, size_type)
         {
             //block<value_type, UserPool>::operator delete (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p)));
             
