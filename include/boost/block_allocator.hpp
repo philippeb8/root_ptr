@@ -25,6 +25,7 @@
 
 #include <boost/block_ptr.hpp>
 #include <boost/detail/block_base.hpp>
+#include <boost/container/allocator_traits.hpp>
 
 
 namespace boost
@@ -88,7 +89,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             return new block<value_type, UserPool>();
         }
 
-        void construct(pointer p, const T & x)
+        void construct(block_allocator &a, pointer * p, const T & x)
         {
             //::new (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p.get()))) block<value_type, UserPool>(x);
         }
@@ -157,6 +158,30 @@ template <typename UserPool>
 using detail::bp::block_allocator;
 using detail::bp::operator ==;
 using detail::bp::operator !=;
+
+
+namespace container
+{
+namespace container_detail
+{
+template <typename T, typename UserPool>
+	struct allocator_traits<boost::block_allocator<T, UserPool> > : boost::block_allocator<T, UserPool>
+	{
+		using Alloc = boost::block_allocator<T, UserPool>;
+
+		template <class T>
+			struct portable_rebind_alloc
+			{
+				typedef typename boost::intrusive::pointer_rebind<Alloc, T>::type type;
+			};
+
+		static Alloc select_on_container_copy_construction(const Alloc &a)
+		{
+			return a;
+		}
+	};
+}
+}
 
 } // namespace boost
 

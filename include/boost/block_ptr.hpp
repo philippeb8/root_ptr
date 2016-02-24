@@ -42,6 +42,7 @@
 #include <boost/detail/roofof.hpp>
 #include <boost/detail/block_ptr_base.hpp>
 #include <boost/detail/system_pool.hpp>
+#include <boost/intrusive/pointer_traits.hpp>
 
 
 namespace boost
@@ -260,7 +261,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         template <typename V>
             block_ptr(block<V, UserPool> * p) : base(p)
             {
-				//std::cout << __FUNCTION__ << "(block<V, UserPool> * p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
+				//std::cout << __FUNCTION__ << "(block<V, UserPool> * p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << p << std::endl;
 
 				//if (! pool<UserPool>::is_from(this))
                 {
@@ -385,7 +386,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
 				if (ps_->redir() != p.ps_->redir())
 				{
-					if (!pool<UserPool>::is_from(this))
+					//if (!pool<UserPool>::is_from(this))
 						release(false);
 
 					// unify & order proxies
@@ -476,11 +477,13 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                     else
                         delete p;
                 }
+				/*
                 else 
                 {
                     if (! d)
                         ps_ = new block_proxy();
                 }
+				*/
             }
         }
 
@@ -576,6 +579,36 @@ using detail::bp::make_block;
 using detail::bp::operator ==;
 using detail::bp::operator !=;
 
+namespace intrusive
+{
+namespace detail
+{
+
+template <typename T, typename UserPool>
+	struct pointer_traits<block_ptr<T, UserPool> >
+	{
+		using pointer = block_ptr<T, UserPool>;
+		using element_type = T;
+		using difference_type = ptrdiff_t;
+		using reference = element_type &;
+
+		template <typename U>
+			using rebind = T;
+
+		template <class U> 
+			struct rebind_pointer
+			{
+				typedef typename boost::intrusive::pointer_rebind<block_ptr<T, UserPool>, U>::type  type;
+			};
+
+		static pointer pointer_to(reference const t)
+		{
+			return new block<T, UserPool>(t);
+		}
+	};
+
+}
+}
 } // namespace boost
 
 
