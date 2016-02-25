@@ -101,7 +101,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 				//static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p))->~block<value_type, UserPool>();
 			}
 
-        static void deallocate(pointer p, size_type)
+        static void deallocate(block_allocator &a, pointer p, size_type)
         {
             //block<value_type, UserPool>::operator delete (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p)));
             
@@ -109,7 +109,16 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             
             //p.reset();
         }
-    };
+
+		static void deallocate(pointer p, size_type)
+		{
+			//block<value_type, UserPool>::operator delete (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p)));
+
+			//delete static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p));
+
+			//p.reset();
+		}
+	};
 
 template <typename T>
     inline bool operator == (const block_allocator<T> &, const block_allocator<T> &)

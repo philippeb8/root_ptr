@@ -49,7 +49,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
     protected:
         typedef T value_type;
-        typedef block<value_type, UserPool> element_type;
+        //typedef block<value_type, UserPool> element_type;
 
         value_type * po_;
 
