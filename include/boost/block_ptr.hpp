@@ -198,7 +198,7 @@ struct block_proxy
     {
         return p;
     }
-
+	
     
     /**
         Deallocates a @c block_proxy from the fast pool allocator.
@@ -318,7 +318,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             Initialization of a pointer living on the stack or proper enlistment if living on the heap.
         */
         
-        block_ptr() : ps_(0)
+        block_ptr() : base(), ps_(0)
         {
 			//std::cout << __FUNCTION__ << "(): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
 
@@ -386,7 +386,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
 				if (ps_->redir() != p.ps_->redir())
 				{
-					//if (!pool<UserPool>::is_from(this))
+					if (!pool<UserPool>::is_from(this))
 						release(false);
 
 					// unify & order proxies
@@ -603,7 +603,7 @@ template <typename T, typename UserPool>
 
 		static pointer pointer_to(reference const t)
 		{
-			return new block<T, UserPool>(t);
+			return pointer(static_cast<block<element_type, UserPool> *>(typename block<element_type, UserPool>::roofof(&t)));
 		}
 	};
 
