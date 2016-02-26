@@ -395,7 +395,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 					else
 						p.ps_->redir()->redir(ps_->redir());
 
-					if (!pool<UserPool>::is_from(this))
+					if (!pool<UserPool>::is_from(this) || !pool<UserPool>::is_from(&p))
 						++ps_->redir()->count_;
 				}
 				base::operator = (p);
@@ -477,13 +477,13 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                     else
                         delete p;
                 }
-				/*
+		/*
                 else 
                 {
                     if (! d)
                         ps_ = new block_proxy();
                 }
-				*/
+		*/		
             }
         }
 
