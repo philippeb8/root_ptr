@@ -263,16 +263,16 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             {
 				//std::cout << __FUNCTION__ << "(block<V, UserPool> * p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << p << std::endl;
 
-				//if (! pool<UserPool>::is_from(this))
+				if (! pool<UserPool>::is_from(this))
                 {
                     ps_ = new block_proxy();
                     init(p);
                 }
-                //else
-                //{
-                //    pool<UserPool>::top(this)->ptrs_.push(& pn_);
-                //    pool<UserPool>::top(this)->inits_.merge(p->inits_);
-                //}
+                else
+                {
+                    pool<UserPool>::top(this)->ptrs_.push(& pn_);
+                    pool<UserPool>::top(this)->inits_.merge(p->inits_);
+                }
             }
 
         
@@ -322,14 +322,14 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         {
 			//std::cout << __FUNCTION__ << "(): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
 
-            //if (! pool<UserPool>::is_from(this))
+            if (! pool<UserPool>::is_from(this))
             {
                 ps_ = new block_proxy();
             }
-            //else
-            //{
-            //    pool<UserPool>::top(this)->ptrs_.push(&pn_);
-            //}
+            else
+            {
+                pool<UserPool>::top(this)->ptrs_.push(&pn_);
+            }
         }
 
         
