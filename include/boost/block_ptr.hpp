@@ -137,13 +137,14 @@ struct block_proxy
 
     void unify(block_proxy * p)
     {
-		//std::cout << __FUNCTION__ << ": " << this << std::endl;
-
 		block_proxy * q[] = { redir(), p->redir() };
+
+		//std::cout << __FUNCTION__ << ": " << q[0] << ", " << q[1] << std::endl;
 
 		if (q[0] != q[1])
 		{
 			redir_.insert(&p->redir_);
+			//p->redir_.insert(&redir_);
 
 			q[0]->includes_.merge(q[1]->includes_);
 			q[0]->elements_.merge(q[1]->elements_);
@@ -486,7 +487,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             {
                 i->init_ = true;
                 q->elements_.push_back(& i->block_tag_);
-
+				
                 // iterate block_ptr elements
                 for (intrusive_stack::iterator<block_ptr, & block_ptr::pn_> j = i->ptrs_.begin(), k; k = j, j != i->ptrs_.end(); j = k)
                 {
