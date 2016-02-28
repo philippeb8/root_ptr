@@ -88,7 +88,7 @@ int main() {
 	{
 	    list l;
 	    for(int j = 0; j < 2; ++j) {
-	        for(int i = 0; i < 100; ++i) {
+	        for(int i = 0; i < 1000; ++i) {
 	            l.insert();
 	        }
 	        l.clear();
@@ -103,7 +103,8 @@ int main() {
 		v->next = v;
 	}
 	std::cout << count << std::endl;
-
+#endif
+#if 1
 	count = 0;
     {
         block_ptr<vector> v = new block<vector>();
@@ -118,7 +119,7 @@ int main() {
     }
     std::cout << count << std::endl;
 
-#if 0
+#if 1
 	count = 0;
 	{
         vector v;
@@ -136,12 +137,13 @@ int main() {
         std::cout << "test = " << * test << std::endl;
     }
     std::cout << count << std::endl;
-    
+#if 0
     count = 0;
     for(int i = 0; i < 500; ++i) {
         boost::mpl::for_each<boost::mpl::range_c<int, 1, 100> >(create_type());
     }
     std::cout << count << std::endl;
+#endif
 #endif
     //_exit(-1); // bypassing bug in pool destructor
 }
