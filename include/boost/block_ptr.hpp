@@ -29,6 +29,7 @@
 #include <new.h>
 #endif
 
+#include <set>
 #include <iostream>
 #include <boost/pool/pool_alloc.hpp>
 #include <boost/type_traits/add_pointer.hpp>
@@ -67,7 +68,7 @@ struct block_base;
 struct block_proxy
 {
     long count_;								/**< Count of the number of pointers from the stack referencing the same @c block_proxy .*/
-    mutable block_proxy * redir_;					/**< Redirection in the case of an union multiple sets.*/
+	intrusive_list::node redir_;
 
     bool destroy_;									/**< Destruction sequence initiated. */
     intrusive_list::node tag_;						/**< Tag used to enlist to @c block_proxy::includes_ . */
@@ -95,7 +96,7 @@ struct block_proxy
         Initialization of a single @c block_proxy .
     */
     
-    block_proxy() : count_(1), redir_(this), destroy_(false)
+    block_proxy() : count_(1), destroy_(false)
     {
 		//std::cout << __FUNCTION__ << "(): " << this << std::endl;
 		includes_.push_back(& tag_);
@@ -112,14 +113,25 @@ struct block_proxy
         @return		@c block_proxy responsible for managing the counter of an union.
     */
     
-    block_proxy * redir() const
+    block_proxy * redir()
     {
-		//std::cout << __FUNCTION__ << ": " << this << ", " << redir_ << std::endl;
+		intrusive_list::iterator<block_proxy, &block_proxy::redir_> i(&redir_);
 
-		while (redir_ != redir_->redir_)
-            redir_ = redir_->redir_;
-        
-        return redir_;
+		//std::cout << __FUNCTION__ << ": " << __LINE__ << ": " << this << ", " << &*i << std::endl;
+
+		std::set<block_proxy *> s;
+
+		for (; ; ++i)
+		{
+			//std::cout << __FUNCTION__ << ": " << __LINE__ << ": " << this << ", " << &*i << ", " << std::endl;
+
+			if (s.find(&*i) == s.end())
+				s.insert(&*i);
+			else
+				return &*i;
+		}
+
+        return &*--i;
     }
     
     
@@ -129,16 +141,16 @@ struct block_proxy
         @param	p	New @c block_proxy to unify with.
     */
 
-    void redir(block_proxy * p)
+    void unify(block_proxy * p)
     {
-        if (redir_ != p)
-        {
-			//std::cout << __FUNCTION__ << ": " << this << ", " << redir_ << ", " << p << std::endl;
-            redir_ = p;
-            redir_->includes_.merge(includes_);
-            redir_->elements_.merge(elements_);
-            //redir_->count_ += count_;
-        }
+		//std::cout << __FUNCTION__ << ": " << this << std::endl;
+
+		if (redir() != p->redir())
+		{
+			redir_.insert(&p->redir_);
+			includes_.merge(p->includes_);
+			elements_.merge(p->elements_);
+		}
     }
 
     
@@ -154,20 +166,6 @@ struct block_proxy
         return static_pool().allocate(s);
     }
     
-    
-    /**
-        Placement new.
-        
-        @param	s	Size of the @c block_proxy .
-        @param	p	Address to construct the @c block_proxy on.
-        @return		Address to construct the @c block_proxy on.
-    */
-	
-    void * operator new (size_t s, block_proxy * p)
-    {
-        return p;
-    }
-	
     
     /**
         Deallocates a @c block_proxy from the fast pool allocator.
@@ -232,16 +230,16 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             {
 				//std::cout << __FUNCTION__ << "(block<V, UserPool> * p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << p << std::endl;
 
-				if (! pool<UserPool>::is_from(this))
+				//if (! pool<UserPool>::is_from(this))
                 {
                     ps_ = new block_proxy();
 					init(p);
                 }
-                else
-                {
-                    pool<UserPool>::top(this)->ptrs_.push(& pn_);
-                    pool<UserPool>::top(this)->inits_.merge(p->inits_);
-                }
+                //else
+                //{
+                //    pool<UserPool>::top(this)->ptrs_.push(& pn_);
+                //    pool<UserPool>::top(this)->inits_.merge(p->inits_);
+                //}
             }
 
 		template <typename V>
@@ -249,15 +247,15 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 			{
 				//std::cout << __FUNCTION__ << "(block<V, UserPool> * p, int): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << p << std::endl;
 
-				if (!pool<UserPool>::is_from(this))
+				//if (!pool<UserPool>::is_from(this))
 				{
 					ps_ = new block_proxy();
 				}
-				else
-				{
-					pool<UserPool>::top(this)->ptrs_.push(&pn_);
-					pool<UserPool>::top(this)->inits_.merge(p->inits_);
-				}
+				//else
+				//{
+				//	pool<UserPool>::top(this)->ptrs_.push(&pn_);
+				//	pool<UserPool>::top(this)->inits_.merge(p->inits_);
+				//}
 			}
 
         
@@ -307,14 +305,14 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         {
 			//std::cout << __FUNCTION__ << "(): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
 
-            if (! pool<UserPool>::is_from(this))
+            //if (! pool<UserPool>::is_from(this))
             {
                 ps_ = new block_proxy();
             }
-            else
-            {
-                pool<UserPool>::top(this)->ptrs_.push(&pn_);
-            }
+            //else
+            //{
+            //    pool<UserPool>::top(this)->ptrs_.push(&pn_);
+            //}
         }
 
         
@@ -374,11 +372,8 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 					if (!pool<UserPool>::is_from(this))
 						release(false);
 
-					// unify & order proxies
-					if (ps_->redir() < p.ps_->redir())
-						ps_->redir()->redir(p.ps_->redir());
-					else
-						p.ps_->redir()->redir(ps_->redir());
+					// unify proxies
+					ps_->unify(p.ps_);
 
 					if (!pool<UserPool>::is_from(this) || !pool<UserPool>::is_from(&p))
 						++ps_->redir()->count_;
