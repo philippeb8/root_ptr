@@ -107,40 +107,6 @@ struct block_proxy
 
     
     /**
-        Release of a @c block_proxy with possible destruction of all its elements and other sets unified to it.
-        
-        @return		True if the @c block_proxy was released.
-    */
-    
-    bool release()
-    {
-		//std::cout << __FUNCTION__ << ": " << this << ", " << count_ << std::endl;
-
-        if (-- count_ == 0)
-        {
-            destroy_ = true;
-            
-            for (intrusive_list::iterator<block_base, & block_base::block_tag_> i; i = elements_.begin(), i != elements_.end(); )
-                delete &* i;
-                
-            destroy_ = false;
-            
-            for (intrusive_list::iterator<block_proxy, & block_proxy::tag_> i = includes_.begin(), j; j = i, i != includes_.end(); i = j)
-            { 
-                ++ j;
-                
-                if (&* i != this)
-                    delete &* i;
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
-    
-    /**
         Search for the @c block_proxy header of an union.
         
         @return		@c block_proxy responsible for managing the counter of an union.
@@ -148,7 +114,9 @@ struct block_proxy
     
     block_proxy * redir() const
     {
-        while (redir_ != redir_->redir_)
+		//std::cout << __FUNCTION__ << ": " << this << ", " << redir_ << std::endl;
+
+		while (redir_ != redir_->redir_)
             redir_ = redir_->redir_;
         
         return redir_;
@@ -165,6 +133,7 @@ struct block_proxy
     {
         if (redir_ != p)
         {
+			//std::cout << __FUNCTION__ << ": " << this << ", " << redir_ << ", " << p << std::endl;
             redir_ = p;
             redir_->includes_.merge(includes_);
             redir_->elements_.merge(elements_);
@@ -193,7 +162,7 @@ struct block_proxy
         @param	p	Address to construct the @c block_proxy on.
         @return		Address to construct the @c block_proxy on.
     */
-    
+	
     void * operator new (size_t s, block_proxy * p)
     {
         return p;
@@ -205,11 +174,11 @@ struct block_proxy
         
         @param	p	Address of the @c block_proxy to deallocate.
     */
-    
-    void operator delete (void * p)
-    {
-        static_pool().deallocate(static_cast<block_proxy *>(p), sizeof(block_proxy));
-    }
+	
+	void operator delete (void * p)
+	{
+		static_pool().deallocate(static_cast<block_proxy *>(p), sizeof(block_proxy));
+	}
 };
 
 
@@ -266,7 +235,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 				if (! pool<UserPool>::is_from(this))
                 {
                     ps_ = new block_proxy();
-                    init(p);
+					init(p);
                 }
                 else
                 {
@@ -274,6 +243,22 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                     pool<UserPool>::top(this)->inits_.merge(p->inits_);
                 }
             }
+
+		template <typename V>
+			block_ptr(block<V, UserPool> * p, int) : base(p)
+			{
+				//std::cout << __FUNCTION__ << "(block<V, UserPool> * p, int): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << p << std::endl;
+
+				if (!pool<UserPool>::is_from(this))
+				{
+					ps_ = new block_proxy();
+				}
+				else
+				{
+					pool<UserPool>::top(this)->ptrs_.push(&pn_);
+					pool<UserPool>::top(this)->inits_.merge(p->inits_);
+				}
+			}
 
         
         /**
@@ -467,23 +452,24 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             {
                 block_proxy * p = ps_->redir();
 
-                if (p->release())
-                {
-					if (! d)
-                    {
-                        p->~block_proxy();
-                        ps_ = new (p) block_proxy();
-                    }
-                    else
-                        delete p;
-                }
-		/*
-                else 
-                {
-                    if (! d)
-                        ps_ = new block_proxy();
-                }
-		*/		
+				if (-- p->count_ == 0)
+				{
+					p->destroy_ = true;
+
+					for (intrusive_list::iterator<block_base, &block_base::block_tag_> i; i = p->elements_.begin(), i != p->elements_.end(); )
+						delete &* i;
+
+					p->destroy_ = false;
+
+					for (intrusive_list::iterator<block_proxy, &block_proxy::tag_> i = p->includes_.begin(), j; j = i, i != p->includes_.end(); i = j)
+					{
+						++j;
+						delete &* i;
+					}
+
+					if (!d)
+						ps_ = new block_proxy();
+				}
             }
         }
 
@@ -496,6 +482,8 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         
         void init(block_base * p)
         {
+			//std::cout << __FUNCTION__ << "(): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
+
             if (p->init_)
                 return;
 
@@ -603,7 +591,9 @@ template <typename T, typename UserPool>
 
 		static pointer pointer_to(reference const t)
 		{
-			return pointer(static_cast<block<element_type, UserPool> *>(typename block<element_type, UserPool>::roofof(&t)));
+			//block<T, UserPool> * p = static_cast<block<element_type, UserPool> *>(typename block<element_type, UserPool>::roofof(&t));
+			//std::cout << __FUNCTION__ << "(reference const t): " << &t << ", " << p << ", " << p->init_ << std::endl;
+			return pointer(static_cast<block<element_type, UserPool> *>(typename block<element_type, UserPool>::roofof(&t)), 1);
 		}
 	};
 

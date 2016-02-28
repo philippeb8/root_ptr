@@ -229,6 +229,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
         block() : elem_() 
         {
+			//std::cout << __FUNCTION__ << ": " << this << std::endl;
 		}
 
         BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_BLOCK, block)
