@@ -115,24 +115,18 @@ struct block_proxy
     
     block_proxy * redir()
     {
+		//std::cout << __FUNCTION__ << ": " << __LINE__ << ": " << this << std::endl;
+
 		intrusive_list::iterator<block_proxy, &block_proxy::redir_> i(&redir_);
 
-		//std::cout << __FUNCTION__ << ": " << __LINE__ << ": " << this << ", " << &*i << std::endl;
-
-		std::set<block_proxy *> s;
-
-		for (; ; ++i)
+		for (std::set<block_proxy *> s; s.find(&*i) == s.end(); ++i)
 		{
-			//std::cout << __FUNCTION__ << ": " << __LINE__ << ": " << this << ", " << &*i << ", " << std::endl;
-
-			if (s.find(&*i) == s.end())
-				s.insert(&*i);
-			else
-				return &*i;
+			s.insert(&*i);
 		}
 
-        return &*--i;
-    }
+		i->redir_.insert(&redir_);
+		return &*i;
+	}
     
     
     /**
