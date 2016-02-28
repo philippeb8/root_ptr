@@ -139,11 +139,14 @@ struct block_proxy
     {
 		//std::cout << __FUNCTION__ << ": " << this << std::endl;
 
-		if (redir() != p->redir())
+		block_proxy * q[] = { redir(), p->redir() };
+
+		if (q[0] != q[1])
 		{
 			redir_.insert(&p->redir_);
-			includes_.merge(p->includes_);
-			elements_.merge(p->elements_);
+
+			q[0]->includes_.merge(q[1]->includes_);
+			q[0]->elements_.merge(q[1]->elements_);
 		}
     }
 
