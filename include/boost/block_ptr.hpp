@@ -121,10 +121,11 @@ struct block_proxy
 
 		for (std::set<block_proxy *> s; s.find(&*i) == s.end(); ++i)
 		{
+			//std::cout << __FUNCTION__ << ": " << __LINE__ << ": " << &*i << std::endl;
 			s.insert(&*i);
 		}
 
-		i->redir_.insert(&redir_);
+		//i->redir_.insert(&redir_);
 		return &*i;
 	}
     
@@ -248,6 +249,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 				//if (!pool<UserPool>::is_from(this))
 				{
 					ps_ = new block_proxy();
+					//init(p);
 				}
 				//else
 				//{
@@ -449,12 +451,12 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 				{
 					p->destroy_ = true;
 
-					for (intrusive_list::iterator<block_base, &block_base::block_tag_> i; i = p->elements_.begin(), i != p->elements_.end(); )
+					for (intrusive_list::iterator<block_base, &block_base::block_tag_> i = p->elements_.begin(); i != p->elements_.end(); i = p->elements_.begin())
 						delete &* i;
 
 					p->destroy_ = false;
 
-					for (intrusive_list::iterator<block_proxy, &block_proxy::tag_> i = p->includes_.begin(), j; j = i, i != p->includes_.end(); i = j)
+					for (intrusive_list::iterator<block_proxy, &block_proxy::tag_> i = p->includes_.begin(), j = p->includes_.begin(); i != p->includes_.end(); i = j)
 					{
 						++j;
 						delete &* i;
@@ -487,13 +489,14 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             {
                 i->init_ = true;
                 q->elements_.push_back(& i->block_tag_);
-				
+				/*
                 // iterate block_ptr elements
                 for (intrusive_stack::iterator<block_ptr, & block_ptr::pn_> j = i->ptrs_.begin(), k; k = j, j != i->ptrs_.end(); j = k)
                 {
                     ++ k;
                     j->ps_ = ps_;
                 }
+				*/
             }
         }
 

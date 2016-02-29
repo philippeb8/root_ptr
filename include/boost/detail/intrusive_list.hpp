@@ -137,11 +137,18 @@ template <typename T, intrusive_list_node T::* P>
         typedef iterator           						self_type;
         typedef intrusive_list_node               		node_type;
 
-        iterator() : node_() 							{}
+        //iterator() : node_() 							{}
         iterator(intrusive_list::pointer __x) : node_(__x) {}
 
         T & operator * () const 						{ return * roofof(P, node_); }
         T * operator -> () const						{ return roofof(P, node_); }
+
+		self_type & operator = (self_type const & x)
+		{
+			node_ = x.node_;
+
+			return * this;
+		}
 
         self_type & operator ++ ()
         {
