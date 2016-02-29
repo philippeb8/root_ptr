@@ -96,7 +96,7 @@ struct block_proxy
         Initialization of a single @c block_proxy .
     */
     
-    block_proxy() : count_(1), destroy_(false)
+    block_proxy() : count_(0), destroy_(false)
     {
 		//std::cout << __FUNCTION__ << "(): " << this << std::endl;
 		includes_.push_back(& tag_);
@@ -119,7 +119,9 @@ struct block_proxy
 
 		intrusive_list::iterator<block_proxy, &block_proxy::redir_> i(&redir_);
 
-		for (std::set<block_proxy *> s; s.find(&*i) == s.end(); ++i)
+        std::set<block_proxy *> s;
+        
+		for (; s.find(&*i) == s.end(); ++i)
 		{
 			//std::cout << __FUNCTION__ << ": " << __LINE__ << ": " << &*i << std::endl;
 			s.insert(&*i);
@@ -144,12 +146,14 @@ struct block_proxy
 
 		if (q[0] != q[1])
 		{
-			redir_.insert(&p->redir_);
-			//p->redir_.insert(&redir_);
+            redir_.insert(&p->redir_);
 
-			q[0]->includes_.merge(q[1]->includes_);
-			q[0]->elements_.merge(q[1]->elements_);
-		}
+            redir()->count_ = q[0]->count_ + q[1]->count_;
+			redir()->includes_.merge(q[1]->includes_);
+			redir()->elements_.merge(q[1]->elements_);            
+
+            //std::cout << __FUNCTION__ << ": " << redir() << ", " << q[0] << ", " << q[1] << ", " << redir()->count_ << std::endl;
+        }
     }
 
     
@@ -233,6 +237,9 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 {
                     ps_ = new block_proxy();
 					init(p);
+                    
+                    if (!pool<UserPool>::is_from(this))
+                        ++ ps_->redir()->count_;                    
                 }
                 //else
                 //{
@@ -250,7 +257,10 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 				{
 					ps_ = new block_proxy();
 					//init(p);
-				}
+                    
+                    if (!pool<UserPool>::is_from(this))
+                        ++ ps_->redir()->count_;                    
+                }
 				//else
 				//{
 				//	pool<UserPool>::top(this)->ptrs_.push(&pn_);
@@ -275,7 +285,10 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
                 release(false);
                 init(p);
-
+                
+                if (!pool<UserPool>::is_from(this))
+                    ++ ps_->redir()->count_;
+                
                 base::operator = (p);
 
                 return * this;
@@ -308,6 +321,9 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             //if (! pool<UserPool>::is_from(this))
             {
                 ps_ = new block_proxy();
+                
+                if (!pool<UserPool>::is_from(this))
+                    ++ ps_->redir()->count_;            
             }
             //else
             //{
@@ -375,9 +391,9 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 					// unify proxies
 					ps_->unify(p.ps_);
 
-					if (!pool<UserPool>::is_from(this) || !pool<UserPool>::is_from(&p))
-						++ps_->redir()->count_;
-				}
+                    if (!pool<UserPool>::is_from(this))
+                        ++ ps_->redir()->count_;
+                }
 				base::operator = (p);
 
                 return * this;
@@ -447,6 +463,8 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             {
                 block_proxy * p = ps_->redir();
 
+                //std::cout << __FUNCTION__ << ": " << p << ", " << p->count_ << std::endl;
+                
 				if (-- p->count_ == 0)
 				{
 					p->destroy_ = true;
