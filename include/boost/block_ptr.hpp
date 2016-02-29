@@ -94,14 +94,14 @@ struct block_proxy
     
     block_proxy() : count_(0), destroying_(false)
     {
-		//std::cout << __FUNCTION__ << "(): " << this << std::endl;
+        //std::cout << __FUNCTION__ << "(): " << this << std::endl;
     }
-	~block_proxy()
-	{
-		//std::cout << __FUNCTION__ << "(): " << this << std::endl;
-	}
-	
-	long count() const
+    ~block_proxy()
+    {
+        //std::cout << __FUNCTION__ << "(): " << this << std::endl;
+    }
+    
+    long count() const
     {
         long c = 0;
         
@@ -176,11 +176,11 @@ struct block_proxy
         
         @param	p	Address of the @c block_proxy to deallocate.
     */
-	
-	void operator delete (void * p)
-	{
-		static_pool().deallocate(static_cast<block_proxy *>(p), sizeof(block_proxy));
-	}
+    
+    void operator delete (void * p)
+    {
+        static_pool().deallocate(static_cast<block_proxy *>(p), sizeof(block_proxy));
+    }
 };
 
 
@@ -232,12 +232,12 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         template <typename V>
             block_ptr(block<V, UserPool> * p) : base(p)
             {
-				//std::cout << __FUNCTION__ << "(block<V, UserPool> * p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << p << std::endl;
+                //std::cout << __FUNCTION__ << "(block<V, UserPool> * p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << p << std::endl;
 
-				//if (! pool<UserPool>::is_from(this))
+                //if (! pool<UserPool>::is_from(this))
                 {
                     ps_ = new block_proxy();
-					init(p);
+                    init(p);
                     
                     if (!pool<UserPool>::is_from(this))
                         ++ ps_->count_;                    
@@ -249,25 +249,25 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 //}
             }
 
-		template <typename V>
-			block_ptr(block<V, UserPool> * p, int) : base(p)
-			{
-				//std::cout << __FUNCTION__ << "(block<V, UserPool> * p, int): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << p << std::endl;
+        template <typename V>
+            block_ptr(block<V, UserPool> * p, int) : base(p)
+            {
+                //std::cout << __FUNCTION__ << "(block<V, UserPool> * p, int): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << p << std::endl;
 
-				//if (!pool<UserPool>::is_from(this))
-				{
-					ps_ = new block_proxy();
-					//init(p);
+                //if (!pool<UserPool>::is_from(this))
+                {
+                    ps_ = new block_proxy();
+                    //init(p);
                     
                     if (!pool<UserPool>::is_from(this))
                         ++ ps_->count_;                    
                 }
-				//else
-				//{
-				//	pool<UserPool>::top(this)->ptrs_.push(&pn_);
-				//	pool<UserPool>::top(this)->inits_.merge(p->inits_);
-				//}
-			}
+                //else
+                //{
+                //	pool<UserPool>::top(this)->ptrs_.push(&pn_);
+                //	pool<UserPool>::top(this)->inits_.merge(p->inits_);
+                //}
+            }
 
         
         /**
@@ -282,7 +282,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
-				//std::cout << __FUNCTION__ << "(block<V, UserPool> * p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
+                //std::cout << __FUNCTION__ << "(block<V, UserPool> * p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
 
                 release(false);
                 init(p);
@@ -317,7 +317,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         
         block_ptr() : base(), ps_(0)
         {
-			//std::cout << __FUNCTION__ << "(): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
+            //std::cout << __FUNCTION__ << "(): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
 
             //if (! pool<UserPool>::is_from(this))
             {
@@ -345,9 +345,9 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
-				//std::cout << __FUNCTION__ << "(block_ptr<V, UserPool> const & p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
+                //std::cout << __FUNCTION__ << "(block_ptr<V, UserPool> const & p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
 
-				if (!pool<UserPool>::is_from(this))
+                if (!pool<UserPool>::is_from(this))
                     ++ ps_->count_;
             }
 
@@ -363,9 +363,9 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
-				//std::cout << __FUNCTION__ << "(block_ptr<T, UserPool> const & p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << &p << (pool<UserPool>::is_from(&p) ? " (heap)" : " (stack)") << std::endl;
+                //std::cout << __FUNCTION__ << "(block_ptr<T, UserPool> const & p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << &p << (pool<UserPool>::is_from(&p) ? " (heap)" : " (stack)") << std::endl;
 
-				if (!pool<UserPool>::is_from(this))
+                if (!pool<UserPool>::is_from(this))
                     ++ ps_->count_;
             }
 
@@ -382,20 +382,20 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
-				//std::cout << __FUNCTION__ << "(block_ptr<V, UserPool> const & p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << &p << (pool<UserPool>::is_from(&p) ? " (heap)" : " (stack)") << std::endl;
+                //std::cout << __FUNCTION__ << "(block_ptr<V, UserPool> const & p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << &p << (pool<UserPool>::is_from(&p) ? " (heap)" : " (stack)") << std::endl;
 
-				if (!ps_->intersects(p.ps_))
-				{
-					if (!pool<UserPool>::is_from(this))
-						release(false);
+                if (!ps_->intersects(p.ps_))
+                {
+                    if (!pool<UserPool>::is_from(this))
+                        release(false);
 
-					// unify proxies
-					ps_->unify(p.ps_);
+                    // unify proxies
+                    ps_->unify(p.ps_);
 
                     if (!pool<UserPool>::is_from(this))
                         ++ ps_->count_;
                 }
-				base::operator = (p);
+                base::operator = (p);
 
                 return * this;
             }
@@ -412,14 +412,14 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             return operator = <T>(p);
         }
 
-		block_ptr & operator = (int i)
-		{
-			reset();
+        block_ptr & operator = (int i)
+        {
+            reset();
 
-			return *this;
-		}
+            return *this;
+        }
 
-		void reset()
+        void reset()
         {
 #ifndef BOOST_DISABLE_THREADS
             mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
@@ -441,9 +441,9 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
         ~block_ptr()
         {
-			//std::cout << __FUNCTION__ << "(): " << this << (pool<UserPool>::is_from(this) ? " (heap)" :  " (stack)") << std::endl;
-			
-			if (cyclic())
+            //std::cout << __FUNCTION__ << "(): " << this << (pool<UserPool>::is_from(this) ? " (heap)" :  " (stack)") << std::endl;
+            
+            if (cyclic())
                 base::po_ = 0;
             else
                 release(true);
@@ -462,9 +462,9 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             
             if (! pool<UserPool>::is_from(this))
             {
-				if (-- ps_->count_, ps_->count() == 0)
-				{
-					ps_->destroying_ = true;
+                if (-- ps_->count_, ps_->count() == 0)
+                {
+                    ps_->destroying_ = true;
 
                     for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&ps_->proxy_tag_);;)
                     {
@@ -478,11 +478,11 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                             break;
                     }
 
-					ps_->destroying_ = false;
+                    ps_->destroying_ = false;
 
-					if (!d)
-						ps_ = new block_proxy();
-				}
+                    if (!d)
+                        ps_ = new block_proxy();
+                }
             }
         }
 
@@ -495,7 +495,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         
         void init(block_base * p)
         {
-			//std::cout << __FUNCTION__ << "(): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
+            //std::cout << __FUNCTION__ << "(): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
 
             if (p->init_)
                 return;
@@ -505,14 +505,14 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             {
                 i->init_ = true;
                 ps_->block_list_.push_back(& i->block_tag_);
-				/*
+                /*
                 // iterate block_ptr elements
                 for (intrusive_stack::iterator<block_ptr, & block_ptr::pn_> j = i->ptrs_.begin(), k; k = j, j != i->ptrs_.end(); j = k)
                 {
                     ++ k;
                     j->ps_ = ps_;
                 }
-				*/
+                */
             }
         }
 
@@ -555,16 +555,16 @@ template <typename V, typename UserPool = system_pool<system_pool_tag, sizeof(ch
     }
 
 template <typename T, typename UserPool>
-	bool operator == (block_ptr<T, UserPool> const &a1, block_ptr<T, UserPool> const &a2)
-	{
-		return a1.get() == a2.get();
-	}
+    bool operator == (block_ptr<T, UserPool> const &a1, block_ptr<T, UserPool> const &a2)
+    {
+        return a1.get() == a2.get();
+    }
 
 template <typename T, typename UserPool>
-	bool operator != (block_ptr<T, UserPool> const &a1, block_ptr<T, UserPool> const &a2)
-	{
-		return a1.get() != a2.get();
-	}
+    bool operator != (block_ptr<T, UserPool> const &a1, block_ptr<T, UserPool> const &a2)
+    {
+        return a1.get() != a2.get();
+    }
 
 
 BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_BLOCK, make_block)
@@ -585,29 +585,29 @@ namespace detail
 {
 
 template <typename T, typename UserPool>
-	struct pointer_traits<block_ptr<T, UserPool> >
-	{
-		using pointer = block_ptr<T, UserPool>;
-		using element_type = T;
-		using difference_type = ptrdiff_t;
-		using reference = element_type &;
+    struct pointer_traits<block_ptr<T, UserPool> >
+    {
+        using pointer = block_ptr<T, UserPool>;
+        using element_type = T;
+        using difference_type = ptrdiff_t;
+        using reference = element_type &;
 
-		template <typename U>
-			using rebind = T;
+        template <typename U>
+            using rebind = T;
 
-		template <class U> 
-			struct rebind_pointer
-			{
-				typedef typename boost::intrusive::pointer_rebind<block_ptr<T, UserPool>, U>::type  type;
-			};
+        template <class U> 
+            struct rebind_pointer
+            {
+                typedef typename boost::intrusive::pointer_rebind<block_ptr<T, UserPool>, U>::type  type;
+            };
 
-		static pointer pointer_to(reference const t)
-		{
-			//block<T, UserPool> * p = static_cast<block<element_type, UserPool> *>(typename block<element_type, UserPool>::roofof(&t));
-			//std::cout << __FUNCTION__ << "(reference const t): " << &t << ", " << p << ", " << p->init_ << std::endl;
-			return pointer(static_cast<block<element_type, UserPool> *>(typename block<element_type, UserPool>::roofof(&t)), 1);
-		}
-	};
+        static pointer pointer_to(reference const t)
+        {
+            //block<T, UserPool> * p = static_cast<block<element_type, UserPool> *>(typename block<element_type, UserPool>::roofof(&t));
+            //std::cout << __FUNCTION__ << "(reference const t): " << &t << ", " << p << ", " << p->init_ << std::endl;
+            return pointer(static_cast<block<element_type, UserPool> *>(typename block<element_type, UserPool>::roofof(&t)), 1);
+        }
+    };
 
 }
 }
