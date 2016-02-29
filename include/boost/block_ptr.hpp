@@ -67,14 +67,10 @@ struct block_base;
 
 struct block_proxy
 {
-    long count_;								/**< Count of the number of pointers from the stack referencing the same @c block_proxy .*/
-	intrusive_list::node redir_;
-
-    bool destroy_;									/**< Destruction sequence initiated. */
-    intrusive_list::node tag_;						/**< Tag used to enlist to @c block_proxy::includes_ . */
-
-    intrusive_list includes_;						/**< List of all sets of an union. */
-    intrusive_list elements_;						/**< List of all pointee objects belonging to a @c block_proxy . */
+    long count_;							    	/**< Count of the number of pointers from the stack referencing the same @c block_proxy .*/
+    bool destroying_;									/**< Destruction sequence initiated. */
+    intrusive_list::node proxy_tag_;				/**< Tag used to enlist to @c block_proxy::includes_ . */
+    intrusive_list block_list_;				    	/**< List of all pointee objects belonging to a @c block_proxy . */
 
 #ifndef BOOST_DISABLE_THREADS
     static mutex & static_mutex()					/**< Main global mutex used for thread safety */
@@ -96,41 +92,59 @@ struct block_proxy
         Initialization of a single @c block_proxy .
     */
     
-    block_proxy() : count_(0), destroy_(false)
+    block_proxy() : count_(0), destroying_(false)
     {
 		//std::cout << __FUNCTION__ << "(): " << this << std::endl;
-		includes_.push_back(& tag_);
     }
 	~block_proxy()
 	{
 		//std::cout << __FUNCTION__ << "(): " << this << std::endl;
 	}
-
-    
-    /**
-        Search for the @c block_proxy header of an union.
-        
-        @return		@c block_proxy responsible for managing the counter of an union.
-    */
-    
-    block_proxy * redir()
+	
+	long count() const
     {
-		//std::cout << __FUNCTION__ << ": " << __LINE__ << ": " << this << std::endl;
-
-		intrusive_list::iterator<block_proxy, &block_proxy::redir_> i(&redir_);
-
-        std::set<block_proxy *> s;
+        long c = 0;
         
-		for (; s.find(&*i) == s.end(); ++i)
-		{
-			//std::cout << __FUNCTION__ << ": " << __LINE__ << ": " << &*i << std::endl;
-			s.insert(&*i);
-		}
-
-		//i->redir_.insert(&redir_);
-		return &*i;
-	}
+        for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&proxy_tag_);;)
+        {
+            c += i->count_;
+            
+            if (++ i == intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_>(&proxy_tag_))
+                break;
+        }
+        
+        return c;
+    }
     
+    bool intersects(block_proxy const * p) const
+    {
+        for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&proxy_tag_);;)
+        {
+            if (&* i == p)
+                return true;
+            
+            if (++ i == intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_>(&proxy_tag_))
+                break;
+        }
+        
+        return false;
+    }
+    
+    
+    bool destroying() const
+    {
+        for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&proxy_tag_);;)
+        {
+            if (i->destroying_ == true)
+                return true;
+            
+            if (++ i == intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_>(&proxy_tag_))
+                break;
+        }
+        
+        return false;
+    }
+
     
     /**
         Unification with a new @c block_proxy .
@@ -140,20 +154,7 @@ struct block_proxy
 
     void unify(block_proxy * p)
     {
-		block_proxy * q[] = { redir(), p->redir() };
-
-		//std::cout << __FUNCTION__ << ": " << q[0] << ", " << q[1] << std::endl;
-
-		if (q[0] != q[1])
-		{
-            redir_.insert(&p->redir_);
-
-            redir()->count_ = q[0]->count_ + q[1]->count_;
-			redir()->includes_.merge(q[1]->includes_);
-			redir()->elements_.merge(q[1]->elements_);            
-
-            //std::cout << __FUNCTION__ << ": " << redir() << ", " << q[0] << ", " << q[1] << ", " << redir()->count_ << std::endl;
-        }
+        proxy_tag_.insert(& p->proxy_tag_);
     }
 
     
@@ -239,7 +240,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 					init(p);
                     
                     if (!pool<UserPool>::is_from(this))
-                        ++ ps_->redir()->count_;                    
+                        ++ ps_->count_;                    
                 }
                 //else
                 //{
@@ -259,7 +260,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 					//init(p);
                     
                     if (!pool<UserPool>::is_from(this))
-                        ++ ps_->redir()->count_;                    
+                        ++ ps_->count_;                    
                 }
 				//else
 				//{
@@ -287,7 +288,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 init(p);
                 
                 if (!pool<UserPool>::is_from(this))
-                    ++ ps_->redir()->count_;
+                    ++ ps_->count_;
                 
                 base::operator = (p);
 
@@ -323,7 +324,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 ps_ = new block_proxy();
                 
                 if (!pool<UserPool>::is_from(this))
-                    ++ ps_->redir()->count_;            
+                    ++ ps_->count_;            
             }
             //else
             //{
@@ -339,7 +340,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         */
 
         template <typename V>
-            block_ptr(block_ptr<V, UserPool> const & p) : base(p), ps_(p.ps_->redir())
+            block_ptr(block_ptr<V, UserPool> const & p) : base(p), ps_(p.ps_)
             {
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
@@ -347,7 +348,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 				//std::cout << __FUNCTION__ << "(block_ptr<V, UserPool> const & p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
 
 				if (!pool<UserPool>::is_from(this))
-                    ++ ps_->redir()->count_;
+                    ++ ps_->count_;
             }
 
         
@@ -357,7 +358,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             @param	p	New pointer to manage.
         */
 
-            block_ptr(block_ptr<T, UserPool> const & p) : base(p), ps_(p.ps_->redir())
+            block_ptr(block_ptr<T, UserPool> const & p) : base(p), ps_(p.ps_)
             {
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
@@ -365,7 +366,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 				//std::cout << __FUNCTION__ << "(block_ptr<T, UserPool> const & p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << &p << (pool<UserPool>::is_from(&p) ? " (heap)" : " (stack)") << std::endl;
 
 				if (!pool<UserPool>::is_from(this))
-                    ++ ps_->redir()->count_;
+                    ++ ps_->count_;
             }
 
 
@@ -383,7 +384,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #endif
 				//std::cout << __FUNCTION__ << "(block_ptr<V, UserPool> const & p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << &p << (pool<UserPool>::is_from(&p) ? " (heap)" : " (stack)") << std::endl;
 
-				if (ps_->redir() != p.ps_->redir())
+				if (!ps_->intersects(p.ps_))
 				{
 					if (!pool<UserPool>::is_from(this))
 						release(false);
@@ -392,7 +393,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 					ps_->unify(p.ps_);
 
                     if (!pool<UserPool>::is_from(this))
-                        ++ ps_->redir()->count_;
+                        ++ ps_->count_;
                 }
 				base::operator = (p);
 
@@ -435,7 +436,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         
         bool cyclic() const
         {
-            return ps_->redir()->destroy_;
+            return ps_->destroying();
         }
 
         ~block_ptr()
@@ -461,24 +462,23 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             
             if (! pool<UserPool>::is_from(this))
             {
-                block_proxy * p = ps_->redir();
-
-                //std::cout << __FUNCTION__ << ": " << p << ", " << p->count_ << std::endl;
-                
-				if (-- p->count_ == 0)
+				if (-- ps_->count_, ps_->count() == 0)
 				{
-					p->destroy_ = true;
+					ps_->destroying_ = true;
 
-					for (intrusive_list::iterator<block_base, &block_base::block_tag_> i = p->elements_.begin(); i != p->elements_.end(); i = p->elements_.begin())
-						delete &* i;
+                    for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&ps_->proxy_tag_);;)
+                    {
+                        for (intrusive_list::iterator<block_base, &block_base::block_tag_> j = i->block_list_.begin(), k = i->block_list_.begin(); j != i->block_list_.end(); j = k)
+                        {
+                            ++ k;
+                            delete &* j;
+                        }
+                        
+                        if (++ i == intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_>(&ps_->proxy_tag_))
+                            break;
+                    }
 
-					p->destroy_ = false;
-
-					for (intrusive_list::iterator<block_proxy, &block_proxy::tag_> i = p->includes_.begin(), j = p->includes_.begin(); i != p->includes_.end(); i = j)
-					{
-						++j;
-						delete &* i;
-					}
+					ps_->destroying_ = false;
 
 					if (!d)
 						ps_ = new block_proxy();
@@ -500,13 +500,11 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             if (p->init_)
                 return;
 
-            block_proxy * q = ps_->redir();
-        
             // iterate memory blocks
             for (intrusive_list::iterator<block_base, & block_base::init_tag_> i = p->inits_.begin(); i != p->inits_.end(); ++ i)
             {
                 i->init_ = true;
-                q->elements_.push_back(& i->block_tag_);
+                ps_->block_list_.push_back(& i->block_tag_);
 				/*
                 // iterate block_ptr elements
                 for (intrusive_stack::iterator<block_ptr, & block_ptr::pn_> j = i->ptrs_.begin(), k; k = j, j != i->ptrs_.end(); j = k)
