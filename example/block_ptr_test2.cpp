@@ -71,8 +71,8 @@ struct vector {
     ~vector() { --count; std::cout << __FUNCTION__ << "(): " << this << std::endl; }
     vector(const vector& other) : elements(other.elements) { ++count; }
     //std::vector<block_ptr<vector> > elements;
-	std::list<block_ptr<vector>, block_allocator< block_ptr<vector> > > elements; //! works fine
-	//boost::container::list<block_ptr<vector>, block_allocator< block_ptr<vector> > > elements; //! works fine
+	//std::list<block_ptr<vector>, block_allocator< block_ptr<vector> > > elements; //! works fine
+	boost::container::list<block_ptr<vector>, block_allocator< block_ptr<vector> > > elements; //! works fine
 };
 
 struct create_type {
@@ -83,7 +83,7 @@ struct create_type {
 };
 
 int main() {
-#if 1
+#if 0
     count = 0;
 	{
 	    list l;
@@ -96,7 +96,7 @@ int main() {
 	}
     std::cout << count << std::endl;
 #endif
-#if 1
+#if 0
 	count = 0;
 	{
 		block_ptr<node> v = new block<node>();
@@ -104,7 +104,7 @@ int main() {
 	}
 	std::cout << count << std::endl;
 #endif
-#if 1
+#if 0
 	count = 0;
     {
         block_ptr<vector> v = new block<vector>();
@@ -119,6 +119,7 @@ int main() {
     }
     std::cout << count << std::endl;
 
+#endif
 #if 1
 	count = 0;
 	{
@@ -126,7 +127,6 @@ int main() {
         v.elements.push_back(new block<vector>()); //<- Heap block not referenced from the stack
     }
     std::cout << count << std::endl;
-#endif
 #endif
 #if 1
     count = 0;
@@ -137,13 +137,13 @@ int main() {
         std::cout << "test = " << * test << std::endl;
     }
     std::cout << count << std::endl;
-#if 0
+#endif
+#if 1
     count = 0;
     for(int i = 0; i < 500; ++i) {
         boost::mpl::for_each<boost::mpl::range_c<int, 1, 100> >(create_type());
     }
     std::cout << count << std::endl;
-#endif
 #endif
     //_exit(-1); // bypassing bug in pool destructor
 }

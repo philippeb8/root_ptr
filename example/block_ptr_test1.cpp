@@ -42,6 +42,7 @@ struct A
 
 int main()
 {
+#if 1
 	cout << "Cyclicism:" << endl;
 	{
 		block_ptr<A> p = make_block<A>(7);
@@ -75,12 +76,13 @@ int main()
 	}
 	cout << endl;
 #endif
-
+#endif
+    
 	cout << "Order of destruction:" << endl;
 	{
-		block_ptr<A> v = make_block<A>(0);
-		v->p = make_block<A>(1);
-		v->p->p = make_block<A>(2);
+		block_ptr<A> v = new block<A>(0);
+		v->p = new block<A>(1);
+		v->p->p = new block<A>(2);
 		v->p->p->p = v;
 	}
 	cout << endl;

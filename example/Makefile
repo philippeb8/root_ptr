@@ -1,8 +1,8 @@
-CXX             := g++-4.8
-CXXFLAGS        := -O3 -DBOOST_DISABLE_THREADS -std=c++11
-INCPATH         := -I../include
-LINK            := g++-4.8
-LFLAGS          := -lboost_thread -lboost_system
+CXX             := g++
+CXXFLAGS        := -fpermissive -O3 -DBOOST_DISABLE_THREADS -std=c++11
+INCPATH         := -I../include -I/usr/local/include
+LINK            := g++
+LFLAGS          := -L/usr/local/lib -lboost_thread -lboost_system
 RM              := rm
 HEADERS         := $(wildcard *.h)
 SOURCES         := $(wildcard *.cpp)
@@ -16,7 +16,7 @@ OBJECTS         := $(patsubst %.cpp,%.o,$(SOURCES))
 .PHONY : all depend clean
 
 
-all : benchmark block_ptr_test1 block_ptr_test2 block_ptr_test3 t100_test1
+all : benchmark block_ptr_test1
 
 benchmark: benchmark.o
 	$(LINK) -o $@ $^ $(LFLAGS)
