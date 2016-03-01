@@ -42,6 +42,9 @@ struct intrusive_list_node
 
     void insert(intrusive_list_node * const p)
     {
+        if (this == p)
+            return;
+        
         p->next = this;
         p->prev = prev;
         

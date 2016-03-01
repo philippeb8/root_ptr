@@ -116,6 +116,21 @@ struct block_proxy
         return c;
     }
     
+    long size() const
+    {
+        long c = 0;
+        
+        for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&proxy_tag_);;)
+        {
+            ++ c;
+            
+            if (++ i == intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_>(&proxy_tag_))
+                break;
+        }
+        
+        return c;
+    }
+    
     bool intersects(block_proxy const * p) const
     {
         //std::cout << __FUNCTION__ << ": " << __LINE__ << ": " << p << std::endl;
@@ -147,6 +162,18 @@ struct block_proxy
         }
         
         return false;
+    }
+
+    
+    void destroying(bool b) const
+    {
+        for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&proxy_tag_);;)
+        {
+            i->destroying_ = b;
+            
+            if (++ i == intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_>(&proxy_tag_))
+                break;
+        }
     }
 
     
@@ -465,27 +492,32 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             base::reset();
             
             if (! pool<UserPool>::is_from(this))
-            {
+            {                
                 if (-- ps_->count_, ps_->count() == 0)
                 {
-                    ps_->destroying_ = true;
+                    ps_->destroying(true);
 
-                    for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&ps_->proxy_tag_);;)
+                    long s = ps_->size();
+                    
+                    for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&ps_->proxy_tag_), j(&ps_->proxy_tag_); ; i = j)
                     {
-                        for (intrusive_list::iterator<block_base, &block_base::block_tag_> j = i->block_list_.begin(), k = i->block_list_.begin(); j != i->block_list_.end(); j = k)
+                        for (intrusive_list::iterator<block_base, &block_base::block_tag_> m = i->block_list_.begin(), n = i->block_list_.begin(); m != i->block_list_.end(); m = n)
                         {
-                            ++ k;
-                            delete &* j;
+                            ++ n;
+                            delete &* m;
                         }
                         
-                        if (++ i == intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_>(&ps_->proxy_tag_))
+                        ++ j;
+                        delete &* i;
+                        
+                        if (-- s == 0)
                             break;
                     }
 
-                    ps_->destroying_ = false;
-
                     if (!d)
+                    {
                         ps_ = new block_proxy();
+                    }
                 }
             }
         }
