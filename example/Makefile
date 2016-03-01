@@ -16,7 +16,7 @@ OBJECTS         := $(patsubst %.cpp,%.o,$(SOURCES))
 .PHONY : all depend clean
 
 
-all : benchmark block_ptr_test1
+all : benchmark block_ptr_test1 block_ptr_test2 block_ptr_test3 t100_test1
 
 benchmark: benchmark.o
 	$(LINK) -o $@ $^ $(LFLAGS)
