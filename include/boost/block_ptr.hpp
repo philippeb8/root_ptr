@@ -189,7 +189,6 @@ struct block_proxy
     }
 
 
-#if 0
     /**
         Allocates a new @c block_proxy using the fast pool allocator.
         
@@ -213,7 +212,6 @@ struct block_proxy
     {
         static_pool().deallocate(static_cast<block_proxy *>(p), sizeof(block_proxy));
     }
-#endif
 };
 
 
