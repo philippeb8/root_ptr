@@ -101,13 +101,13 @@ struct block_proxy
         //std::cout << __FUNCTION__ << "(): " << this << std::endl;
     }
     
-    long count() const
+    long size() const
     {
         long c = 0;
         
         for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&proxy_tag_);;)
         {
-            c += i->count_;
+            ++ c;
             
             if (++ i == intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_>(&proxy_tag_))
                 break;
@@ -116,13 +116,13 @@ struct block_proxy
         return c;
     }
     
-    long size() const
+    long count() const
     {
         long c = 0;
         
         for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&proxy_tag_);;)
         {
-            ++ c;
+            c += i->count_;
             
             if (++ i == intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_>(&proxy_tag_))
                 break;
@@ -188,7 +188,8 @@ struct block_proxy
         proxy_tag_.insert(& p->proxy_tag_);
     }
 
-    
+
+#if 0
     /**
         Allocates a new @c block_proxy using the fast pool allocator.
         
@@ -212,6 +213,7 @@ struct block_proxy
     {
         static_pool().deallocate(static_cast<block_proxy *>(p), sizeof(block_proxy));
     }
+#endif
 };
 
 
@@ -249,7 +251,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
         union
         {
-            block_proxy * ps_;						/**< Pointer to the @c block_proxy node @c block_ptr<> belongs to. */
+            block_proxy * ps_;                      /**< Pointer to the @c block_proxy node @c block_ptr<> belongs to. */
             intrusive_stack::node pn_;				/**< Tag used for enlisting a pointer on the heap to later share the @c block_proxy it belongs to. */
         };
         
@@ -280,27 +282,12 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 }
             }
 
+        
         template <typename V>
-            block_ptr(block<V, UserPool> * p, int) : base(p)
+            block_ptr(V * p) : base(p), ps_(0)
             {
-                //std::cout << __FUNCTION__ << "(block<V, UserPool> * p, int): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << p << std::endl;
-
-                if (!pool<UserPool>::is_from(this))
-                {
-                    ps_ = new block_proxy();
-                    //init(p);
-                    
-                    if (!pool<UserPool>::is_from(this))
-                        ++ ps_->count_;                    
-                }
-                else
-                {
-                	pool<UserPool>::top(this)->ptrs_.push(&pn_);
-                	pool<UserPool>::top(this)->inits_.merge(p->inits_);
-                }
             }
 
-        
         /**
             Assignment & union of 2 sets if the pointee resides a different @c block_proxy.
             
@@ -315,11 +302,26 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #endif
                 //std::cout << __FUNCTION__ << "(block<V, UserPool> * p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
 
-                release(false);
+                release(false); 
                 init(p);
                 
-                if (!pool<UserPool>::is_from(this))
+                if (ps_ && !pool<UserPool>::is_from(this))
                     ++ ps_->count_;
+                
+                base::operator = (p);
+
+                return * this;
+            }
+            
+        template <typename V>
+            block_ptr & operator = (V * p)
+            {
+#ifndef BOOST_DISABLE_THREADS
+                mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
+#endif
+                //std::cout << __FUNCTION__ << "(block<V, UserPool> * p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
+
+                release(true);
                 
                 base::operator = (p);
 
@@ -328,6 +330,12 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
         template <typename V>
             void reset(block<V, UserPool> * p)
+            {
+                operator = <T>(p);
+            }
+        
+        template <typename V>
+            void reset(V * p)
             {
                 operator = <T>(p);
             }
@@ -378,7 +386,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #endif
                 //std::cout << __FUNCTION__ << "(block_ptr<V, UserPool> const & p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
 
-                if (!pool<UserPool>::is_from(this))
+                if (ps_ && !pool<UserPool>::is_from(this))
                     ++ ps_->count_;
             }
 
@@ -396,7 +404,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #endif
                 //std::cout << __FUNCTION__ << "(block_ptr<T, UserPool> const & p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << &p << (pool<UserPool>::is_from(&p) ? " (heap)" : " (stack)") << std::endl;
 
-                if (!pool<UserPool>::is_from(this))
+                if (ps_ && !pool<UserPool>::is_from(this))
                     ++ ps_->count_;
             }
 
@@ -413,20 +421,42 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
-                //std::cout << __FUNCTION__ << "(block_ptr<V, UserPool> const & p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << &p << (pool<UserPool>::is_from(&p) ? " (heap)" : " (stack)") << std::endl;
 
-                if (!ps_->intersects(p.ps_))
+                if (ps_ && p.ps_)
                 {
-                    if (!pool<UserPool>::is_from(this))
+                    if (!ps_->intersects(p.ps_))
+                    {
                         release(false);
 
-                    // unify proxies
-                    ps_->unify(p.ps_);
+                        // unify proxies
+                        ps_->unify(p.ps_);
 
+                        if (!pool<UserPool>::is_from(this))
+                            ++ ps_->count_;
+                    }
+                    
+                    base::operator = (p);
+                }
+                else if (!p.ps_)
+                {
+                    release(true);
+                    
+                    base::operator = (p.get());
+                }
+                else if (!ps_)
+                {
+                    ps_ = p.ps_;
+                    base::po_ = 0;
+                    
                     if (!pool<UserPool>::is_from(this))
                         ++ ps_->count_;
+                    
+                    base::operator = (p);
                 }
-                base::operator = (p);
+                else
+                {
+                    base::operator = (p.get());
+                }
 
                 return * this;
             }
@@ -446,7 +476,6 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         block_ptr & operator = (int i)
         {
             reset();
-
             return *this;
         }
 
@@ -467,14 +496,14 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         
         bool cyclic() const
         {
-            return ps_->destroying();
+            return ps_ && ps_->destroying();
         }
 
         ~block_ptr()
         {
             //std::cout << __FUNCTION__ << "(): " << this << (pool<UserPool>::is_from(this) ? " (heap)" :  " (stack)") << std::endl;
             
-            if (cyclic())
+            if (!ps_ || cyclic())
                 base::po_ = 0;
             else
                 release(true);
@@ -489,37 +518,45 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         
         void release(bool d)
         {
-            base::reset();
-            
-            if (! pool<UserPool>::is_from(this))
-            {                
-                if (-- ps_->count_, ps_->count() == 0)
+            if (!ps_)
+            {
+                base::po_ = 0;
+            }
+            else
+            {
+                base::reset();
+                
+                if (!pool<UserPool>::is_from(this))
                 {
-                    ps_->destroying(true);
-
-                    long s = ps_->size();
-                    
-                    for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&ps_->proxy_tag_), j(&ps_->proxy_tag_); ; i = j)
+                    if (-- ps_->count_, ps_->count() == 0)
                     {
-                        for (intrusive_list::iterator<block_base, &block_base::block_tag_> m = i->block_list_.begin(), n = i->block_list_.begin(); m != i->block_list_.end(); m = n)
+                        ps_->destroying(true);
+
+                        long s = ps_->size();
+                        
+                        for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&ps_->proxy_tag_), j(&ps_->proxy_tag_); ; i = j)
                         {
-                            ++ n;
-                            delete &* m;
+                            for (intrusive_list::iterator<block_base, &block_base::block_tag_> m = i->block_list_.begin(), n = i->block_list_.begin(); m != i->block_list_.end(); m = n)
+                            {
+                                ++ n;
+                                delete &* m;
+                            }
+                            
+                            ++ j;
+                            delete &* i;
+                            
+                            if (-- s == 0)
+                                break;
                         }
-                        
-                        ++ j;
-                        delete &* i;
-                        
-                        if (-- s == 0)
-                            break;
-                    }
 
-                    if (!d)
-                    {
-                        ps_ = new block_proxy();
+                        if (!d)
+                            ps_ = new block_proxy();
                     }
                 }
             }
+            
+            if (d)
+                ps_ = 0;
         }
 
         
@@ -532,25 +569,25 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         void init(block_base * p)
         {
             //std::cout << __FUNCTION__ << "(): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
-
-            if (p->init_)
-                return;
-
-            // iterate memory blocks
-            for (intrusive_list::iterator<block_base, & block_base::init_tag_> i = p->inits_.begin(); i != p->inits_.end(); ++ i)
+            
+            if (ps_ && !p->init_)
             {
-                i->init_ = true;
-                ps_->block_list_.push_back(& i->block_tag_);
-                
-                // iterate block_ptr elements
-                for (intrusive_stack::iterator<block_ptr, & block_ptr::pn_> j = i->ptrs_.begin(), k; k = j, j != i->ptrs_.end(); j = k)
+                // iterate memory blocks
+                for (intrusive_list::iterator<block_base, & block_base::init_tag_> i = p->inits_.begin(); i != p->inits_.end(); ++ i)
                 {
-                    ++ k;
-                    j->ps_ = ps_;
+                    i->init_ = true;
+                    ps_->block_list_.push_back(& i->block_tag_);
+                    
+                    // iterate block_ptr elements
+                    for (intrusive_stack::iterator<block_ptr, & block_ptr::pn_> j = i->ptrs_.begin(), k; k = j, j != i->ptrs_.end(); j = k)
+                    {
+                        ++ k;
+                        j->ps_ = ps_;
+                    }
                 }
             }
         }
-
+        
 #if 0 //defined(BOOST_HAS_RVALUE_REFS)
     public:
         block_ptr(block_ptr<T> && p): base(p.po_), ps_(p.ps_)
@@ -640,7 +677,9 @@ template <typename T, typename UserPool>
         {
             //block<T, UserPool> * p = static_cast<block<element_type, UserPool> *>(typename block<element_type, UserPool>::roofof(&t));
             //std::cout << __FUNCTION__ << "(reference const t): " << &t << ", " << p << ", " << p->init_ << std::endl;
-            return pointer(static_cast<block<element_type, UserPool> *>(typename block<element_type, UserPool>::roofof(&t)), 1);
+            //::new (&t) boost::detail::bp::block_base();
+            //return pointer(static_cast<block<element_type, UserPool> *>(typename block<element_type, UserPool>::roofof(&t)), 1);
+            return pointer(&t);
         }
     };
 

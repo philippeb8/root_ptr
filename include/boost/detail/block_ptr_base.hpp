@@ -53,6 +53,16 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
         value_type * po_;
 
+        block_ptr_common(T * p) : po_(p)
+        {
+        }
+
+        block_ptr_common & operator = (T * p)
+        {
+            po_ = p;
+            return * this;
+        }
+            
     public:
         block_ptr_common() : po_(0)
         {
@@ -84,10 +94,9 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             block_ptr_common & operator = (block<V, UserPool> * p)
             {
                 reset(p->element());
-
                 return * this;
             }
-
+            
         template <typename V>
             block_ptr_common & operator = (block_ptr_common<V, UserPool> const & p)
             {
@@ -177,8 +186,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
     protected:
         block_base * header() const
         {
-            block_base * p = (block<value_type, UserPool> *) (typename block<value_type, UserPool>::roofof) static_cast<value_type *>(rootof<is_polymorphic<value_type>::value>::get(po_));
-            return p;
+            return (block<value_type, UserPool> *) (typename block<value_type, UserPool>::roofof) static_cast<value_type *>(rootof<is_polymorphic<value_type>::value>::get(po_));
         }
     };
 
@@ -191,6 +199,15 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         
     protected:
         using base::po_;
+
+        block_ptr_base(value_type * p) : base(p)
+        {
+        }
+
+        block_ptr_base & operator = (value_type * p)
+        {
+            return static_cast<block_ptr_base &>(base::operator = (p));
+        }
 
     public:
         block_ptr_base() : base()
@@ -250,6 +267,15 @@ template <typename T, size_t N, typename UserPool>
     protected:
         using base::po_;
 
+        block_ptr_base(value_type * p) : base(p)
+        {
+        }
+
+        block_ptr_base & operator = (value_type * p)
+        {
+            return static_cast<block_ptr_base &>(base::operator = (p));
+        }
+
     public:
         block_ptr_base() : base()
         {
@@ -307,6 +333,15 @@ template <typename UserPool>
 
     protected:
         using base::po_;
+
+        block_ptr_base(value_type * p) : base(p)
+        {
+        }
+
+        block_ptr_base & operator = (value_type * p)
+        {
+            return static_cast<block_ptr_base &>(base::operator = (p));
+        }
 
     public:
         block_ptr_base() : base()
