@@ -87,8 +87,8 @@ int main() {
     count = 0;
     {
         node n;
-        block_ptr<node> v;
-        v = block_ptr<node>(&n);
+        block_ptr<node> v = &n;
+        v = v;
     }
     std::cout << count << std::endl;
 #endif
@@ -113,7 +113,7 @@ int main() {
 	}
 	std::cout << count << std::endl;
 #endif
-#if 0
+#if 1
 	count = 0;
     {
         block_ptr<vector> v = new block<vector>();
@@ -129,7 +129,7 @@ int main() {
     std::cout << count << std::endl;
 
 #endif
-#if 0
+#if 1
 	count = 0;
 	{
         vector v;
