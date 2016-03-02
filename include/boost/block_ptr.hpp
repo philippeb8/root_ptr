@@ -273,11 +273,11 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                     if (!pool<UserPool>::is_from(this))
                         ++ ps_->count_;                    
                 }
-                else
-                {
-                    pool<UserPool>::top(this)->ptrs_.push(& pn_);
-                    pool<UserPool>::top(this)->inits_.merge(p->inits_);
-                }
+                //else
+                //{
+                //    pool<UserPool>::top(this)->ptrs_.push(& pn_);
+                //    pool<UserPool>::top(this)->inits_.merge(p->inits_);
+                //}
             }
 
         
@@ -359,7 +359,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         block_ptr() : base(), ps_(0)
         {
             //std::cout << __FUNCTION__ << "(): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
-
+/*
             if (! pool<UserPool>::is_from(this))
             {
                 ps_ = new block_proxy();
@@ -371,6 +371,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             {
                 pool<UserPool>::top(this)->ptrs_.push(&pn_);
             }
+*/
         }
 
         
@@ -580,12 +581,14 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                     i->init_ = true;
                     ps_->block_list_.push_back(& i->block_tag_);
                     
+                    /*
                     // iterate block_ptr elements
                     for (intrusive_stack::iterator<block_ptr, & block_ptr::pn_> j = i->ptrs_.begin(), k; k = j, j != i->ptrs_.end(); j = k)
                     {
                         ++ k;
                         j->ps_ = ps_;
                     }
+                    */
                 }
             }
         }
