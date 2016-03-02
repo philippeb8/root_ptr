@@ -51,9 +51,9 @@ public:
     }
     void insert() {
         if(front.get() == 0) {
-            back = make_block<node>();
+            back = new block<node>();
         } else {
-            back->next = make_block<node>();
+            back->next = new block<node>();
             back->next->prior = back;
             back = back->next;
         }
@@ -83,7 +83,16 @@ struct create_type {
 };
 
 int main() {
-#if 0
+#if 1
+    count = 0;
+    {
+        node n;
+        block_ptr<node> v;
+        v = block_ptr<node>(&n);
+    }
+    std::cout << count << std::endl;
+#endif
+#if 1
     count = 0;
 	{
 	    list l;
@@ -96,7 +105,7 @@ int main() {
 	}
     std::cout << count << std::endl;
 #endif
-#if 0
+#if 1
 	count = 0;
 	{
 		block_ptr<node> v = new block<node>();
@@ -120,7 +129,7 @@ int main() {
     std::cout << count << std::endl;
 
 #endif
-#if 1
+#if 0
 	count = 0;
 	{
         vector v;
