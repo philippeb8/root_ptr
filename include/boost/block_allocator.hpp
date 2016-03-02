@@ -71,8 +71,8 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             block_allocator(const block_allocator<U, UserPool> &) throw() {}
 
         ~block_allocator() throw()                                {}
-        //pointer address(reference x) const                          { return & x; }
-        //const_pointer address(const_reference x) const              { return & x; }
+        pointer address(reference x) const                          { return & x; }
+        const_pointer address(const_reference x) const              { return & x; }
 
         size_type max_size() const throw()
         {
@@ -81,42 +81,25 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
         static pointer allocate(size_type s, const void * = 0)
         {
-            //block<value_type, UserPool> * p = static_cast<block<value_type, UserPool> *>(block<value_type, UserPool>::operator new(sizeof(block<value_type, UserPool>)));
-            //block<value_type, UserPool> * p = new block<value_type, UserPool>();
-
-            //return p->element();
-
             return new block<value_type, UserPool>();
         }
         
         template <typename V, typename... Args>
             static void construct(block_allocator &a, V * p, Args &&... x)
             {
-                //::new (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p.get()))) block<value_type, UserPool>(x);
             }
 
         template <typename V, typename... Args>
             static void destroy(block_allocator &a, V * p)
             {
-                //static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p))->~block<value_type, UserPool>();
             }
 
         static void deallocate(block_allocator &a, const pointer & p, size_type)
         {
-            //block<value_type, UserPool>::operator delete (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p)));
-            
-            //delete static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p));
-            
-            //p.reset();
         }
 
         static void deallocate(const pointer & p, size_type)
         {
-            //block<value_type, UserPool>::operator delete (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p)));
-
-            //delete static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p));
-
-            //p.reset();
         }
     };
 

@@ -640,10 +640,6 @@ template <typename T, typename UserPool>
 
         static pointer pointer_to(reference const t)
         {
-            //block<T, UserPool> * p = static_cast<block<element_type, UserPool> *>(typename block<element_type, UserPool>::roofof(&t));
-            //std::cout << __FUNCTION__ << "(reference const t): " << &t << ", " << p << ", " << p->init_ << std::endl;
-            //::new (&t) boost::detail::bp::block_base();
-            //return pointer(static_cast<block<element_type, UserPool> *>(typename block<element_type, UserPool>::roofof(&t)), 1);
             return pointer(&t);
         }
     };
