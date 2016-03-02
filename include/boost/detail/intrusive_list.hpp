@@ -42,9 +42,6 @@ struct intrusive_list_node
 
     void insert(intrusive_list_node * const p)
     {
-        if (this == p)
-            return;
-        
         p->next = this;
         p->prev = prev;
         
@@ -146,12 +143,11 @@ template <typename T, intrusive_list_node T::* P>
         T & operator * () const 						{ return * roofof(P, node_); }
         T * operator -> () const						{ return roofof(P, node_); }
 
-		self_type & operator = (self_type const & x)
-		{
-			node_ = x.node_;
-
-			return * this;
-		}
+        self_type & operator = (self_type const & x)
+        {
+            node_ = x.node_;
+            return * this;
+        }
 
         self_type & operator ++ ()
         {

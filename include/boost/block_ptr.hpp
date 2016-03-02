@@ -94,11 +94,9 @@ struct block_proxy
     
     block_proxy() : count_(0), destroying_(false)
     {
-        //std::cout << __FUNCTION__ << "(): " << this << std::endl;
     }
     ~block_proxy()
     {
-        //std::cout << __FUNCTION__ << "(): " << this << std::endl;
     }
     
     long size() const
@@ -133,12 +131,8 @@ struct block_proxy
     
     bool intersects(block_proxy const * p) const
     {
-        //std::cout << __FUNCTION__ << ": " << __LINE__ << ": " << p << std::endl;
-        
         for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&proxy_tag_);;)
         {
-            //std::cout << __FUNCTION__ << ": " << &* i << std::endl;
-            
             if (&* i == p)
                 return true;
             
@@ -263,8 +257,6 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         template <typename V>
             block_ptr(block<V, UserPool> * p) : base(p)
             {
-                //std::cout << __FUNCTION__ << "(block<V, UserPool> * p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << p << std::endl;
-
                 if (! pool<UserPool>::is_from(this))
                 {
                     ps_ = new block_proxy();
@@ -273,11 +265,10 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                     if (!pool<UserPool>::is_from(this))
                         ++ ps_->count_;                    
                 }
-                //else
-                //{
-                //    pool<UserPool>::top(this)->ptrs_.push(& pn_);
-                //    pool<UserPool>::top(this)->inits_.merge(p->inits_);
-                //}
+                else
+                {
+                    pool<UserPool>::top(this)->inits_.merge(p->inits_);
+                }
             }
 
         
@@ -298,7 +289,6 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
-                //std::cout << __FUNCTION__ << "(block<V, UserPool> * p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
 
                 release(false);
 
@@ -321,7 +311,6 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
-                //std::cout << __FUNCTION__ << "(block<V, UserPool> * p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
 
                 release(true);
                 
@@ -358,20 +347,6 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         
         block_ptr() : base(), ps_(0)
         {
-            //std::cout << __FUNCTION__ << "(): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
-/*
-            if (! pool<UserPool>::is_from(this))
-            {
-                ps_ = new block_proxy();
-                
-                if (!pool<UserPool>::is_from(this))
-                    ++ ps_->count_;            
-            }
-            else
-            {
-                pool<UserPool>::top(this)->ptrs_.push(&pn_);
-            }
-*/
         }
 
         
@@ -387,7 +362,6 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
-                //std::cout << __FUNCTION__ << "(block_ptr<V, UserPool> const & p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
 
                 if (ps_ && !pool<UserPool>::is_from(this))
                     ++ ps_->count_;
@@ -405,7 +379,6 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
-                //std::cout << __FUNCTION__ << "(block_ptr<T, UserPool> const & p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << ", " << &p << (pool<UserPool>::is_from(&p) ? " (heap)" : " (stack)") << std::endl;
 
                 if (ps_ && !pool<UserPool>::is_from(this))
                     ++ ps_->count_;
@@ -504,8 +477,6 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
         ~block_ptr()
         {
-            //std::cout << __FUNCTION__ << "(): " << this << (pool<UserPool>::is_from(this) ? " (heap)" :  " (stack)") << std::endl;
-            
             if (!ps_ || cyclic())
                 base::po_ = 0;
             else
@@ -571,8 +542,6 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         
         void init(block_base * p)
         {
-            //std::cout << __FUNCTION__ << "(): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
-            
             if (ps_ && !p->init_)
             {
                 // iterate memory blocks
@@ -580,15 +549,6 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 {
                     i->init_ = true;
                     ps_->block_list_.push_back(& i->block_tag_);
-                    
-                    /*
-                    // iterate block_ptr elements
-                    for (intrusive_stack::iterator<block_ptr, & block_ptr::pn_> j = i->ptrs_.begin(), k; k = j, j != i->ptrs_.end(); j = k)
-                    {
-                        ++ k;
-                        j->ps_ = ps_;
-                    }
-                    */
                 }
             }
         }

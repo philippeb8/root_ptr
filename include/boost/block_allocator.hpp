@@ -1,16 +1,16 @@
 /**
-	@file
-	Boost block_allocator.hpp header file.
+    @file
+    Boost block_allocator.hpp header file.
 
-	@note
-	Copyright (c) 2008 Phil Bouchard <pbouchard8@gmail.com>.
+    @note
+    Copyright (c) 2008 Phil Bouchard <pbouchard8@gmail.com>.
 
-	Distributed under the Boost Software License, Version 1.0.
+    Distributed under the Boost Software License, Version 1.0.
 
-	See accompanying file LICENSE_1_0.txt or copy at
-	http://www.boost.org/LICENSE_1_0.txt
+    See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt
 
-	See http://www.boost.org/libs/smart_ptr/doc/index.html for documentation.
+    See http://www.boost.org/libs/smart_ptr/doc/index.html for documentation.
 */
 
 
@@ -88,18 +88,18 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
             return new block<value_type, UserPool>();
         }
-		
-		template <typename V, typename... Args>
-			static void construct(block_allocator &a, V * p, Args &&... x)
-			{
-				//::new (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p.get()))) block<value_type, UserPool>(x);
-			}
+        
+        template <typename V, typename... Args>
+            static void construct(block_allocator &a, V * p, Args &&... x)
+            {
+                //::new (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p.get()))) block<value_type, UserPool>(x);
+            }
 
-		template <typename V, typename... Args>
-			static void destroy(block_allocator &a, V * p)
-			{
-				//static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p))->~block<value_type, UserPool>();
-			}
+        template <typename V, typename... Args>
+            static void destroy(block_allocator &a, V * p)
+            {
+                //static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p))->~block<value_type, UserPool>();
+            }
 
         static void deallocate(block_allocator &a, const pointer & p, size_type)
         {
@@ -110,15 +110,15 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             //p.reset();
         }
 
-		static void deallocate(const pointer & p, size_type)
-		{
-			//block<value_type, UserPool>::operator delete (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p)));
+        static void deallocate(const pointer & p, size_type)
+        {
+            //block<value_type, UserPool>::operator delete (static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p)));
 
-			//delete static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p));
+            //delete static_cast<block<value_type, UserPool> *>(typename block<value_type, UserPool>::roofof(p));
 
-			//p.reset();
-		}
-	};
+            //p.reset();
+        }
+    };
 
 template <typename T>
     inline bool operator == (const block_allocator<T> &, const block_allocator<T> &)
@@ -135,30 +135,30 @@ template <typename T>
 
 #if defined(_MSC_VER)
 template <typename UserPool>
-	class block_allocator<void, UserPool>
-	{
-		typedef void                            element_type;
+    class block_allocator<void, UserPool>
+    {
+        typedef void                            element_type;
 
-	public:
-		typedef element_type                    value_type;
-		typedef size_t                          size_type;
-		typedef ptrdiff_t                       difference_type;
-		typedef block_ptr<element_type>         pointer;
-		typedef block_ptr<const element_type>   const_pointer;
+    public:
+        typedef element_type                    value_type;
+        typedef size_t                          size_type;
+        typedef ptrdiff_t                       difference_type;
+        typedef block_ptr<element_type>         pointer;
+        typedef block_ptr<const element_type>   const_pointer;
 
-		template <typename U>
-		struct rebind
-		{
-			typedef block_allocator<U, UserPool> other;
-		};
+        template <typename U>
+        struct rebind
+        {
+            typedef block_allocator<U, UserPool> other;
+        };
 
-		block_allocator() throw() {}
-		block_allocator(const block_allocator &) throw() {}
-		template <typename U>
-		block_allocator(const block_allocator<U, UserPool> &) throw() {}
+        block_allocator() throw() {}
+        block_allocator(const block_allocator &) throw() {}
+        template <typename U>
+        block_allocator(const block_allocator<U, UserPool> &) throw() {}
 
-		~block_allocator() throw() {}
-	};
+        ~block_allocator() throw() {}
+    };
 #endif
 
 
@@ -176,21 +176,21 @@ namespace container
 namespace container_detail
 {
 template <typename T, typename UserPool>
-	struct allocator_traits<boost::block_allocator<T, UserPool> > : boost::block_allocator<T, UserPool>
-	{
-		using Alloc = boost::block_allocator<T, UserPool>;
+    struct allocator_traits<boost::block_allocator<T, UserPool> > : boost::block_allocator<T, UserPool>
+    {
+        using Alloc = boost::block_allocator<T, UserPool>;
 
-		template <class V>
-			struct portable_rebind_alloc
-			{
-				typedef typename boost::intrusive::pointer_rebind<Alloc, V>::type type;
-			};
+        template <class V>
+            struct portable_rebind_alloc
+            {
+                typedef typename boost::intrusive::pointer_rebind<Alloc, V>::type type;
+            };
 
-		static Alloc select_on_container_copy_construction(const Alloc &a)
-		{
-			return a;
-		}
-	};
+        static Alloc select_on_container_copy_construction(const Alloc &a)
+        {
+            return a;
+        }
+    };
 }
 }
 

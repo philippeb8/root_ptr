@@ -194,7 +194,7 @@ struct block_base : public sp_counted_base
 
     block_base() : init_(false)
     {
-		inits_.push_back(& init_tag_);
+        inits_.push_back(& init_tag_);
     }
 
 protected:
@@ -229,8 +229,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
         block() : elem_() 
         {
-			//std::cout << __FUNCTION__ << ": " << this << std::endl;
-		}
+        }
 
         BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_BLOCK, block)
 
@@ -243,7 +242,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
         virtual ~block()					
         { 
-			dispose();
+            dispose();
         }
         virtual void dispose()              {}
 
