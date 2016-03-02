@@ -300,7 +300,11 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #endif
                 //std::cout << __FUNCTION__ << "(block<V, UserPool> * p): " << this << (pool<UserPool>::is_from(this) ? " (heap)" : " (stack)") << std::endl;
 
-                release(false); 
+                release(false);
+
+                if (!ps_ && !pool<UserPool>::is_from(this))
+                    ps_ = new block_proxy();
+                
                 init(p);
                 
                 if (ps_ && !pool<UserPool>::is_from(this))
