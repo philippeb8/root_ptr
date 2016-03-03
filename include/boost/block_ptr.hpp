@@ -525,16 +525,16 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
                         if (!d)
                             ps_ = new block_proxy();
-						else
-							ps_ = 0;
+                        else
+                            ps_ = 0;
                     }
                 }
 
-				if (d && ps_)
-				{
-					delete ps_;
-					ps_ = 0;
-				}
+                if (d && ps_)
+                {
+                    delete ps_;
+                    ps_ = 0;
+                }
             }
         }
 
