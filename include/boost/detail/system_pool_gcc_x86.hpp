@@ -67,8 +67,7 @@ template <typename Tag, unsigned RequestedSize, typename UserAllocator = default
         {
             int x;
 
-            asm("movq %1, %%rax;"
-                "cmpq %%rsp, %%rax;"
+            asm("cmpq %%rsp, %1;"
                 "jbe 1f;"
                 "movl $1,%0;"
                 "jmp 2f;"

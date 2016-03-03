@@ -18,7 +18,7 @@
 #define BOOST_DETAIL_SYSTEM_POOL_HPP_INCLUDED
 
 
-#if 0 //defined( __GNUC__ ) && ( defined( __i386__ ) || defined( __x86_64__ ) ) && !defined(__PATHSCALE__)
+#if defined( __GNUC__ ) && ( defined( __i386__ ) || defined( __x86_64__ ) ) && !defined(__PATHSCALE__)
 # include <boost/detail/system_pool_gcc_x86.hpp>
 
 #elif 0 //defined( WIN32 ) || defined( _WIN32 ) || defined( __WIN32__ ) || defined(__CYGWIN__)
