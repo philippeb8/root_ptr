@@ -129,7 +129,7 @@ int main() {
     std::cout << count << std::endl;
 
 #endif
-#if 1
+#if 0
 	count = 0;
 	{
         vector v;
