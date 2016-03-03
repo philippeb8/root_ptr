@@ -262,8 +262,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                     ps_ = new block_proxy();
                     init(p);
                     
-                    if (!pool<UserPool>::is_from(this))
-                        ++ ps_->count_;                    
+                    ++ ps_->count_;                    
                 }
                 else
                 {
@@ -292,12 +291,12 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
                 release(false);
 
-                if (!ps_ && !pool<UserPool>::is_from(this))
+                if (!ps_)
                     ps_ = new block_proxy();
                 
                 init(p);
                 
-                if (ps_ && !pool<UserPool>::is_from(this))
+                if (!pool<UserPool>::is_from(this))
                     ++ ps_->count_;
                 
                 base::operator = (p);
