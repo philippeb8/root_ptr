@@ -1,16 +1,16 @@
 /**
-	@file
-	block_ptr_test2.cpp
+    @file
+    block_ptr_test2.cpp
 
-	@note
-	Copyright (c) 2008 Steven Watanabe <watanabesj@gmail.com>
+    @note
+    Copyright (c) 2008 Steven Watanabe <watanabesj@gmail.com>
 
-	Distributed under the Boost Software License, Version 1.0.
+    Distributed under the Boost Software License, Version 1.0.
 
-	See accompanying file LICENSE_1_0.txt or copy at
-	http://www.boost.org/LICENSE_1_0.txt
+    See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt
 
-	See http://www.boost.org/libs/smart_ptr/doc/index.html for documentation.
+    See http://www.boost.org/libs/smart_ptr/doc/index.html for documentation.
 */
 
 
@@ -58,9 +58,9 @@ public:
             back = back->next;
         }
     }
-	~list()
-	{
-	}
+    ~list()
+    {
+    }
 private:
     block_ptr<node> front;
     block_ptr<node> back;
@@ -71,8 +71,8 @@ struct vector {
     ~vector() { --count; std::cout << __FUNCTION__ << "(): " << this << std::endl; }
     vector(const vector& other) : elements(other.elements) { ++count; }
     //std::vector<block_ptr<vector> > elements;
-	//std::list<block_ptr<vector>, block_allocator< block_ptr<vector> > > elements; //! works fine
-	boost::container::list<block_ptr<vector>, block_allocator< block_ptr<vector> > > elements; //! works fine
+    //std::list<block_ptr<vector>, block_allocator< block_ptr<vector> > > elements; //! works fine
+    boost::container::list<block_ptr<vector>, block_allocator< block_ptr<vector> > > elements; //! works fine
 };
 
 struct create_type {
@@ -94,34 +94,34 @@ int main() {
 #endif
 #if 1
     count = 0;
-	{
-	    list l;
-	    for(int j = 0; j < 2; ++j) {
-	        for(int i = 0; i < 1000; ++i) {
-	            l.insert();
-	        }
-	        l.clear();
-	    }
-	}
+    {
+        list l;
+        for(int j = 0; j < 2; ++j) {
+            for(int i = 0; i < 1000; ++i) {
+                l.insert();
+            }
+            l.clear();
+        }
+    }
     std::cout << count << std::endl;
 #endif
 #if 1
-	count = 0;
-	{
-		block_ptr<node> v = new block<node>();
-		v->next = v;
-	}
-	std::cout << count << std::endl;
+    count = 0;
+    {
+        block_ptr<node> v = new block<node>();
+        v->next = v;
+    }
+    std::cout << count << std::endl;
 #endif
 #if 1
-	count = 0;
+    count = 0;
     {
         block_ptr<vector> v = new block<vector>();
         v->elements.push_back(v);
     }
     std::cout << count << std::endl;
 
-	count = 0;
+    count = 0;
     {
         block_ptr<vector> v = new block<vector>();
         v->elements.push_back(v);
@@ -130,8 +130,8 @@ int main() {
 
 #endif
 #if 0
-	count = 0;
-	{
+    count = 0;
+    {
         vector v;
         v.elements.push_back(new block<vector>()); //<- Heap block not referenced from the stack
     }
