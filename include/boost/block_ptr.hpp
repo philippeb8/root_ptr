@@ -255,7 +255,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         */
         
         template <typename V>
-            block_ptr(block<V, UserPool> * p) : base(p)
+            block_ptr(block<V, UserPool> * p) : base(p), ps_(0)
             {
                 if (! pool<UserPool>::is_from(this))
                 {
