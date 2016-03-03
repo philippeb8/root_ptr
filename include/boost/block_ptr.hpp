@@ -99,7 +99,7 @@ struct block_proxy
     {
     }
     
-    long size() const
+    long size()
     {
         long c = 0;
         
@@ -114,7 +114,7 @@ struct block_proxy
         return c;
     }
     
-    long count() const
+    long count()
     {
         long c = 0;
         
@@ -129,7 +129,7 @@ struct block_proxy
         return c;
     }
     
-    bool intersects(block_proxy const * p) const
+    bool intersects(block_proxy const * p)
     {
         for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&proxy_tag_);;)
         {
@@ -144,7 +144,7 @@ struct block_proxy
     }
     
     
-    bool destroying() const
+    bool destroying()
     {
         for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&proxy_tag_);;)
         {
@@ -159,7 +159,7 @@ struct block_proxy
     }
 
     
-    void destroying(bool b) const
+    void destroying(bool b)
     {
         for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&proxy_tag_);;)
         {
