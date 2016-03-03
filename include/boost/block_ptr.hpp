@@ -255,19 +255,14 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         */
         
         template <typename V>
-            block_ptr(block<V, UserPool> * p) : base(p), ps_(0)
+            block_ptr(block<V, UserPool> * p) : base(p), ps_(new block_proxy())
             {
+                init(p);
+
                 if (! pool<UserPool>::is_from(this))
-                {
-                    ps_ = new block_proxy();
-                    init(p);
-                    
                     ++ ps_->count_;                    
-                }
                 else
-                {
                     pool<UserPool>::top(this)->inits_.merge(p->inits_);
-                }
             }
 
         
