@@ -72,7 +72,7 @@ struct vector {
     vector(const vector& other) : elements(other.elements) { ++count; }
     //std::vector<block_ptr<vector> > elements;
     //std::list<block_ptr<vector>, block_allocator< block_ptr<vector> > > elements; //! works fine
-    boost::container::list<block_ptr<vector>, block_allocator< block_ptr<vector> > > elements; //! works fine
+    boost::container::list<block_ptr<vector> > elements; //! works fine
 };
 
 struct create_type {
@@ -117,6 +117,9 @@ int main() {
     count = 0;
     {
         block_ptr<vector> v = new block<vector>();
+        v->elements.push_back(new block<vector>());
+        v->elements.push_back(new block<vector>());
+        v->elements.push_back(new block<vector>());
         v->elements.push_back(v);
     }
     std::cout << count << std::endl;
@@ -129,7 +132,7 @@ int main() {
     std::cout << count << std::endl;
 
 #endif
-#if 0
+#if 1
     count = 0;
     {
         vector v;
