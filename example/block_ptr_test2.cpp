@@ -86,15 +86,6 @@ int main() {
 #if 1
     count = 0;
     {
-        node n;
-        block_ptr<node> v = &n;
-        v = v;
-    }
-    std::cout << count << std::endl;
-#endif
-#if 1
-    count = 0;
-    {
         list l;
         for(int j = 0; j < 2; ++j) {
             for(int i = 0; i < 1000; ++i) {
