@@ -532,9 +532,9 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                                 break;
                         }
 
-						if (!d)
-							ps_ = new block_proxy();
-                    }
+						ps_ = 0;
+						base::po_ = 0;
+					}
                 }
 			}
         }
