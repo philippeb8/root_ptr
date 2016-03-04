@@ -110,7 +110,7 @@ int main() {
         block_ptr<vector> v = new block<vector>();
         v->elements.push_back(new block<vector>());
         v->elements.push_back(new block<vector>());
-        v->elements.push_back(new block<vector>());
+        v->elements.push_back(v->elements.back());
         v->elements.push_back(v);
     }
     std::cout << count << std::endl;
