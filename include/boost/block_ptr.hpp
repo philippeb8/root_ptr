@@ -262,8 +262,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             }
 
         
-        template <typename V>
-            block_ptr(V * p) : base(p), ps_(0)
+            block_ptr(T * p) : base(p), ps_(0)
             {
             }
 
