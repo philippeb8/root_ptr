@@ -302,7 +302,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #endif
 
                 release(true);
-				base::po_ = 0;
+                base::po_ = 0;
 
                 base::operator = (p);
 
@@ -413,7 +413,10 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                         release(false);
 
                         // unify proxies
-                        ps_->unify(p.ps_);
+                        if (!ps_)
+                            ps_ = p.ps_;
+                        else
+                            ps_->unify(p.ps_);
 
                         if (!pool<UserPool>::is_from(this))
                             ++ ps_->count_;
@@ -424,7 +427,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 else if (!p.ps_)
                 {
                     release(true);
-					ps_ = 0;
+                    ps_ = 0;
 
                     base::operator = (p.get());
                 }
@@ -532,11 +535,11 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                                 break;
                         }
 
-						ps_ = 0;
-						base::po_ = 0;
-					}
+                        ps_ = 0;
+                        base::po_ = 0;
+                    }
                 }
-			}
+            }
         }
 
         
