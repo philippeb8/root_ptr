@@ -257,8 +257,6 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
                 if (! pool<UserPool>::is_from(this))
                     ++ ps_->count_;                    
-                else
-                    pool<UserPool>::top(this)->inits_.merge(p->inits_);
             }
 
         
