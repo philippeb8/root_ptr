@@ -351,12 +351,17 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         */
 
         template <typename V>
-            block_ptr(block_ptr<V, UserPool> const & p) : base(p), ps_(p.ps_)
+            block_ptr(block_ptr<V, UserPool> const & p) : base(), ps_(p.ps_)
             {
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
 
+                if (ps_)
+                    base::operator = (p);
+                else
+                    base::operator = (p.get());
+                        
                 if (ps_ && !pool<UserPool>::is_from(this))
                     ++ ps_->count_;
             }
@@ -368,12 +373,17 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             @param	p	New pointer to manage.
         */
 
-            block_ptr(block_ptr<T, UserPool> const & p) : base(p), ps_(p.ps_)
+            block_ptr(block_ptr<T, UserPool> const & p) : base(), ps_(p.ps_)
             {
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
-
+                
+                if (ps_)
+                    base::operator = (p);
+                else
+                    base::operator = (p.get());
+            
                 if (ps_ && !pool<UserPool>::is_from(this))
                     ++ ps_->count_;
             }
