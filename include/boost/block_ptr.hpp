@@ -189,7 +189,7 @@ struct block_proxy
         @param	s	Size of the @c block_proxy .
         @return		Pointer of the new memory block.
     */
-    
+
     void * operator new (size_t s)
     {
         return static_pool().allocate(s);
@@ -302,7 +302,8 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #endif
 
                 release(true);
-                
+				base::po_ = 0;
+
                 base::operator = (p);
 
                 return * this;
@@ -423,7 +424,8 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 else if (!p.ps_)
                 {
                     release(true);
-                    
+					ps_ = 0;
+
                     base::operator = (p.get());
                 }
                 else if (!ps_)
@@ -484,7 +486,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
         ~block_ptr()
         {
-            if (!ps_ || cyclic())
+            if (cyclic())
                 base::po_ = 0;
             else
                 release(true);
@@ -530,19 +532,11 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                                 break;
                         }
 
-                        if (!d)
-                            ps_ = new block_proxy();
-                        else
-                            ps_ = 0;
+						if (!d)
+							ps_ = new block_proxy();
                     }
                 }
-
-                if (d && ps_)
-                {
-                    delete ps_;
-                    ps_ = 0;
-                }
-            }
+			}
         }
 
         
