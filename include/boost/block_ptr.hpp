@@ -536,7 +536,6 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                         }
 
                         ps_ = 0;
-                        base::po_ = 0;
                     }
                 }
             }
