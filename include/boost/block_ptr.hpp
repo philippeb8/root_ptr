@@ -260,10 +260,6 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             }
 
         
-            block_ptr(T * p) : base(p), ps_(0)
-            {
-            }
-
         /**
             Assignment & union of 2 sets if the pointee resides a different @c block_proxy.
             
@@ -293,32 +289,11 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             }
             
         template <typename V>
-            block_ptr & operator = (V * p)
-            {
-#ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
-#endif
-
-                release();
-                base::po_ = 0;
-
-                base::operator = (p);
-
-                return * this;
-            }
-
-        template <typename V>
             void reset(block<V, UserPool> * p)
             {
                 operator = <T>(p);
             }
         
-        template <typename V>
-            void reset(V * p)
-            {
-                operator = <T>(p);
-            }
-            
         template <typename V>
             friend block_ptr<V, UserPool> make_block();
 
