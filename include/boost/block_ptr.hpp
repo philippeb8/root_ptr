@@ -241,11 +241,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         using base::share;
         using base::po_;
 
-        union
-        {
-            block_proxy * ps_;                      /**< Pointer to the @c block_proxy node @c block_ptr<> belongs to. */
-            intrusive_stack::node pn_;				/**< Tag used for enlisting a pointer on the heap to later share the @c block_proxy it belongs to. */
-        };
+        block_proxy * ps_;                      /**< Pointer to the @c block_proxy node @c block_ptr<> belongs to. */
         
     public:
         /**
@@ -358,12 +354,16 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #endif
 
                 if (ps_)
+                {
+                    if (!pool<UserPool>::is_from(this))
+                        ++ ps_->count_;
+                    
                     base::operator = (p);
+                }
                 else
-                    base::operator = (p.get());
-                        
-                if (ps_ && !pool<UserPool>::is_from(this))
-                    ++ ps_->count_;
+                {
+                    base::operator = (p.get());            
+                }
             }
 
         
@@ -380,12 +380,16 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #endif
                 
                 if (ps_)
+                {
+                    if (!pool<UserPool>::is_from(this))
+                        ++ ps_->count_;
+                    
                     base::operator = (p);
+                }
                 else
-                    base::operator = (p.get());
-            
-                if (ps_ && !pool<UserPool>::is_from(this))
-                    ++ ps_->count_;
+                {
+                    base::operator = (p.get());            
+                }
             }
 
 
