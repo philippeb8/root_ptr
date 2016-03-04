@@ -486,30 +486,30 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 base::reset();
                 
                 if (!pool<UserPool>::is_from(this))
+                    -- ps_->count_;
+                
+                if (ps_->count() == 0)
                 {
-                    if (-- ps_->count_, ps_->count() == 0)
+                    ps_->destroying(true);
+
+                    long s = ps_->size();
+                    
+                    for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&ps_->proxy_tag_), j(&ps_->proxy_tag_); ; i = j)
                     {
-                        ps_->destroying(true);
-
-                        long s = ps_->size();
-                        
-                        for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&ps_->proxy_tag_), j(&ps_->proxy_tag_); ; i = j)
+                        for (intrusive_list::iterator<block_base, &block_base::block_tag_> m = i->block_list_.begin(), n = i->block_list_.begin(); m != i->block_list_.end(); m = n)
                         {
-                            for (intrusive_list::iterator<block_base, &block_base::block_tag_> m = i->block_list_.begin(), n = i->block_list_.begin(); m != i->block_list_.end(); m = n)
-                            {
-                                ++ n;
-                                delete &* m;
-                            }
-                            
-                            ++ j;
-                            delete &* i;
-                            
-                            if (-- s == 0)
-                                break;
+                            ++ n;
+                            delete &* m;
                         }
-
-                        ps_ = 0;
+                        
+                        ++ j;
+                        delete &* i;
+                        
+                        if (-- s == 0)
+                            break;
                     }
+
+                    ps_ = 0;
                 }
             }
         }
