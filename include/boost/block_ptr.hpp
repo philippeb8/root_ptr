@@ -279,7 +279,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
 
-                release(false);
+                release();
 
                 if (!ps_)
                     ps_ = new block_proxy();
@@ -301,7 +301,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
 
-                release(true);
+                release();
                 base::po_ = 0;
 
                 base::operator = (p);
@@ -410,7 +410,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 {
                     if (!ps_->intersects(p.ps_))
                     {
-                        release(false);
+                        release();
 
                         // unify proxies
                         if (!ps_)
@@ -426,7 +426,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 }
                 else if (!p.ps_)
                 {
-                    release(true);
+                    release();
                     ps_ = 0;
 
                     base::operator = (p.get());
@@ -473,7 +473,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
 
-            release(false);
+            release();
         }
         
         template <typename V>
@@ -492,7 +492,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             if (cyclic())
                 base::po_ = 0;
             else
-                release(true);
+                release();
         }
 
     private:
@@ -502,7 +502,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             @param	d	Destroy (true) or reuse (false) the @c block_proxy it is releasing.
         */
         
-        void release(bool d)
+        void release()
         {
             if (!ps_)
             {
