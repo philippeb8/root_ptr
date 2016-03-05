@@ -29,6 +29,9 @@
 
 #include <boost/pool/pool.hpp>
 
+#define _X86_
+#include <processthreadsapi.h>
+
 
 namespace boost
 {
@@ -65,21 +68,11 @@ template <typename Tag, unsigned RequestedSize, typename UserAllocator = default
         }
         static bool is_from(void * p)
         {
-            int x;
+			ULONG_PTR range[2];
 
-			__asm
-			{
-				mov    eax, p
-				cmp    eax, esp
-				jbe    l1
-				mov    x, 0x1
-				jmp    l2
-				l1:
-				mov    x, 0x0
-				l2:
-			};
+			GetCurrentThreadStackLimits(&range[0], &range[1]);
 
-            return ! x;
+            return PtrToUlong(p) < range[0] || PtrToUlong(p) > range[1];
         }
         static void free BOOST_PREVENT_MACRO_SUBSTITUTION(void * const ptr)
         {
