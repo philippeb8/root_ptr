@@ -77,23 +77,6 @@ template <typename UserPool>
     {
         typedef UserPool pool_t;
 
-        typedef std::list< numeric::interval<long>, fast_pool_allocator< numeric::interval<long> > > pool_lii;	/**< Syntax helper. */
-
-#ifndef BOOST_DISABLE_THREADS
-        static thread_specific_ptr<pool_lii> & static_plii()    /**< Thread specific list of memory boundaries. */
-        {
-            static thread_specific_ptr<pool_lii> plii_;
-            
-            return plii_;
-        }
-#else
-        static std::auto_ptr<pool_lii> & static_plii()          /**< List of memory boundaries. */
-        {
-            static std::auto_ptr<pool_lii> plii_;
-            
-            return plii_;
-        }
-#endif
 
         /**
             Tells whether a pointer is part of the pool or not.
@@ -107,33 +90,6 @@ template <typename UserPool>
             return pool_t::is_from(const_cast<void *>(p));
         }
         
-        static void init()
-        {
-            if (static_plii().get() == 0)
-                static_plii().reset(new pool_lii());
-        }
-        
-        /**
-            Tracks the memory boundaries where a pointer belongs to.  Also gets rid of the boundaries that were allocated before the pointer was allocated.
-            
-            @param	p	Pointer that is being tracked.
-            @return		Pointer to the pointee object where @c p belongs to.
-        */
-        
-        static block_base * top(void * p)
-        {
-            init();
-            
-            pool_lii::reverse_iterator i;
-            
-            for (i = static_plii()->rbegin(); i != static_plii()->rend(); i ++)
-                if (in((long)(p), * i))
-                    break;
-
-            static_plii()->erase(i.base(), static_plii()->end());
-            
-            return (block_base *)(static_plii()->rbegin()->lower());
-        }
         
         
         /**
@@ -145,13 +101,7 @@ template <typename UserPool>
         
         static void * allocate(std::size_t s)
         {
-            init();
-            
-            void * p = pool_t::ordered_malloc(s);
-            
-            static_plii()->push_back(numeric::interval<long>((long) p, long((char *)(p) + s)));
-            
-            return p;
+            return pool_t::ordered_malloc(s);;
         }
 
         
@@ -164,15 +114,6 @@ template <typename UserPool>
         
         static void deallocate(void * p, std::size_t s)
         {
-            init();
-            
-            pool_lii::reverse_iterator i;
-            
-            for (i = static_plii()->rbegin(); i != static_plii()->rend(); i ++)
-                if (in((long)(p), * i))
-                    break;
-
-            static_plii()->erase(i.base(), static_plii()->end());
             pool_t::ordered_free(p, s);
         }
     };
@@ -186,7 +127,6 @@ struct block_base : public sp_counted_base
 {
     bool init_;										/**< Flag marking initialization of the pointee object to its @c block_proxy . */
 
-    intrusive_stack ptrs_;							/**< Stack of all @c block_ptr s on the heap that will later need to be initlialized to a specific @c block_proxy . */
     intrusive_list inits_;							/**< List of all pointee objects that will later need to be initlialized to a specific @c block_proxy .*/
 
     intrusive_list::node block_tag_;					/**< Tag used to enlist to @c block_proxy::elements_ . */
