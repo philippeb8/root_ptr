@@ -83,6 +83,7 @@ struct create_type {
 
 int main() {
 #if 1
+    std::cout << "*** Test #1 ***" << std::endl;
     count = 0;
     {
         list l;
@@ -96,6 +97,7 @@ int main() {
     std::cout << count << std::endl;
 #endif
 #if 1
+    std::cout << "*** Test #2 ***" << std::endl;
     count = 0;
     {
         block_ptr<node> v = new block<node>();
@@ -104,6 +106,7 @@ int main() {
     std::cout << count << std::endl;
 #endif
 #if 1
+    std::cout << "*** Test #3 ***" << std::endl;
     count = 0;
     {
         block_ptr<vector> v = new block<vector>();
@@ -123,10 +126,11 @@ int main() {
 
 #endif
 #if 1
+    std::cout << "*** Test #4 ***" << std::endl;
     count = 0;
     {
-        vector v;
-        v.elements.push_back(new block<vector>()); //<- Heap block not referenced from the stack
+        vector v; //<- Heap block not referenced from the stack
+        v.elements.push_back(new block<vector>());
         v.elements.push_back(new block<vector>());
         v.elements.push_back(new block<vector>());
         v.elements.push_back(v.elements.back());
@@ -134,6 +138,25 @@ int main() {
     std::cout << count << std::endl;
 #endif
 #if 1
+    std::cout << "*** Test #5 ***" << std::endl;
+    count = 0;
+    {
+        node * v = new node; //<- Heap block not referenced from the stack
+        v->next = new block<node>();
+        v->next->next = v->next;
+        v->next->prior = v->next;
+        v->prior = new block<node>();
+        v->prior->next = v->next;
+        v->prior->prior = v->next;
+        v->prior.reset();
+        std::cout << "node = " << v->next.get() << std::endl;
+        std::cout << "node = " << v->next->next.get() << std::endl;
+        delete v;
+    }
+    std::cout << count << std::endl;
+#endif
+#if 1
+    std::cout << "*** Test #6 ***" << std::endl;
     count = 0;
     {
         block_ptr<int> test = make_block<int>(5);
@@ -144,6 +167,7 @@ int main() {
     std::cout << count << std::endl;
 #endif
 #if 1
+    std::cout << "*** Test #7 ***" << std::endl;
     count = 0;
     for(int i = 0; i < 500; ++i) {
         boost::mpl::for_each<boost::mpl::range_c<int, 1, 100> >(create_type());
