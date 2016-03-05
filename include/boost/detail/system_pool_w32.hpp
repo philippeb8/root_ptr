@@ -68,9 +68,9 @@ template <typename Tag, unsigned RequestedSize, typename UserAllocator = default
         }
         static bool is_from(void * p)
         {
-			ULONG_PTR range[2];
+            ULONG_PTR range[2];
 
-			GetCurrentThreadStackLimits(&range[0], &range[1]);
+            GetCurrentThreadStackLimits(&range[0], &range[1]);
 
             return PtrToUlong(p) < range[0] || PtrToUlong(p) > range[1];
         }
