@@ -67,59 +67,6 @@ struct block_base;
 
 
 /**
-    Allocator wrapper tracking allocations.
-    
-    Pool where all pointee objects are allocated and tracks memory blocks for later enlisting & marking the @c block_proxy the pointee object belongs to.
-*/
-
-template <typename UserPool>
-    struct pool
-    {
-        typedef UserPool pool_t;
-
-
-        /**
-            Tells whether a pointer is part of the pool or not.
-            
-            @param	p	Pointer to object.
-            @return		Belongs to the pool.
-        */
-        
-        static bool is_from(void const * p)
-        {
-            return pool_t::is_from(const_cast<void *>(p));
-        }
-        
-        
-        
-        /**
-            Pointee object allocator and stacking of the newly allocated memory boundary.
-            
-            @param	s	Size of the memory block to allocate.
-            @return		Address of the newly allocated block.
-        */
-        
-        static void * allocate(std::size_t s)
-        {
-            return pool_t::ordered_malloc(s);;
-        }
-
-        
-        /**
-            Pointee object deallocator and removal of the boundaries that were allocated before the pointer was allocated.
-            
-            @param	p	Address of the memory block to deallocate.
-            @param	s	Size of the memory block.
-        */
-        
-        static void deallocate(void * p, std::size_t s)
-        {
-            pool_t::ordered_free(p, s);
-        }
-    };
-
-
-/**
     Root class of all pointee objects.
 */
 
@@ -222,7 +169,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         
         void * operator new (size_t s)
         {
-            return pool<UserPool>::allocate(s);
+            return UserPool::ordered_malloc(s);
         }
         
 
@@ -234,7 +181,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         
         void operator delete (void * p)
         {
-            pool<UserPool>::deallocate(p, sizeof(block));
+            UserPool::ordered_free(p, sizeof(block));
         }
     };
 

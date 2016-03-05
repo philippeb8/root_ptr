@@ -255,7 +255,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             {
                 init(p);
 
-                if (! pool<UserPool>::is_from(this))
+                if (! UserPool::is_from(this))
                     ++ ps_->count_;                    
             }
 
@@ -280,7 +280,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 
                 init(p);
                 
-                if (!pool<UserPool>::is_from(this))
+                if (!UserPool::is_from(this))
                     ++ ps_->count_;
                 
                 base::operator = (p);
@@ -328,7 +328,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
                 if (ps_)
                 {
-                    if (!pool<UserPool>::is_from(this))
+                    if (!UserPool::is_from(this))
                         ++ ps_->count_;
                     
                     base::operator = (p);
@@ -354,7 +354,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 
                 if (ps_)
                 {
-                    if (!pool<UserPool>::is_from(this))
+                    if (!UserPool::is_from(this))
                         ++ ps_->count_;
                     
                     base::operator = (p);
@@ -391,7 +391,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                         else
                             ps_->unify(p.ps_);
 
-                        if (!pool<UserPool>::is_from(this))
+                        if (!UserPool::is_from(this))
                             ++ ps_->count_;
                     }
                     
@@ -409,7 +409,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                     ps_ = p.ps_;
                     base::po_ = 0;
                     
-                    if (!pool<UserPool>::is_from(this))
+                    if (!UserPool::is_from(this))
                         ++ ps_->count_;
                     
                     base::operator = (p);
@@ -485,7 +485,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             {
                 base::reset();
                 
-                if (!pool<UserPool>::is_from(this))
+                if (!UserPool::is_from(this))
                     -- ps_->count_;
                 
                 if (ps_->count() == 0)
