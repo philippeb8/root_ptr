@@ -127,6 +127,9 @@ int main() {
     {
         vector v;
         v.elements.push_back(new block<vector>()); //<- Heap block not referenced from the stack
+        v.elements.push_back(new block<vector>());
+        v.elements.push_back(new block<vector>());
+        v.elements.push_back(v.elements.back());
     }
     std::cout << count << std::endl;
 #endif
