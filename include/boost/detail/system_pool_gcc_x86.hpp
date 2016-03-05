@@ -53,15 +53,15 @@ template <typename Tag, unsigned RequestedSize, typename UserAllocator = default
 
         static void * malloc BOOST_PREVENT_MACRO_SUBSTITUTION()
         {
-            return (UserAllocator::malloc)();
+            return (user_allocator::malloc)();
         }
         static void * ordered_malloc()
         {
-            return (UserAllocator::malloc)();
+            return (user_allocator::malloc)();
         }
         static void * ordered_malloc(const size_type n)
         {
-            return (UserAllocator::malloc)(n);
+            return (user_allocator::malloc)(n);
         }
         static bool is_from(void * p)
         {
@@ -82,19 +82,19 @@ template <typename Tag, unsigned RequestedSize, typename UserAllocator = default
         }
         static void free BOOST_PREVENT_MACRO_SUBSTITUTION(void * const ptr)
         {
-            (UserAllocator::free)(static_cast<char *>(ptr));
+            (user_allocator::free)(static_cast<char *>(ptr));
         }
         static void ordered_free(void * const ptr)
         {
-            (UserAllocator::free)(static_cast<char *>(ptr));
+            (user_allocator::free)(static_cast<char *>(ptr));
         }
         static void free BOOST_PREVENT_MACRO_SUBSTITUTION(void * const ptr, const size_type n)
         {
-            (UserAllocator::free)(static_cast<char *>(ptr));
+            (user_allocator::free)(static_cast<char *>(ptr));
         }
         static void ordered_free(void * const ptr, const size_type n)
         {
-            (UserAllocator::free)(static_cast<char *>(ptr));
+            (user_allocator::free)(static_cast<char *>(ptr));
         }
         static bool release_memory()
         {
