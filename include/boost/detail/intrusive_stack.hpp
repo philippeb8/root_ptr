@@ -18,7 +18,7 @@
 #define BOOST_INTRUSIVE_STACK_HPP_INCLUDED
 
 
-#include <boost/detail/roofof.hpp>
+#include <boost/detail/classof.hpp>
 
 
 namespace boost
@@ -100,8 +100,8 @@ template <typename T, intrusive_stack_node T::* P>
         iterator() : node_() 							{}
         iterator(intrusive_stack::pointer __x) : node_(__x) {}
 
-        T & operator * () const 						{ return * roofof(P, node_); }
-        T * operator -> () const						{ return roofof(P, node_); }
+        T & operator * () const 						{ return * classof(P, node_); }
+        T * operator -> () const						{ return classof(P, node_); }
 
         self_type & operator ++ ()
         {

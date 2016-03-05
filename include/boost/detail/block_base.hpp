@@ -48,7 +48,7 @@
 
 #include <boost/detail/intrusive_list.hpp>
 #include <boost/detail/intrusive_stack.hpp>
-#include <boost/detail/roofof.hpp>
+#include <boost/detail/classof.hpp>
 #include <boost/detail/system_pool.hpp>
 
 
@@ -224,8 +224,8 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         T elem_; 									/**< Pointee object.  @note Needs alignas<long>. */
         
     public:
-        class roofof;
-        friend class roofof;
+        class classof;
+        friend class classof;
 
         block() : elem_() 
         {
@@ -251,7 +251,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             Cast operator used by @c block_ptr_coblockon::header() .
         */
         
-        class roofof
+        class classof
         {
             block * p_;							/**< Address of the @c block the element belong to. */
 
@@ -262,7 +262,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 @param	p	Address of a @c data_type member object to cast from.
             */
             
-            roofof(data_type * p) : p_(bp::roofof((data_type block::*)(& block::elem_), p)) {}
+            classof(data_type * p) : p_(bp::classof((data_type block::*)(& block::elem_), p)) {}
             
             
             /**
@@ -309,8 +309,8 @@ template <typename UserPool>
         block();
 
     public:
-        class roofof;
-        friend class roofof;
+        class classof;
+        friend class classof;
 
         data_type * element() 				{ return & elem_; }
 
@@ -324,7 +324,7 @@ template <typename UserPool>
             Cast operator used by @c block_ptr_coblockon::header() .
         */
         
-        class roofof
+        class classof
         {
             block * p_;							/**< Address of the @c block the element belong to. */
 
@@ -335,7 +335,7 @@ template <typename UserPool>
                 @param	p	Address of a @c data_type member object to cast from.
             */
             
-            roofof(data_type * p) : p_(bp::roofof((long block::*)(& block::elem_), static_cast<long *>(p))) {}
+            classof(data_type * p) : p_(bp::classof((long block::*)(& block::elem_), static_cast<long *>(p))) {}
             
             
             /**

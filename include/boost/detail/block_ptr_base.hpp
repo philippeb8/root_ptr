@@ -19,7 +19,7 @@
 #define BOOST_DETAIL_BLOCK_PTR_BASE_HPP
 
 
-#include <boost/detail/roofof.hpp>
+#include <boost/detail/classof.hpp>
 #include <boost/detail/block_base.hpp>
 
 
@@ -186,7 +186,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
     protected:
         block_base * header() const
         {
-            return (block<value_type, UserPool> *) (typename block<value_type, UserPool>::roofof) static_cast<value_type *>(rootof<is_polymorphic<value_type>::value>::get(po_));
+            return (block<value_type, UserPool> *) (typename block<value_type, UserPool>::classof) static_cast<value_type *>(rootof<is_polymorphic<value_type>::value>::get(po_));
         }
     };
 

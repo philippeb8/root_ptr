@@ -40,7 +40,7 @@
 
 #include <boost/detail/intrusive_list.hpp>
 #include <boost/detail/intrusive_stack.hpp>
-#include <boost/detail/roofof.hpp>
+#include <boost/detail/classof.hpp>
 #include <boost/detail/block_ptr_base.hpp>
 #include <boost/detail/system_pool.hpp>
 #include <boost/intrusive/pointer_traits.hpp>
