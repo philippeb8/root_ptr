@@ -192,7 +192,7 @@ struct block_proxy
 
     void * operator new (size_t s)
     {
-        return static_pool().allocate(s);
+        return static_pool().allocate(1);
     }
     
     
@@ -204,7 +204,7 @@ struct block_proxy
     
     void operator delete (void * p)
     {
-        static_pool().deallocate(static_cast<block_proxy *>(p), sizeof(block_proxy));
+        static_pool().deallocate(static_cast<block_proxy *>(p), 1);
     }
 };
 
