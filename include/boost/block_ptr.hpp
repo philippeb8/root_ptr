@@ -275,7 +275,9 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
                 release();
 
-                ps_ = new block_proxy();
+                if (!ps_)
+                    ps_ = new block_proxy();
+                
                 init(p);
                 
                 if (!UserPool::is_from(this))
