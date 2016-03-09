@@ -57,9 +57,9 @@ public:
     }
     void insert() {
         if(front.get() == 0) {
-            back = new block<node>();
+            back = make_block<node>();
         } else {
-            back->next = new block<node>();
+            back->next = make_block<node>();
             back->next->prior = back;
             back = back->next;
         }
