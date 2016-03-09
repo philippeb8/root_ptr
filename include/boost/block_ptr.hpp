@@ -81,13 +81,6 @@ struct block_proxy
     }
 #endif
 
-    static fast_pool_allocator<block_proxy> & static_pool() /**< Pool where all sets are allocated. */
-    {
-        static fast_pool_allocator<block_proxy> pool_;
-        
-        return pool_;
-    }
-
     /**
         Initialization of a single @c block_proxy .
     */
@@ -181,33 +174,97 @@ struct block_proxy
     {
         proxy_tag_.insert(& p->proxy_tag_);
     }
-
-
-    /**
-        Allocates a new @c block_proxy using the fast pool allocator.
-        
-        @param	s	Size of the @c block_proxy .
-        @return		Pointer of the new memory block.
-    */
-
-    void * operator new (size_t s)
-    {
-        return static_pool().allocate(1);
-    }
-    
-    
-    /**
-        Deallocates a @c block_proxy from the fast pool allocator.
-        
-        @param	p	Address of the @c block_proxy to deallocate.
-    */
-    
-    void operator delete (void * p)
-    {
-        static_pool().deallocate(static_cast<block_proxy *>(p), 1);
-    }
 };
 
+template <typename UserPool>
+    class block<block_proxy, UserPool> : public block_base
+    {
+        typedef block_proxy data_type;
+
+        data_type elem_;                                    /**< Pointee object.  @note Needs alignas<long>. */
+        
+        static fast_pool_allocator<block<block_proxy>> & static_pool() /**< Pool where all sets are allocated. */
+        {
+            static fast_pool_allocator<block<block_proxy>> pool_;
+            
+            return pool_;
+        }
+
+    public:
+        class classof;
+        friend class classof;
+
+        block() : elem_() 
+        {
+        }
+
+        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_BLOCK, block)
+
+
+        /**
+            @return     Pointee object address.
+        */
+        
+        data_type * element()               { return & elem_; }
+
+        virtual ~block()                    
+        { 
+            dispose();
+        }
+        virtual void dispose()              {}
+
+    public:
+        /**
+            Cast operator used by @c block_ptr_coblockon::header() .
+        */
+        
+        class classof
+        {
+            block * p_;                         /**< Address of the @c block the element belong to. */
+
+        public:
+            /**
+                Casts from a @c data_type to its parent @c block object.
+                
+                @param  p   Address of a @c data_type member object to cast from.
+            */
+            
+            classof(data_type * p) : p_(bp::classof((data_type block::*)(& block::elem_), p)) {}
+            
+            
+            /**
+                @return     Address of the parent @c block object.
+            */
+            
+            operator block * () const { return p_; }
+        };
+
+        
+        /**
+            Allocates a new @c block_proxy using the fast pool allocator.
+            
+            @param  s   Size of the @c block_proxy .
+            @return     Pointer of the new memory block.
+        */
+
+        void * operator new (size_t s)
+        {
+            return static_pool().allocate(1);
+        }
+        
+        
+        /**
+            Deallocates a @c block_proxy from the fast pool allocator.
+            
+            @param  p   Address of the @c block_proxy to deallocate.
+        */
+        
+        void operator delete (void * p)
+        {
+            static_pool().deallocate(static_cast<block<block_proxy> *>(p), 1);
+        }
+    };
+    
 
 #define TEMPLATE_DECL(z, n, text) BOOST_PP_COMMA_IF(n) typename T ## n
 #define ARGUMENT_DECL(z, n, text) BOOST_PP_COMMA_IF(n) T ## n const & t ## n
