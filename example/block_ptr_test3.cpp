@@ -16,7 +16,6 @@
 
 
 #include <boost/block_ptr.hpp>
-#include <boost/block_allocator.hpp>
 
 #include <vector>
 #include <iostream>
@@ -58,7 +57,7 @@ public:
     }
     void insert() {
         if(front.get() == 0) {
-            front = back = make_block<node>();
+            back = make_block<node>();
         } else {
             back->next = make_block<node>();
             back->next->prior = back;
@@ -74,7 +73,7 @@ struct vector {
     vector() { ++count; }
     ~vector() { --count; }
     vector(const vector& other) : elements(other.elements) { ++count; }
-    boost::container::vector<block_ptr<vector>, block_allocator<block_ptr<vector> > > elements;
+    boost::container::vector<block_ptr<vector> > elements;
 };
 
 struct create_type {
