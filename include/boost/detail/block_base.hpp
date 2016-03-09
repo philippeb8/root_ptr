@@ -234,6 +234,43 @@ template <typename UserPool>
     };
 
 
+template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(char)> >
+    class fastblock : public block<block_proxy, UserPool>
+    {
+        static fast_pool_allocator<block<block_proxy, UserPool>> & static_pool() /**< Pool where all sets are allocated. */
+        {
+            static fast_pool_allocator<block<block_proxy, UserPool>> pool_;
+            
+            return pool_;
+        }
+
+    public:
+        /**
+            Allocates a new @c block_proxy using the fast pool allocator.
+            
+            @param  s   Size of the @c block_proxy .
+            @return     Pointer of the new memory block.
+        */
+
+        void * operator new (size_t s)
+        {
+            return static_pool().allocate(1);
+        }
+        
+        
+        /**
+            Deallocates a @c block_proxy from the fast pool allocator.
+            
+            @param  p   Address of the @c block_proxy to deallocate.
+        */
+        
+        void operator delete (void * p)
+        {
+            static_pool().deallocate(static_cast<fastblock<block_proxy, UserPool> *>(p), 1);
+        }
+    };
+    
+
 } // namespace bp
 
 } // namespace detail
