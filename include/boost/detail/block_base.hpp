@@ -235,11 +235,11 @@ template <typename UserPool>
 
 
 template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(char)> >
-    class fastblock : public block<block_proxy, UserPool>
+    class fastblock : public block<T, UserPool>
     {
-        static fast_pool_allocator<block<block_proxy, UserPool>> & static_pool() /**< Pool where all sets are allocated. */
+        static fast_pool_allocator<block<T, UserPool>> & static_pool() /**< Pool where all sets are allocated. */
         {
-            static fast_pool_allocator<block<block_proxy, UserPool>> pool_;
+            static fast_pool_allocator<block<T, UserPool>> pool_;
             
             return pool_;
         }
@@ -266,7 +266,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         
         void operator delete (void * p)
         {
-            static_pool().deallocate(static_cast<fastblock<block_proxy, UserPool> *>(p), 1);
+            static_pool().deallocate(static_cast<fastblock<T, UserPool> *>(p), 1);
         }
     };
     
