@@ -241,7 +241,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         using base::share;
         using base::po_;
 
-        block_proxy * ps_;                      /**< Pointer to the @c block_proxy node @c block_ptr<> belongs to. */
+        block_ptr_base<block_proxy, UserPool> ps_;                      /**< Pointer to the @c block_proxy node @c block_ptr<> belongs to. */
         
     public:
         /**
@@ -251,7 +251,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         */
         
         template <typename V>
-            block_ptr(block<V, UserPool> * p) : base(p), ps_(new block_proxy())
+            block_ptr(block<V, UserPool> * p) : base(p), ps_(new block<block_proxy>())
             {
                 init(p);
 
@@ -276,7 +276,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 release();
 
                 if (!ps_)
-                    ps_ = new block_proxy();
+                    ps_ = new block<block_proxy>();
                 
                 init(p);
                 
@@ -308,7 +308,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             Initialization of a pointer living on the stack or proper enlistment if living on the heap.
         */
         
-        block_ptr() : base(), ps_(0)
+        block_ptr() : base(), ps_()
         {
         }
 
@@ -381,7 +381,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
                 if (ps_ && p.ps_)
                 {
-                    if (!ps_->intersects(p.ps_))
+                    if (!ps_->intersects(&* p.ps_))
                     {
                         release();
 
@@ -389,7 +389,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                         if (!ps_)
                             ps_ = p.ps_;
                         else
-                            ps_->unify(p.ps_);
+                            ps_->unify(&* p.ps_);
 
                         if (!UserPool::is_from(this))
                             ++ ps_->count_;
@@ -400,7 +400,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 else if (!p.ps_)
                 {
                     release();
-                    ps_ = 0;
+                    ps_.reset();
 
                     base::operator = (p.get());
                 }
@@ -486,31 +486,24 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 base::reset();
                 
                 if (!UserPool::is_from(this))
-                    -- ps_->count_;
-                
-                if (ps_->count() == 0)
-                {
-                    ps_->destroying(true);
-
-                    long s = ps_->size();
-                    
-                    for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&ps_->proxy_tag_), j(&ps_->proxy_tag_); ; i = j)
+                    if (-- ps_->count_, ps_->count() == 0)
                     {
-                        for (intrusive_list::iterator<block_base, &block_base::block_tag_> m = i->block_list_.begin(), n = i->block_list_.begin(); m != i->block_list_.end(); m = n)
+                        ps_->destroying(true);
+
+                        for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&ps_->proxy_tag_), j(&ps_->proxy_tag_); ; i = j)
                         {
-                            ++ n;
-                            delete &* m;
+                            for (intrusive_list::iterator<block_base, &block_base::block_tag_> m = i->block_list_.begin(), n = i->block_list_.begin(); m != i->block_list_.end(); m = n)
+                            {
+                                ++ n;
+                                delete &* m;
+                            }
+                            
+                            if (++ j == intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_>(&ps_->proxy_tag_))
+                                break;
                         }
                         
-                        ++ j;
-                        delete &* i;
-                        
-                        if (-- s == 0)
-                            break;
+                        ps_.reset();
                     }
-
-                    ps_ = 0;
-                }
             }
         }
 
