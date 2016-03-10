@@ -450,24 +450,26 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 base::reset();
                 
                 if (!UserPool::is_from(this))
-                    if (-- ps_->count_, ps_->count() == 0)
-                    {
-                        ps_->destroying(true);
+                    -- ps_->count_;
+                
+                if (ps_->count() == 0)
+                {
+                    ps_->destroying(true);
 
-                        for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&ps_->proxy_tag_), j(&ps_->proxy_tag_); ; i = j)
+                    for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&ps_->proxy_tag_), j(&ps_->proxy_tag_); ; i = j)
+                    {
+                        for (intrusive_list::iterator<block_base, &block_base::block_tag_> m = i->block_list_.begin(), n = i->block_list_.begin(); m != i->block_list_.end(); m = n)
                         {
-                            for (intrusive_list::iterator<block_base, &block_base::block_tag_> m = i->block_list_.begin(), n = i->block_list_.begin(); m != i->block_list_.end(); m = n)
-                            {
-                                ++ n;
-                                delete &* m;
-                            }
-                            
-                            if (++ j == intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_>(&ps_->proxy_tag_))
-                                break;
+                            ++ n;
+                            delete &* m;
                         }
                         
-                        ps_.reset();
+                        if (++ j == intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_>(&ps_->proxy_tag_))
+                            break;
                     }
+                    
+                    ps_.reset();
+                }
             }
         }
 
