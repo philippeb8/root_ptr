@@ -29,7 +29,6 @@
 #include <new.h>
 #endif
 
-#include <boost/type_traits/add_pointer.hpp>
 #ifndef BOOST_DISABLE_THREADS
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -40,7 +39,6 @@
 #include <boost/smart_ptr/detail/classof.hpp>
 #include <boost/smart_ptr/detail/block_ptr_base.hpp>
 #include <boost/smart_ptr/detail/system_pool.hpp>
-#include <boost/intrusive/pointer_traits.hpp>
 
 
 namespace boost
