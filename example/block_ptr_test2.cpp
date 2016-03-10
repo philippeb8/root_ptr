@@ -14,7 +14,7 @@
 */
 
 
-#include <boost/block_ptr.hpp>
+#include <boost/smart_ptr/block_ptr.hpp>
 
 #include <list>
 #include <vector>
