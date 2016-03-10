@@ -174,6 +174,10 @@ struct block_proxy
 };
 
 
+} // namespace detail
+
+} // namespace smart_ptr
+
 #define TEMPLATE_DECL(z, n, text) BOOST_PP_COMMA_IF(n) typename T ## n
 #define ARGUMENT_DECL(z, n, text) BOOST_PP_COMMA_IF(n) T ## n const & t ## n
 #define PARAMETER_DECL(z, n, text) BOOST_PP_COMMA_IF(n) t ## n
@@ -183,7 +187,7 @@ struct block_proxy
         friend block_ptr<V, UserPool> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0));
 
 #define CONSTRUCT_MAKE_BLOCK(z, n, text)																			    \
-    template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename UserPool = system_pool<system_pool_tag, sizeof(char)> >										                    \
+    template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >										                    \
         block_ptr<V, UserPool> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))															\
         {																												\
             return block_ptr<V, UserPool>(new block<V, UserPool>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));									\
@@ -196,17 +200,17 @@ struct block_proxy
     Complete memory management utility on top of standard reference counting.
 */
 
-template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(char)> >
-    class block_ptr : public block_ptr_base<T, UserPool>
+template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
+    class block_ptr : public smart_ptr::detail::block_ptr_base<T, UserPool>
     {
         template <typename, typename> friend class block_ptr;
 
-        typedef block_ptr_base<T, UserPool> base;
+        typedef smart_ptr::detail::block_ptr_base<T, UserPool> base;
         
         using base::share;
         using base::po_;
 
-        block_ptr_base<block_proxy, UserPool> ps_;                      /**< Pointer to the @c block_proxy node @c block_ptr<> belongs to. */
+        smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy, UserPool> ps_;                      /**< Pointer to the @c block_proxy node @c block_ptr<> belongs to. */
         
     public:
         /**
@@ -216,7 +220,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         */
         
         template <typename V>
-            block_ptr(block<V, UserPool> * p) : base(p), ps_(new fastblock<block_proxy>())
+            block_ptr(block<V, UserPool> * p) : base(p), ps_(new fastblock<smart_ptr::detail::block_proxy>())
             {
                 init(p);
 
@@ -235,12 +239,12 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             block_ptr & operator = (block<V, UserPool> * p)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
+                mutex::scoped_lock scoped_lock(smart_ptr::detail::block_proxy::static_mutex());
 #endif
 
                 release();
 
-                ps_ = new fastblock<block_proxy>();
+                ps_ = new fastblock<smart_ptr::detail::block_proxy>();
                 init(p);
                 
                 if (!UserPool::is_from(this))
@@ -257,14 +261,8 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 operator = <T>(p);
             }
         
-        template <typename V>
-            friend block_ptr<V, UserPool> make_block();
-
-        BOOST_PP_REPEAT_FROM_TO(1, 10, BEFRIEND_MAKE_BLOCK, make_block)
-
     public:
         typedef T                           value_type;
-        //typedef block<value_type, UserPool> element_type;
 
 
         /**
@@ -286,7 +284,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             block_ptr(block_ptr<V, UserPool> const & p) : base(), ps_(p.ps_)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
+                mutex::scoped_lock scoped_lock(smart_ptr::detail::block_proxy::static_mutex());
 #endif
 
                 if (ps_)
@@ -312,7 +310,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             block_ptr(block_ptr<T, UserPool> const & p) : base(), ps_(p.ps_)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
+                mutex::scoped_lock scoped_lock(smart_ptr::detail::block_proxy::static_mutex());
 #endif
                 
                 if (ps_)
@@ -339,7 +337,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             block_ptr & operator = (block_ptr<V, UserPool> const & p)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
+                mutex::scoped_lock scoped_lock(smart_ptr::detail::block_proxy::static_mutex());
 #endif
 
                 if (ps_ && p.ps_)
@@ -405,7 +403,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         void reset()
         {
 #ifndef BOOST_DISABLE_THREADS
-            mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
+            mutex::scoped_lock scoped_lock(smart_ptr::detail::block_proxy::static_mutex());
 #endif
 
             release();
@@ -439,6 +437,8 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         
         void release()
         {
+            using namespace smart_ptr::detail;
+            
             if (!ps_)
             {
                 base::po_ = 0;
@@ -478,8 +478,10 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
             @param	p	Pointee object to initialize.
         */
         
-        void init(block_base * p)
+        void init(smart_ptr::detail::block_base * p)
         {
+            using namespace smart_ptr::detail;
+            
             if (ps_ && !p->init_)
             {
                 // iterate memory blocks
@@ -523,7 +525,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 #endif
     };
 
-template <typename V, typename UserPool = system_pool<system_pool_tag, sizeof(char)> >
+template <typename V, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
     block_ptr<V, UserPool> make_block()
     {
         return block_ptr<V, UserPool>(new block<V, UserPool>());
@@ -543,16 +545,6 @@ template <typename T, typename UserPool>
 
 
 BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_BLOCK, make_block)
-
-} // namespace detail
-
-} // namespace smart_ptr
-
-using smart_ptr::detail::block_ptr;
-using smart_ptr::detail::block;
-using smart_ptr::detail::make_block;
-using smart_ptr::detail::operator ==;
-using smart_ptr::detail::operator !=;
 
 } // namespace boost
 

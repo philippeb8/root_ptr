@@ -91,6 +91,10 @@ protected:
 };
 
 
+} // namespace detail
+
+} // namespace smart_ptr
+
 #define TEMPLATE_DECL(z, n, text) BOOST_PP_COMMA_IF(n) typename T ## n
 #define ARGUMENT_DECL(z, n, text) BOOST_PP_COMMA_IF(n) T ## n const & t ## n
 #define PARAMETER_DECL(z, n, text) BOOST_PP_COMMA_IF(n) t ## n
@@ -103,8 +107,8 @@ protected:
     Object wrapper.
 */
 
-template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(char)> >
-    class block : public block_base
+template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
+    class block : public smart_ptr::detail::block_base
     {
         typedef T data_type;
 
@@ -149,7 +153,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 @param	p	Address of a @c data_type member object to cast from.
             */
             
-            classof(data_type * p) : p_(detail::classof((data_type block::*)(& block::elem_), p)) {}
+            classof(data_type * p) : p_(smart_ptr::detail::classof((data_type block::*)(& block::elem_), p)) {}
             
             
             /**
@@ -187,7 +191,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
 
 template <typename UserPool>
-    class block<void, UserPool> : public block_base
+    class block<void, UserPool> : public smart_ptr::detail::block_base
     {
         typedef void data_type;
 
@@ -222,7 +226,7 @@ template <typename UserPool>
                 @param	p	Address of a @c data_type member object to cast from.
             */
             
-            classof(data_type * p) : p_(detail::classof((long block::*)(& block::elem_), static_cast<long *>(p))) {}
+            classof(data_type * p) : p_(smart_ptr::detail::classof((long block::*)(& block::elem_), static_cast<long *>(p))) {}
             
             
             /**
@@ -234,7 +238,7 @@ template <typename UserPool>
     };
 
 
-template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(char)> >
+template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
     class fastblock : public block<T, UserPool>
     {
         static fast_pool_allocator<block<T, UserPool> > & static_pool() /**< Pool where all sets are allocated. */
@@ -270,10 +274,6 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
         }
     };
     
-
-} // namespace detail
-
-} // namespace smart_ptr
 
 } // namespace boost
 
