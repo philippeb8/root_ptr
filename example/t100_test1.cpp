@@ -17,7 +17,7 @@
 #include <string>
 #include <iostream>
 #include <boost/regex.hpp>
-#include <boost/block_ptr.hpp>
+#include <boost/smart_ptr/block_ptr.hpp>
 
 #include "t100.h"
 
