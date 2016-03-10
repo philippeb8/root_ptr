@@ -214,7 +214,7 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
         /**
             Initialization of a pointer.
             
-            @param	p	New pointee object to manage.
+            @param  p   New pointee object to manage.
         */
         
         template <typename V>
@@ -225,6 +225,28 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
                 if (! UserPool::is_from(this))
                     ++ ps_->count_;                    
             }
+
+            
+        /**
+            Initialization of a pointer.
+            
+            @param	p	New pointee object to manage.
+        */
+        
+        template <typename V>
+            block_ptr(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy, UserPool> & q, block<V, UserPool> * p) : base(p), ps_(q)
+            {
+                init(p);
+
+                if (! UserPool::is_from(this))
+                    ++ ps_->count_;                    
+            }
+            
+            
+        smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy, UserPool> & proxy()
+        {
+            return ps_;
+        }
 
         
         /**
