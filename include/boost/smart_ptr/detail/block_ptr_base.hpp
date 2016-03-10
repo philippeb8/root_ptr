@@ -26,10 +26,10 @@
 namespace boost
 {
 
-namespace detail
+namespace smart_ptr
 {
 
-namespace bp
+namespace detail
 {
 
 
@@ -381,9 +381,9 @@ template <typename UserPool>
     };
 
 
-} // namespace bp
-
 } // namespace detail
+
+} // namespace smart_ptr
 
 } // namespace boost
 

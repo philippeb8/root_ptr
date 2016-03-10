@@ -27,10 +27,10 @@
 namespace boost
 {
 
-namespace detail
+namespace smart_ptr
 {
 
-namespace bp
+namespace detail
 {
 
 
@@ -90,9 +90,9 @@ template <typename T, typename U>
     }
 
 
-} // namespace bp
-
 } // namespace detail
+
+} // namespace smart_ptr
 
 } // namespace boost
 

@@ -24,10 +24,10 @@
 namespace boost
 {
 
-namespace detail
+namespace smart_ptr
 {
 
-namespace bp
+namespace detail
 {
 
 
@@ -116,9 +116,9 @@ template <typename T, intrusive_stack_node T::* P>
     };
 
 
-} // namespace bp
-
 } // namespace detail
+
+} // namespace smart_ptr
 
 } // namespace boost
 

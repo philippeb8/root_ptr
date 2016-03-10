@@ -29,8 +29,6 @@
 #include <new.h>
 #endif
 
-#include <set>
-#include <iostream>
 #include <boost/type_traits/add_pointer.hpp>
 #ifndef BOOST_DISABLE_THREADS
 #include <boost/thread/thread.hpp>
@@ -48,10 +46,10 @@
 namespace boost
 {
 
-namespace detail
+namespace smart_ptr
 {
 
-namespace bp
+namespace detail
 {
 
 
@@ -546,15 +544,15 @@ template <typename T, typename UserPool>
 
 BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_BLOCK, make_block)
 
-} // namespace bp
-
 } // namespace detail
 
-using detail::bp::block_ptr;
-using detail::bp::block;
-using detail::bp::make_block;
-using detail::bp::operator ==;
-using detail::bp::operator !=;
+} // namespace smart_ptr
+
+using smart_ptr::detail::block_ptr;
+using smart_ptr::detail::block;
+using smart_ptr::detail::make_block;
+using smart_ptr::detail::operator ==;
+using smart_ptr::detail::operator !=;
 
 } // namespace boost
 

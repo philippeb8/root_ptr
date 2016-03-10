@@ -55,10 +55,10 @@
 namespace boost
 {
 
-namespace detail
+namespace smart_ptr
 {
 
-namespace bp
+namespace detail
 {
 
 
@@ -70,7 +70,7 @@ struct block_base;
     Root class of all pointee objects.
 */
 
-struct block_base : public sp_counted_base
+struct block_base : public boost::detail::sp_counted_base
 {
     bool init_;										/**< Flag marking initialization of the pointee object to its @c block_proxy . */
 
@@ -149,7 +149,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 @param	p	Address of a @c data_type member object to cast from.
             */
             
-            classof(data_type * p) : p_(bp::classof((data_type block::*)(& block::elem_), p)) {}
+            classof(data_type * p) : p_(detail::classof((data_type block::*)(& block::elem_), p)) {}
             
             
             /**
@@ -222,7 +222,7 @@ template <typename UserPool>
                 @param	p	Address of a @c data_type member object to cast from.
             */
             
-            classof(data_type * p) : p_(bp::classof((long block::*)(& block::elem_), static_cast<long *>(p))) {}
+            classof(data_type * p) : p_(detail::classof((long block::*)(& block::elem_), static_cast<long *>(p))) {}
             
             
             /**
@@ -237,9 +237,9 @@ template <typename UserPool>
 template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(char)> >
     class fastblock : public block<T, UserPool>
     {
-        static fast_pool_allocator<block<T, UserPool>> & static_pool() /**< Pool where all sets are allocated. */
+        static fast_pool_allocator<block<T, UserPool> > & static_pool() /**< Pool where all sets are allocated. */
         {
-            static fast_pool_allocator<block<T, UserPool>> pool_;
+            static fast_pool_allocator<block<T, UserPool> > pool_;
             
             return pool_;
         }
@@ -271,9 +271,9 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
     };
     
 
-} // namespace bp
-
 } // namespace detail
+
+} // namespace smart_ptr
 
 } // namespace boost
 

@@ -23,20 +23,16 @@
 # pragma once
 #endif
 
-#include <list>
-#include <stack>
-#include <limits>
-
 #include <boost/pool/pool.hpp>
 
 
 namespace boost
 {
 
-namespace detail
+namespace smart_ptr
 {
 
-namespace bp
+namespace detail
 {
 
 
@@ -49,9 +45,9 @@ template <typename Tag, unsigned RequestedSize, typename UserAllocator = default
     };
 
 
-} // namespace bp
-
 } // namespace detail
+
+} // namespace smart_ptr
 
 } // namespace boost
 
