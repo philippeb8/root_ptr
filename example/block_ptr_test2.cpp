@@ -100,7 +100,7 @@ int main() {
     std::cout << "*** Test #2 ***" << std::endl;
     count = 0;
     {
-        block_ptr<node> v = new block<node>();
+        block_ptr<node> v = make_block<node>();
         v->next = v;
     }
     std::cout << count << std::endl;
@@ -109,9 +109,9 @@ int main() {
     std::cout << "*** Test #3 ***" << std::endl;
     count = 0;
     {
-        block_ptr<vector> v = new block<vector>();
-        v->elements.push_back(new block<vector>());
-        v->elements.push_back(new block<vector>());
+        block_ptr<vector> v = make_block<vector>();
+        v->elements.push_back(make_block<vector>());
+        v->elements.push_back(make_block<vector>());
         v->elements.push_back(v->elements.back());
         v->elements.push_back(v);
     }
@@ -119,7 +119,7 @@ int main() {
 
     count = 0;
     {
-        block_ptr<vector> v = new block<vector>();
+        block_ptr<vector> v = make_block<vector>();
         v->elements.push_back(v);
     }
     std::cout << count << std::endl;
@@ -130,9 +130,9 @@ int main() {
     count = 0;
     {
         vector v; //<- Heap block not referenced from the stack
-        v.elements.push_back(new block<vector>());
-        v.elements.push_back(new block<vector>());
-        v.elements.push_back(new block<vector>());
+        v.elements.push_back(make_block<vector>());
+        v.elements.push_back(make_block<vector>());
+        v.elements.push_back(make_block<vector>());
         v.elements.push_back(v.elements.back());
     }
     std::cout << count << std::endl;
@@ -142,10 +142,10 @@ int main() {
     count = 0;
     {
         node * v = new node; //<- Heap block not referenced from the stack
-        v->next = new block<node>();
+        v->next = make_block<node>();
         v->next->next = v->next;
         v->next->prior = v->next;
-        v->prior = new block<node>();
+        v->prior = make_block<node>();
         v->prior->next = v->next;
         v->prior->prior = v->next;
         v->prior.reset();
