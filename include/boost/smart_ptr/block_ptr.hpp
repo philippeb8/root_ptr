@@ -249,32 +249,6 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
         }
 
         
-        /**
-            Assignment.
-            
-            @param	p	New pointee object to manage.
-        */
-        
-        template <typename V>
-            block_ptr & operator = (block<V, UserPool> * p)
-            {
-#ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(smart_ptr::detail::block_proxy::static_mutex());
-#endif
-
-                release();
-
-                ps_ = new fastblock<smart_ptr::detail::block_proxy>();
-                init(p);
-                
-                if (!UserPool::is_from(this))
-                    ++ ps_->count_;
-                
-                base::operator = (p);
-
-                return * this;
-            }
-            
         template <typename V>
             void reset(block<V, UserPool> * p)
             {
