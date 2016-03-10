@@ -193,7 +193,7 @@ struct block_proxy
 
 
 /**
-    Deterministic memory manager of constant complexity.
+    Deterministic region based memory manager.
     
     Complete memory management utility on top of standard reference counting.
 */
@@ -212,7 +212,7 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
         
     public:
         /**
-            Initialization of a pointer living on the stack or proper enlistment if living on the heap.
+            Initialization of a pointer.
             
             @param	p	New pointee object to manage.
         */
@@ -228,7 +228,7 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
 
         
         /**
-            Assignment & union of 2 sets if the pointee resides a different @c block_proxy.
+            Assignment.
             
             @param	p	New pointee object to manage.
         */
@@ -264,7 +264,7 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
 
 
         /**
-            Initialization of a pointer living on the stack or proper enlistment if living on the heap.
+            Initialization of a pointer.
         */
         
         block_ptr() : base(), ps_()
@@ -273,7 +273,7 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
 
         
         /**
-            Initialization of a pointer living on the stack or proper enlistment if living on the heap.
+            Initialization of a pointer.
             
             @param	p	New pointer to manage.
         */
@@ -300,7 +300,7 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
 
         
         /**
-            Initialization of a pointer living on the stack or proper enlistment if living on the heap.
+            Initialization of a pointer.
             
             @param	p	New pointer to manage.
         */
@@ -429,8 +429,6 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
     private:
         /**
             Release of the pointee object with or without destroying the entire @c block_proxy it belongs to.
-            
-            @param	d	Destroy (true) or reuse (false) the @c block_proxy it is releasing.
         */
         
         void release()
