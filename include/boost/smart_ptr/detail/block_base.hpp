@@ -46,10 +46,10 @@
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
 
-#include <boost/detail/intrusive_list.hpp>
-#include <boost/detail/intrusive_stack.hpp>
-#include <boost/detail/classof.hpp>
-#include <boost/detail/system_pool.hpp>
+#include <boost/smart_ptr/detail/intrusive_list.hpp>
+#include <boost/smart_ptr/detail/intrusive_stack.hpp>
+#include <boost/smart_ptr/detail/classof.hpp>
+#include <boost/smart_ptr/detail/system_pool.hpp>
 
 
 namespace boost

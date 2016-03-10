@@ -37,11 +37,11 @@
 #include <boost/thread/mutex.hpp>
 #endif
 
-#include <boost/detail/intrusive_list.hpp>
-#include <boost/detail/intrusive_stack.hpp>
-#include <boost/detail/classof.hpp>
-#include <boost/detail/block_ptr_base.hpp>
-#include <boost/detail/system_pool.hpp>
+#include <boost/smart_ptr/detail/intrusive_list.hpp>
+#include <boost/smart_ptr/detail/intrusive_stack.hpp>
+#include <boost/smart_ptr/detail/classof.hpp>
+#include <boost/smart_ptr/detail/block_ptr_base.hpp>
+#include <boost/smart_ptr/detail/system_pool.hpp>
 #include <boost/intrusive/pointer_traits.hpp>
 
 

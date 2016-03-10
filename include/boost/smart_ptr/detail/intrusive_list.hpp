@@ -18,7 +18,7 @@
 #define BOOST_INTRUSIVE_LIST_HPP_INCLUDED
 
 
-#include <boost/detail/classof.hpp>
+#include <boost/smart_ptr/detail/classof.hpp>
 
 
 namespace boost

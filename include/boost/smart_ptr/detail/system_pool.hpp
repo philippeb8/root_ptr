@@ -19,13 +19,13 @@
 
 
 #if defined( __GNUC__ ) && ( defined( __i386__ ) || defined( __x86_64__ ) ) && !defined(__PATHSCALE__)
-# include <boost/detail/system_pool_gcc_x86.hpp>
+# include <boost/smart_ptr/detail/system_pool_gcc_x86.hpp>
 
 #elif defined( WIN32 ) || defined( _WIN32 ) || defined( __WIN32__ ) || defined(__CYGWIN__)
-# include <boost/detail/system_pool_w32.hpp>
+# include <boost/smart_ptr/detail/system_pool_w32.hpp>
 
 #else
-# include <boost/detail/system_pool_spin.hpp>
+# include <boost/smart_ptr/detail/system_pool_spin.hpp>
 
 #endif
 

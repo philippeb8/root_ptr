@@ -19,8 +19,8 @@
 #define BOOST_DETAIL_BLOCK_PTR_BASE_HPP
 
 
-#include <boost/detail/classof.hpp>
-#include <boost/detail/block_base.hpp>
+#include <boost/smart_ptr/detail/classof.hpp>
+#include <boost/smart_ptr/detail/block_base.hpp>
 
 
 namespace boost
