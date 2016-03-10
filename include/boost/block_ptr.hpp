@@ -242,9 +242,7 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
 
                 release();
 
-                if (!ps_)
-                    ps_ = new fastblock<block_proxy>();
-                
+                ps_ = new fastblock<block_proxy>();
                 init(p);
                 
                 if (!UserPool::is_from(this))
@@ -374,7 +372,6 @@ template <typename T, typename UserPool = system_pool<system_pool_tag, sizeof(ch
                 else if (!ps_)
                 {
                     ps_ = p.ps_;
-                    base::po_ = 0;
                     
                     if (!UserPool::is_from(this))
                         ++ ps_->count_;
