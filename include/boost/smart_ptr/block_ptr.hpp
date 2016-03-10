@@ -392,12 +392,6 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
             return operator = <T>(p);
         }
 
-        block_ptr & operator = (int i)
-        {
-            reset();
-            return *this;
-        }
-
         void reset()
         {
 #ifndef BOOST_DISABLE_THREADS
