@@ -140,8 +140,8 @@ int main() {
 #if 1
     std::cout << "*** Test #5 ***" << std::endl;
     count = 0;
+    node * v = new node; //<- Heap block not referenced from the stack
     {
-        node * v = new node; //<- Heap block not referenced from the stack
         v->next = make_block<node>();
         v->next->next = v->next;
         v->next->prior = v->next;
@@ -149,10 +149,10 @@ int main() {
         v->prior->next = v->next;
         v->prior->prior = v->next;
         v->prior.reset();
-        std::cout << "node = " << v->next.get() << std::endl;
-        std::cout << "node = " << v->next->next.get() << std::endl;
-        delete v;
     }
+    std::cout << "node = " << v->next.get() << std::endl;
+    std::cout << "node = " << v->next->next.get() << std::endl;
+    delete v;
     std::cout << count << std::endl;
 #endif
 #if 1
