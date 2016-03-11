@@ -91,7 +91,7 @@ struct block_proxy
     
     ~block_proxy()
     {
-        reset();
+        release();
     }
     
     
@@ -119,7 +119,7 @@ struct block_proxy
     }
     
     
-    void reset()
+    void release()
     {
         using namespace smart_ptr::detail;
         
@@ -349,6 +349,39 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
             }
 #endif
     };
+
+
+/**
+    Helper.
+*/
+    
+template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
+    struct block_proxy_ptr : block_proxy, block_ptr<T, UserPool>
+    {
+        block_proxy_ptr() : block_proxy(), block_ptr<T, UserPool>(* static_cast<block_proxy *>(this)) 
+        {
+        }
+        
+        
+        /**
+            Initialization of a pointer.
+            
+            @param  p   New pointee object to manage.
+        */
+        
+        template <typename V>
+            explicit block_proxy_ptr(block<V, UserPool> * p) : block_ptr<T, UserPool>(*this, p)
+            {
+            }
+            
+            
+        block_ptr<T, UserPool> & operator = (block_ptr<T, UserPool> const & p)
+        {
+            return block_ptr<T, UserPool>::operator = (p);
+        }
+    };
+
+
 /*
 template <typename V, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
     block_ptr<V, UserPool> make_block()
