@@ -26,9 +26,10 @@ using namespace boost;
 struct A
 {
     int i;
+    block_proxy x;
     block_ptr<A> p;
     
-    A(int i = 0) : i(i) 
+    A(int i = 0) : i(i), p(x)
     {
         cout << BOOST_CURRENT_FUNCTION << ": " << i << endl;
     }
@@ -42,19 +43,21 @@ struct A
 
 int main()
 {
+
 #if 1
     cout << "Cyclicism:" << endl;
     {
-        block_ptr<A> p = make_block<A>(7);
-        block_ptr<A> q = make_block<A>(8);
-        block_ptr<A> r = make_block<A>(9);
+        block_proxy x;
+        block_ptr<A> p = block_ptr<A>(x, new block<A>(7));
+        block_ptr<A> q = block_ptr<A>(x, new block<A>(8));
+        block_ptr<A> r = block_ptr<A>(x, new block<A>(9));
 
         //block_ptr<void> t = make_block<A>(10);
-        block_ptr<int const volatile> v = make_block<int const volatile>(11);
+        block_ptr<int const volatile> v = block_ptr<int const volatile>(x, new block<int const volatile>(11));
 
-        p->p = p;
+        p->p = p->p;
         q = r;
-        v = make_block<int const volatile>(12);
+        v = block_ptr<int const volatile>(x, new block<int const volatile>(12));
 
         cout << "p->i = " << p->i << endl;
         cout << "q->i = " << q->i << endl;
@@ -67,8 +70,9 @@ int main()
 #if ! defined(_MSC_VER)
     cout << "Array access:" << endl;
     {
-        block_ptr<A[5]> s = make_block<A[5]>();
-        block_ptr<char[9]> u = make_block<char[9]>();
+        block_proxy x;
+        block_ptr<A[5]> s = block_ptr<A[5]>(x, new block<A[5]>());
+        block_ptr<char[9]> u = block_ptr<char[9]>(x, new block<char[9]>());
 
         u[4] = 'Z';
 
@@ -77,13 +81,14 @@ int main()
     cout << endl;
 #endif
 #endif
-    
+
     cout << "Order of destruction:" << endl;
     {
-        block_ptr<A> v = make_block<A>(0);
-        v->p = make_block<A>(v.proxy(), 1);
-        v->p->p = make_block<A>(v.proxy(), 2);
-        v->p->p->p = v;
+        block_proxy x;
+        block_ptr<A> v = block_ptr<A>(x, new block<A>(0));
+        v->p = block_ptr<A>(x, new block<A>(1));
+        v->p->p = block_ptr<A>(x, new block<A>(2));
+        v->p->p->p = v->p->p->p;
     }
     cout << endl;
 }
