@@ -45,7 +45,8 @@ struct list {
 public:
     list() : front(x), back(x) {}
     void clear() {
-        root.reset();
+        front.reset();
+        back.reset();
     }
     void insert() {
         if(front.get() == 0) {
