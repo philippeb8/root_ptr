@@ -72,16 +72,10 @@ struct block_base;
 
 struct block_base : public boost::detail::sp_counted_base
 {
-    bool init_;										/**< Flag marking initialization of the pointee object to its @c block_proxy . */
-
-    intrusive_list inits_;							/**< List of all pointee objects that will later need to be initlialized to a specific @c block_proxy .*/
-
     intrusive_list::node block_tag_;					/**< Tag used to enlist to @c block_proxy::elements_ . */
-    intrusive_list::node init_tag_;					/**< Tag used to enlist to @c block_base::inits_ . */
 
-    block_base() : init_(false)
+    block_base()
     {
-        inits_.push_back(& init_tag_);
     }
 
 protected:

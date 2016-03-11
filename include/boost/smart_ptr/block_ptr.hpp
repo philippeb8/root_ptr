@@ -54,6 +54,10 @@ namespace detail
 struct block_base;
 
 
+} // namespace detail
+
+} // namespace smart_ptr
+
 /**
     Set header.
     
@@ -62,13 +66,13 @@ struct block_base;
 
 struct block_proxy
 {
-    long count_;							    	/**< Count of the number of pointers from the stack referencing the same @c block_proxy .*/
-    bool destroying_;									/**< Destruction sequence initiated. */
-    intrusive_list::node proxy_tag_;				/**< Tag used to enlist to @c block_proxy::includes_ . */
-    intrusive_list block_list_;				    	/**< List of all pointee objects belonging to a @c block_proxy . */
+    long count_;                                    /**< Count of the number of pointers from the stack referencing the same @c block_proxy .*/
+    bool destroying_;                                   /**< Destruction sequence initiated. */
+    smart_ptr::detail::intrusive_list::node proxy_tag_;                /**< Tag used to enlist to @c block_proxy::includes_ . */
+    smart_ptr::detail::intrusive_list block_list_;                     /**< List of all pointee objects belonging to a @c block_proxy . */
 
 #ifndef BOOST_DISABLE_THREADS
-    static mutex & static_mutex()					/**< Main global mutex used for thread safety */
+    static mutex & static_mutex()                   /**< Main global mutex used for thread safety */
     {
         static mutex mutex_;
         
@@ -83,98 +87,54 @@ struct block_proxy
     block_proxy() : count_(0), destroying_(false)
     {
     }
+    
+    
     ~block_proxy()
     {
-    }
-    
-    long size()
-    {
-        long c = 0;
-        
-        for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&proxy_tag_);;)
-        {
-            ++ c;
-            
-            if (++ i == intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_>(&proxy_tag_))
-                break;
-        }
-        
-        return c;
-    }
-    
-    long count()
-    {
-        long c = 0;
-        
-        for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&proxy_tag_);;)
-        {
-            c += i->count_;
-            
-            if (++ i == intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_>(&proxy_tag_))
-                break;
-        }
-        
-        return c;
-    }
-    
-    bool intersects(block_proxy const * p)
-    {
-        for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&proxy_tag_);;)
-        {
-            if (&* i == p)
-                return true;
-            
-            if (++ i == intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_>(&proxy_tag_))
-                break;
-        }
-        
-        return false;
+        reset();
     }
     
     
-    bool destroying()
+    bool destroying() const
     {
-        for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&proxy_tag_);;)
-        {
-            if (i->destroying_ == true)
-                return true;
-            
-            if (++ i == intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_>(&proxy_tag_))
-                break;
-        }
-        
-        return false;
+        return destroying_;
     }
 
     
     void destroying(bool b)
     {
-        for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&proxy_tag_);;)
-        {
-            i->destroying_ = b;
-            
-            if (++ i == intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_>(&proxy_tag_))
-                break;
-        }
+        destroying_ = b;
     }
 
     
     /**
-        Unification with a new @c block_proxy .
+        Enlist & initialize pointee objects belonging to the same @c block_proxy .  This initialization occurs when a pointee object is affected to the first pointer living on the stack it encounters.
         
-        @param	p	New @c block_proxy to unify with.
+        @param  p   Pointee object to initialize.
     */
-
-    void unify(block_proxy * p)
+    
+    void init(smart_ptr::detail::block_base * p)
     {
-        proxy_tag_.insert(& p->proxy_tag_);
+        block_list_.push_back(& p->block_tag_);
+    }
+    
+    
+    void reset()
+    {
+        using namespace smart_ptr::detail;
+        
+        destroying(true);
+
+        for (intrusive_list::iterator<block_base, &block_base::block_tag_> m = block_list_.begin(), n = block_list_.begin(); m != block_list_.end(); m = n)
+        {
+            ++ n;
+            delete &* m;
+        }
+        
+        destroying(false);
     }
 };
 
-
-} // namespace detail
-
-} // namespace smart_ptr
 
 #define TEMPLATE_DECL(z, n, text) BOOST_PP_COMMA_IF(n) typename T ## n
 #define ARGUMENT_DECL(z, n, text) BOOST_PP_COMMA_IF(n) T ## n const & t ## n
@@ -229,7 +189,7 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
         using base::share;
         using base::po_;
 
-        smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy, UserPool> ps_;                      /**< Pointer to the @c block_proxy node @c block_ptr<> belongs to. */
+        block_proxy const & x_;                      /**< Pointer to the @c block_proxy node @c block_ptr<> belongs to. */
         
     public:
         /**
@@ -238,14 +198,9 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
             @param  p   New pointee object to manage.
         */
         
-        template <typename V>
-            explicit block_ptr(block<V, UserPool> * p) : base(p), ps_(new fastblock<smart_ptr::detail::block_proxy>())
-            {
-                init(p);
-
-                if (! UserPool::is_from(this))
-                    ++ ps_->count_;                    
-            }
+        explicit block_ptr(block_proxy const & x) : base(), x_(x)
+        {
+        }
 
             
         /**
@@ -255,26 +210,11 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
         */
         
         template <typename V>
-            explicit block_ptr(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy, UserPool> & q, block<V, UserPool> * p) : base(p), ps_(q)
+            explicit block_ptr(block_proxy const & x, block<V, UserPool> * p) : base(p), x_(x)
             {
-                init(p);
-
-                if (! UserPool::is_from(this))
-                    ++ ps_->count_;                    
+                x_.init(p);
             }
-            
-            
-        smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy, UserPool> & proxy()
-        {
-            return ps_;
-        }
 
-        
-        template <typename V>
-            void reset(block<V, UserPool> * p)
-            {
-                operator = <T>(block_ptr(p));
-            }
         
     public:
         typedef T                           value_type;
@@ -282,37 +222,16 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
 
         /**
             Initialization of a pointer.
-        */
-        
-        block_ptr() : base(), ps_()
-        {
-        }
-
-        
-        /**
-            Initialization of a pointer.
             
             @param	p	New pointer to manage.
         */
 
         template <typename V>
-            block_ptr(block_ptr<V, UserPool> const & p) : base(), ps_(p.ps_)
+            block_ptr(block_ptr<V, UserPool> const & p) : base(p), x_(p.x_)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(smart_ptr::detail::block_proxy::static_mutex());
+                mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
-
-                if (ps_)
-                {
-                    if (!UserPool::is_from(this))
-                        ++ ps_->count_;
-                    
-                    base::operator = (p);
-                }
-                else
-                {
-                    base::operator = (p.get());            
-                }
             }
 
         
@@ -322,23 +241,11 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
             @param	p	New pointer to manage.
         */
 
-            block_ptr(block_ptr<T, UserPool> const & p) : base(), ps_(p.ps_)
+            block_ptr(block_ptr<T, UserPool> const & p) : base(p), x_(p.x_)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(smart_ptr::detail::block_proxy::static_mutex());
+                mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
-                
-                if (ps_)
-                {
-                    if (!UserPool::is_from(this))
-                        ++ ps_->count_;
-                    
-                    base::operator = (p);
-                }
-                else
-                {
-                    base::operator = (p.get());            
-                }
             }
 
 
@@ -352,47 +259,10 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
             block_ptr & operator = (block_ptr<V, UserPool> const & p)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(smart_ptr::detail::block_proxy::static_mutex());
+                mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
 
-                if (ps_ && p.ps_)
-                {
-                    if (!ps_->intersects(&* p.ps_))
-                    {
-                        release();
-
-                        // unify proxies
-                        if (!ps_)
-                            ps_ = p.ps_;
-                        else
-                            ps_->unify(&* p.ps_);
-
-                        if (!UserPool::is_from(this))
-                            ++ ps_->count_;
-                    }
-                    
-                    base::operator = (p);
-                }
-                else if (!p.ps_)
-                {
-                    release();
-                    ps_.reset();
-
-                    base::operator = (p.get());
-                }
-                else if (!ps_)
-                {
-                    ps_ = p.ps_;
-                    
-                    if (!UserPool::is_from(this))
-                        ++ ps_->count_;
-                    
-                    base::operator = (p);
-                }
-                else
-                {
-                    base::operator = (p.get());
-                }
+                base::operator = (p);
 
                 return * this;
             }
@@ -412,7 +282,7 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
         void reset()
         {
 #ifndef BOOST_DISABLE_THREADS
-            mutex::scoped_lock scoped_lock(smart_ptr::detail::block_proxy::static_mutex());
+            mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
 #endif
 
             release();
@@ -426,7 +296,7 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
         
         bool cyclic() const
         {
-            return ps_ && ps_->destroying();
+            return x_.destroying();
         }
 
         ~block_ptr()
@@ -444,71 +314,19 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
         
         void release()
         {
-            using namespace smart_ptr::detail;
-            
-            if (!ps_)
-            {
-                base::po_ = 0;
-            }
-            else
-            {
-                base::reset();
-                
-                if (!UserPool::is_from(this))
-                    -- ps_->count_;
-                
-                if (ps_->count() == 0)
-                {
-                    ps_->destroying(true);
-
-                    for (intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_> i(&ps_->proxy_tag_), j(&ps_->proxy_tag_); ; i = j)
-                    {
-                        for (intrusive_list::iterator<block_base, &block_base::block_tag_> m = i->block_list_.begin(), n = i->block_list_.begin(); m != i->block_list_.end(); m = n)
-                        {
-                            ++ n;
-                            delete &* m;
-                        }
-                        
-                        if (++ j == intrusive_list::iterator<block_proxy, &block_proxy::proxy_tag_>(&ps_->proxy_tag_))
-                            break;
-                    }
-                    
-                    ps_.reset();
-                }
-            }
+            base::reset();
         }
 
-        
-        /**
-            Enlist & initialize pointee objects belonging to the same @c block_proxy .  This initialization occurs when a pointee object is affected to the first pointer living on the stack it encounters.
-            
-            @param	p	Pointee object to initialize.
-        */
-        
-        void init(smart_ptr::detail::block_base * p)
-        {
-            using namespace smart_ptr::detail;
-            
-            if (ps_ && !p->init_)
-            {
-                // iterate memory blocks
-                for (intrusive_list::iterator<block_base, & block_base::init_tag_> i = p->inits_.begin(); i != p->inits_.end(); ++ i)
-                {
-                    i->init_ = true;
-                    ps_->block_list_.push_back(& i->block_tag_);
-                }
-            }
-        }
         
 #if 0 //defined(BOOST_HAS_RVALUE_REFS)
     public:
-        block_ptr(block_ptr<T> && p): base(p.po_), ps_(p.ps_)
+        block_ptr(block_ptr<T> && p): base(p.po_), x_(p.x_)
         {
             p.po_ = 0;
         }
 
         template<class Y>
-            block_ptr(block_ptr<Y> && p): base(p.po_), ps_(p.ps_)
+            block_ptr(block_ptr<Y> && p): base(p.po_), x_(p.x_)
             {
                 p.po_ = 0;
             }
@@ -516,7 +334,7 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
         block_ptr<T> & operator = (block_ptr<T> && p)
         {
             std::swap(po_, p.po_);
-            std::swap(ps_, p.ps_);
+            std::swap(x_, p.x_);
             
             return *this;
         }
@@ -525,18 +343,19 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
             block_ptr & operator = (block_ptr<Y> && p)
             {
                 std::swap(po_, p.po_);
-                std::swap(ps_, p.ps_);
+                std::swap(x_, p.x_);
                 
                 return *this;
             }
 #endif
     };
-
+/*
 template <typename V, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
     block_ptr<V, UserPool> make_block()
     {
         return block_ptr<V, UserPool>(new block<V, UserPool>());
     }
+*/
 
 template <typename V, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
     block_ptr<V, UserPool> make_block(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy, UserPool> & q)
