@@ -28,7 +28,7 @@ using boost::detail::sh::neuron_sight;
 
 int main(int argv, char * argc[])
 {
-    block_ptr<neuron_sight> t100 = new block<neuron_sight>("I eat ([a-z]+) then drink ([a-z]+)");
+    block_ptr<neuron_sight> t100 = block_ptr<neuron_sight>(new block<neuron_sight>("I eat ([a-z]+) then drink ([a-z]+)"));
     t100->sub_[0].second = block_ptr<neuron_sight>(t100.proxy(), new block<neuron_sight>("beef|chicken"));
     t100->sub_[1].second = block_ptr<neuron_sight>(t100.proxy(), new block<neuron_sight>("vodka|water"));
 

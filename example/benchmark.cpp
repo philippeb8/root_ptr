@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
 		median[i][1] = diff(ts[0], ts[1]).tv_nsec;
 
 		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-		worker_new< boost::block_ptr<int>, block<int> >();
+		worker_new< boost::block_ptr<int>, fastblock<int> >();
 		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
 		median[i][2] = diff(ts[0], ts[1]).tv_nsec;
 	}

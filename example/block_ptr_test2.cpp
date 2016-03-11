@@ -49,7 +49,7 @@ public:
     }
     void insert() {
         if(root.get() == 0) {
-            root = new block<node>();
+            root = block_ptr<node>(new block<node>());
         } else {
             root->next = block_ptr<node>(root.proxy(), new block<node>());
             root->next->prior = root;
