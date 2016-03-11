@@ -184,11 +184,32 @@ struct block_proxy
     template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>										                    \
         friend block_ptr<V, UserPool> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0));
 
-#define CONSTRUCT_MAKE_BLOCK(z, n, text)																			    \
+#define CONSTRUCT_MAKE_BLOCK1(z, n, text)																			    \
     template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >										                    \
         block_ptr<V, UserPool> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))															\
         {																												\
             return block_ptr<V, UserPool>(new block<V, UserPool>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));									\
+        }
+
+#define CONSTRUCT_MAKE_BLOCK2(z, n, text)                                                                                \
+    template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >                                                          \
+        block_ptr<V, UserPool> text(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy, UserPool> & q, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                           \
+        {                                                                                                               \
+            return block_ptr<V, UserPool>(q, new block<V, UserPool>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                                   \
+        }
+
+#define CONSTRUCT_MAKE_BLOCK3(z, n, text)                                                                               \
+    template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >                                                          \
+        block_ptr<V, UserPool> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                           \
+        {                                                                                                               \
+            return block_ptr<V, UserPool>(new fastblock<V, UserPool>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                                   \
+        }
+
+#define CONSTRUCT_MAKE_BLOCK4(z, n, text)                                                                                \
+    template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >                                                          \
+        block_ptr<V, UserPool> text(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy, UserPool> & q, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                           \
+        {                                                                                                               \
+            return block_ptr<V, UserPool>(q, new fastblock<V, UserPool>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                                   \
         }
 
 
@@ -517,6 +538,24 @@ template <typename V, typename UserPool = smart_ptr::detail::system_pool<smart_p
         return block_ptr<V, UserPool>(new block<V, UserPool>());
     }
 
+template <typename V, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
+    block_ptr<V, UserPool> make_block(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy, UserPool> & q)
+    {
+        return block_ptr<V, UserPool>(q, new block<V, UserPool>());
+    }
+
+template <typename V, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
+    block_ptr<V, UserPool> make_fastblock()
+    {
+        return block_ptr<V, UserPool>(new fastblock<V, UserPool>());
+    }
+
+template <typename V, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
+    block_ptr<V, UserPool> make_fastblock(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy, UserPool> & q)
+    {
+        return block_ptr<V, UserPool>(q, new fastblock<V, UserPool>());
+    }
+
 template <typename T, typename UserPool>
     bool operator == (block_ptr<T, UserPool> const &a1, block_ptr<T, UserPool> const &a2)
     {
@@ -530,7 +569,10 @@ template <typename T, typename UserPool>
     }
 
 
-BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_BLOCK, make_block)
+BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_BLOCK1, make_block)
+BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_BLOCK2, make_block)
+BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_BLOCK3, make_fastblock)
+BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_BLOCK4, make_fastblock)
 
 } // namespace boost
 
