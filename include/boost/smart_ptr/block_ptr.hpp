@@ -218,7 +218,7 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
         */
         
         template <typename V>
-            block_ptr(block<V, UserPool> * p) : base(p), ps_(new fastblock<smart_ptr::detail::block_proxy>())
+            explicit block_ptr(block<V, UserPool> * p) : base(p), ps_(new fastblock<smart_ptr::detail::block_proxy>())
             {
                 init(p);
 
@@ -234,7 +234,7 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
         */
         
         template <typename V>
-            block_ptr(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy, UserPool> & q, block<V, UserPool> * p) : base(p), ps_(q)
+            explicit block_ptr(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy, UserPool> & q, block<V, UserPool> * p) : base(p), ps_(q)
             {
                 init(p);
 
@@ -252,7 +252,7 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
         template <typename V>
             void reset(block<V, UserPool> * p)
             {
-                operator = <T>(p);
+                operator = <T>(block_ptr(p));
             }
         
     public:
