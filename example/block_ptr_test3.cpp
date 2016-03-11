@@ -52,22 +52,24 @@ struct list {
 public:
     list() {}
     void clear() {
-        front.reset();
-        back.reset();
+        root.reset();
     }
     void insert() {
-        if(front.get() == 0) {
-            back = make_block<node>();
+        if(root.get() == 0) {
+            root = block_ptr<node>(new block<node>());
         } else {
-            back->next = make_block<node>();
-            back->next->prior = back;
-            back = back->next;
+            root->next = block_ptr<node>(root.proxy(), new block<node>());
+            root->next->prior = root;
+            root = root->next;
         }
     }
+    ~list()
+    {
+    }
 private:
-    block_ptr<node> front;
-    block_ptr<node> back;
+    block_ptr<node> root;
 };
+
 
 struct vector {
     vector() { ++count; }
