@@ -80,9 +80,9 @@ int main()
     
     cout << "Order of destruction:" << endl;
     {
-        block_ptr<A> v = block_ptr<A>(new block<A>(0));
-        v->p = block_ptr<A>(v.proxy(), new block<A>(1));
-        v->p->p = block_ptr<A>(v.proxy(), new block<A>(2));
+        block_ptr<A> v = make_block<A>(0);
+        v->p = make_block<A>(v.proxy(), 1);
+        v->p->p = make_block<A>(v.proxy(), 2);
         v->p->p->p = v;
     }
     cout << endl;
