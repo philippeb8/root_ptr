@@ -43,27 +43,24 @@ struct node {
 
 struct list {
 public:
-    list() : front(x), back(x) {}
+    list() {}
     void clear() {
-        front.reset();
-        back.reset();
+        root.reset();
     }
     void insert() {
-        if(front.get() == 0) {
-            back = block_ptr<node>(x, new block<node>(x));
+        if(root.get() == 0) {
+            root = block_ptr<node>(root, new block<node>(root));
         } else {
-            back->next = block_ptr<node>(x, new block<node>(x));
-            back->next->prior = back;
-            back = back->next;
+            root->next = block_ptr<node>(root, new block<node>(root));
+            root->next->prior = root;
+            root = root->next;
         }
     }
     ~list()
     {
     }
 private:
-    block_proxy x;
-    block_ptr<node> front;
-    block_ptr<node> back;
+    block_proxy_ptr<node> root;
 };
 
 struct vector {
@@ -115,10 +112,9 @@ int main() {
     std::cout << "*** Test #3 ***" << std::endl;
     count = 0;
     {
-        block_proxy x;
-        block_ptr<vector> v = block_ptr<vector>(x, new block<vector>());
-        v->elements.push_back(block_ptr<vector>(x, new block<vector>()));
-        v->elements.push_back(block_ptr<vector>(x, new block<vector>()));
+        block_proxy_ptr<vector> v = block_proxy_ptr<vector>(new block<vector>());
+        v->elements.push_back(block_ptr<vector>(v, new block<vector>()));
+        v->elements.push_back(block_ptr<vector>(v, new block<vector>()));
         v->elements.push_back(v->elements.back());
         v->elements.push_back(v);
     }
@@ -126,8 +122,7 @@ int main() {
 
     count = 0;
     {
-        block_proxy x;
-        block_ptr<vector> v = block_ptr<vector>(x, new block<vector>());
+        block_proxy_ptr<vector> v = block_proxy_ptr<vector>(new block<vector>());
         v->elements.push_back(v);
     }
     std::cout << count << std::endl;
@@ -170,8 +165,7 @@ int main() {
     std::cout << "*** Test #6 ***" << std::endl;
     count = 0;
     {
-        block_proxy x;
-        block_ptr<int> test = block_ptr<int>(x, new block<int>(5));
+        block_proxy_ptr<int> test = block_proxy_ptr<int>(new block<int>(5));
         test = test;
         
         std::cout << "test = " << * test << std::endl;
