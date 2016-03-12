@@ -212,7 +212,7 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
         template <typename V>
             explicit block_ptr(block_proxy const & x, block<V, UserPool> * p) : base(p), x_(x)
             {
-                x_.init(p);
+                const_cast<block_proxy &>(x_).init(p);
             }
 
         
