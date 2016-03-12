@@ -68,7 +68,6 @@ struct block_proxy
 {
     long count_;                                    /**< Count of the number of pointers from the stack referencing the same @c block_proxy .*/
     bool destroying_;                                   /**< Destruction sequence initiated. */
-    smart_ptr::detail::intrusive_list::node proxy_tag_;                /**< Tag used to enlist to @c block_proxy::includes_ . */
     smart_ptr::detail::intrusive_list block_list_;                     /**< List of all pointee objects belonging to a @c block_proxy . */
 
 #ifndef BOOST_DISABLE_THREADS
