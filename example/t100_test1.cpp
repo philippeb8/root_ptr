@@ -28,12 +28,13 @@ using boost::detail::sh::neuron_sight;
 
 int main(int argv, char * argc[])
 {
-    neuron_sight t100 = neuron_sight("I eat ([a-z]+) then drink ([a-z]+)");
-    t100.sub_[0].second = new block<neuron_sight>("beef|chicken");
-    t100.sub_[1].second = new block<neuron_sight>("vodka|water");
+    proxy_ptr<neuron_sight> t100;
+    t100 = new block<neuron_sight>(t100, "I eat ([a-z]+) then drink ([a-z]+)");
+    t100->sub_[0].second = new block<neuron_sight>(t100, "beef|chicken");
+    t100->sub_[1].second = new block<neuron_sight>(t100, "vodka|water");
 
-    cout << (t100)("I eat beef then drink vodka") << endl;
-    cout << (t100)("I eat beef then drink wine") << endl;
-    cout << (t100)("I eat fish then drink wine") << endl;
-    cout << (t100)("I eat fish then drink beer") << endl;
+    cout << (* t100)("I eat beef then drink vodka") << endl;
+    cout << (* t100)("I eat beef then drink wine") << endl;
+    cout << (* t100)("I eat fish then drink wine") << endl;
+    cout << (* t100)("I eat fish then drink beer") << endl;
 }

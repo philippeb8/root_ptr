@@ -35,7 +35,7 @@ namespace sh
 {
 
 
-struct neuron_base : block_proxy
+struct neuron_base
 {
     typedef boost::block_ptr<neuron_base> pointer;
 
@@ -45,7 +45,7 @@ struct neuron_base : block_proxy
     //std::vector< std::pair<double, pointer> > sub_;
     std::pair<double, pointer> sub_[3];
 
-    neuron_base(std::string const & s) : exp_(s), sub_({std::pair<double, pointer>(0., pointer(*this)), std::pair<double, pointer>(0., pointer(*this)), std::pair<double, pointer>(0., pointer(*this))}) {}
+    neuron_base(block_proxy const & x, std::string const & s) : exp_(s), sub_({std::pair<double, pointer>(0., pointer(x)), std::pair<double, pointer>(0., pointer(x)), std::pair<double, pointer>(0., pointer(x))}) {}
     virtual ~neuron_base() {};
 
     virtual double operator () (std::string const & input) { return 0; };
@@ -82,7 +82,7 @@ template <neuron_base::sense_t>
         
         static map_sn_t search_;
     
-        neuron(std::string const & s) : neuron_base(s)
+        neuron(block_proxy const & x, std::string const & s) : neuron_base(x, s)
         {
             /// FIXME
             //search_[s] = (pointee *) (typename pointee::roofof) static_cast<neuron *>(rootof<is_polymorphic<neuron>::value>::get(this));
