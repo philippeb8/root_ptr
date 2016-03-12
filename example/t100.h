@@ -35,7 +35,7 @@ namespace sh
 {
 
 
-struct neuron_base
+struct neuron_base : block_proxy
 {
     typedef boost::block_ptr<neuron_base> pointer;
 
@@ -45,12 +45,10 @@ struct neuron_base
     //std::vector< std::pair<double, pointer> > sub_;
     std::pair<double, pointer> sub_[3];
 
-    neuron_base(std::string const & s) : exp_(s), sub_({std::pair<double, pointer>(0., pointer(x_)), std::pair<double, pointer>(0., pointer(x_)), std::pair<double, pointer>(0., pointer(x_))}) {}
+    neuron_base(std::string const & s) : exp_(s), sub_({std::pair<double, pointer>(0., pointer(*this)), std::pair<double, pointer>(0., pointer(*this)), std::pair<double, pointer>(0., pointer(*this))}) {}
     virtual ~neuron_base() {};
 
     virtual double operator () (std::string const & input) { return 0; };
-    
-    block_proxy x_;
 };
 
 
