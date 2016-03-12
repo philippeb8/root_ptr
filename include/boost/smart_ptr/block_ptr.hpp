@@ -250,7 +250,7 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
 
 
         /**
-            Assignment & union of 2 sets if the pointee resides a different @c block_proxy.
+            Assignment.
             
             @param	p	New pointer to manage.
         */
@@ -269,7 +269,7 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
 
 
         /**
-            Assignment & union of 2 sets if the pointee resides a different @c block_proxy.
+            Assignment.
             
             @param	p	New pointer to manage.
         */
@@ -288,8 +288,28 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
             release();
         }
         
+        /**
+            Assignment.
+            
+            @param  p   New pointer to manage.
+        */
+
+        template <typename V>
+            block_ptr & operator = (block<V, UserPool> * p)
+            {
+                base::operator = (p);
+                
+                return * this;
+            }
+
         template <typename V>
             void reset(block_ptr<V, UserPool> const & p)
+            {
+                operator = <T>(p);
+            }
+        
+        template <typename V>
+            void reset(block<V, UserPool> * p)
             {
                 operator = <T>(p);
             }
