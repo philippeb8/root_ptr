@@ -41,22 +41,13 @@ template <typename T, T (*P)()>
             p = P();
     }  
 
-template <typename T, typename U, typename V>
+template <typename T, typename U>
     void worker_new()  
     {         
         T p;
 
         for (int i = 0; i < 1000000; ++ i)
-            p = U(new V);
-    }  
-
-template <typename T, typename U, typename V>
-    void worker_new_block()  
-    {         
-        T p;
-
-        for (int i = 0; i < 1000000; ++ i)
-            p = U(p, new V);
+            p.reset(new U);
     }  
 
 timespec diff(timespec start, timespec end);
@@ -96,17 +87,17 @@ int main(int argc, char* argv[])
     for (int i = 0; i < n; ++ i)
     {
         clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-        worker_new< std::auto_ptr<int>, std::auto_ptr<int>, int >();
+        worker_new< std::auto_ptr<int>, int >();
         clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
         median[i][0] = diff(ts[0], ts[1]).tv_nsec;
 
         clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-        worker_new< boost::shared_ptr<int>, boost::shared_ptr<int>, int >();
+        worker_new< boost::shared_ptr<int>, int >();
         clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
         median[i][1] = diff(ts[0], ts[1]).tv_nsec;
 
         clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-        worker_new_block< boost::block_proxy_ptr<int>, boost::block_ptr<int>, fastblock<int> >();
+        worker_new< boost::block_proxy_ptr<int>, fastblock<int> >();
         clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
         median[i][2] = diff(ts[0], ts[1]).tv_nsec;
     }

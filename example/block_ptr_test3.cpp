@@ -35,14 +35,11 @@ static int count;
 using namespace boost;
 
 struct node {
-    node() {
+    node(block_proxy const & x) : prior(x), next(x) {
         ++count;
     }
     ~node() {
         --count;
-    }
-    node(const node&) {
-        ++count;
     }
     block_ptr<node> prior;
     block_ptr<node> next;
@@ -56,9 +53,9 @@ public:
     }
     void insert() {
         if(root.get() == 0) {
-            root = make_block<node>();
+            root = block_ptr<node>(root, new block<node>(root));
         } else {
-            root->next = make_block<node>(root.proxy());
+            root->next = block_ptr<node>(root, new block<node>(root));
             root->next->prior = root;
             root = root->next;
         }
@@ -67,7 +64,7 @@ public:
     {
     }
 private:
-    block_ptr<node> root;
+    block_proxy_ptr<node> root;
 };
 
 
@@ -81,15 +78,18 @@ struct vector {
 struct create_type {
     template<class T>
     void operator()(T) const {
-        make_block<boost::array<char, T::value> >();
+        block_ptr<boost::array<char, T::value> >(x_, new block<boost::array<char, T::value> >());
     }
+    
+    block_proxy x_;
 };
+
 
 BOOST_AUTO_TEST_CASE(test_block_ptr) {
 
     count = 0;
     {
-        block_ptr<vector> v = make_block<vector>();
+        block_proxy_ptr<vector> v = block_proxy_ptr<vector>(new block<vector>());
         v->elements.push_back(v);
     }
     BOOST_CHECK_EQUAL(count, 0);
@@ -108,27 +108,31 @@ BOOST_AUTO_TEST_CASE(test_block_ptr) {
 
     count = 0;
     {
-        block_ptr<int> test = make_block<int>(5);
+        block_proxy_ptr<int> test = block_proxy_ptr<int>(new block<int>(5));
         test = test;
         
         BOOST_CHECK_NE(test.get(), static_cast<int*>(0));
         BOOST_CHECK_EQUAL(*test, 5);
     }
-    
-    for(int i = 0; i < 500; ++i) {
-        boost::mpl::for_each<boost::mpl::range_c<int, 1, 100> >(create_type());
-    }
 
     count = 0;
     {
-        block_ptr<vector> v = make_block<vector>();
+        for(int i = 0; i < 500; ++i) {
+            boost::mpl::for_each<boost::mpl::range_c<int, 1, 100> >(create_type());
+        }
+    }
+    BOOST_CHECK_EQUAL(count, 0);
+
+    count = 0;
+    {
+        block_proxy_ptr<vector> v = block_proxy_ptr<vector>(new block<vector>());
         v->elements.push_back(v);
     }
     BOOST_CHECK_EQUAL(count, 0);
 
     {
         vector v;
-        v.elements.push_back(make_block<vector>());
+        v.elements.push_back(block_proxy_ptr<vector>(new block<vector>()));
     }
     BOOST_CHECK_EQUAL(count, 0);
 

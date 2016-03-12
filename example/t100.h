@@ -45,10 +45,12 @@ struct neuron_base
     //std::vector< std::pair<double, pointer> > sub_;
     std::pair<double, pointer> sub_[3];
 
-    neuron_base(std::string const & s) : exp_(s)/*, sub_(exp_.mark_count())*/ {}
+    neuron_base(std::string const & s) : exp_(s), sub_({std::pair<double, pointer>(0., pointer(x_)), std::pair<double, pointer>(0., pointer(x_)), std::pair<double, pointer>(0., pointer(x_))}) {}
     virtual ~neuron_base() {};
 
     virtual double operator () (std::string const & input) { return 0; };
+    
+    block_proxy x_;
 };
 
 
