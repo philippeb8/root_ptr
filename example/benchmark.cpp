@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 
     const int n = 5;
     long median[n][3];
-    /*
+    
     for (int i = 0; i < n; ++ i)
     {
         clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
@@ -71,18 +71,17 @@ int main(int argc, char* argv[])
         clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
         median[i][1] = diff(ts[0], ts[1]).tv_nsec;
 
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-        worker_make< boost::block_proxy_ptr<int>, make_block<int> >();
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
-        median[i][2] = diff(ts[0], ts[1]).tv_nsec;
+        //clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
+        //worker_make< boost::proxy_ptr<int>, make_block<int> >();
+        //clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
+        //median[i][2] = diff(ts[0], ts[1]).tv_nsec;
     }
     
     cout << "make:" << endl;
     cout << "auto_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][0] << " ns" << endl;
     cout << "shared_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][1] << " ns" << endl;
-    cout << "block_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][2] << " ns" << endl;
+    //cout << "block_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][2] << " ns" << endl;
     cout << endl;
-    */
     
     for (int i = 0; i < n; ++ i)
     {
