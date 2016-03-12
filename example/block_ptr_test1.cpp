@@ -26,10 +26,9 @@ using namespace boost;
 struct A
 {
     int i;
-    block_proxy x;
     block_ptr<A> p;
     
-    A(int i = 0) : i(i), p(x)
+    A(block_proxy const & x, int i = 0) : i(i), p(x)
     {
         cout << BOOST_CURRENT_FUNCTION << ": " << i << endl;
     }
@@ -48,9 +47,9 @@ int main()
     cout << "Cyclicism:" << endl;
     {
         block_proxy x;
-        block_ptr<A> p = block_ptr<A>(x, new block<A>(7));
-        block_ptr<A> q = block_ptr<A>(x, new block<A>(8));
-        block_ptr<A> r = block_ptr<A>(x, new block<A>(9));
+        block_ptr<A> p = block_ptr<A>(x, new block<A>(x, 7));
+        block_ptr<A> q = block_ptr<A>(x, new block<A>(x, 8));
+        block_ptr<A> r = block_ptr<A>(x, new block<A>(x, 9));
 
         //block_ptr<void> t = make_block<A>(10);
         block_ptr<int const volatile> v = block_ptr<int const volatile>(x, new block<int const volatile>(11));
@@ -67,11 +66,11 @@ int main()
     cout << endl;
 
     // The following don't work with MSVC:
-#if ! defined(_MSC_VER)
+#if 0 //! defined(_MSC_VER)
     cout << "Array access:" << endl;
     {
         block_proxy x;
-        block_ptr<A[5]> s = block_ptr<A[5]>(x, new block<A[5]>());
+        block_ptr<A[5]> s = block_ptr<A[5]>(x, new block<A[5]>(x));
         block_ptr<char[9]> u = block_ptr<char[9]>(x, new block<char[9]>());
 
         u[4] = 'Z';
@@ -85,10 +84,10 @@ int main()
     cout << "Order of destruction:" << endl;
     {
         block_proxy x;
-        block_ptr<A> v = block_ptr<A>(x, new block<A>(0));
-        v->p = block_ptr<A>(x, new block<A>(1));
-        v->p->p = block_ptr<A>(x, new block<A>(2));
-        v->p->p->p = v->p->p->p;
+        block_ptr<A> v = block_ptr<A>(x, new block<A>(x, 0));
+        v->p = new block<A>(x, 1);
+        v->p->p = new block<A>(x, 2);
+        v->p->p->p = v->p;
     }
     cout << endl;
 }
