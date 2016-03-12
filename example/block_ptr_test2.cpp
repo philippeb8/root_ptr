@@ -145,10 +145,10 @@ int main() {
     {
         block_proxy x;
         node * v = new node(x);
-        v->next = block_ptr<node>(x, new block<node>(x));
+        v->next = new block<node>(x);
         v->next->next = v->next;
         v->next->prior = v->next;
-        v->prior = block_ptr<node>(x, new block<node>(x));
+        v->prior = new block<node>(x);
         v->prior->next = v->next;
         v->prior->prior = v->next;
         v->prior.reset();
