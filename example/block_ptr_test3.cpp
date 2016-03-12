@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(test_block_ptr) {
 
     count = 0;
     {
-        block_proxy_ptr<vector> v = block_proxy_ptr<vector>(new block<vector>());
+        root_ptr<vector> v = root_ptr<vector>(new block<vector>());
         v->elements.push_back(v);
     }
     BOOST_CHECK_EQUAL(count, 0);
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(test_block_ptr) {
 
     count = 0;
     {
-        block_proxy_ptr<int> test = block_proxy_ptr<int>(new block<int>(5));
+        root_ptr<int> test = root_ptr<int>(new block<int>(5));
         test = test;
         
         BOOST_CHECK_NE(test.get(), static_cast<int*>(0));
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(test_block_ptr) {
 
     count = 0;
     {
-        block_proxy_ptr<vector> v = block_proxy_ptr<vector>(new block<vector>());
+        root_ptr<vector> v = root_ptr<vector>(new block<vector>());
         v->elements.push_back(v);
     }
     BOOST_CHECK_EQUAL(count, 0);
