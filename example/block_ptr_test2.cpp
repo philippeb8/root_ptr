@@ -41,17 +41,17 @@ struct node {
     block_ptr<node> next;
 };
 
-struct list {
+struct list : block_proxy {
 public:
-    list() {}
+    list() : root(*this) {}
     void clear() {
         root.reset();
     }
     void insert() {
         if(root.get() == 0) {
-            root = block_ptr<node>(root, new block<node>(root));
+            root = new block<node>(*this);
         } else {
-            root->next = block_ptr<node>(root, new block<node>(root));
+            root->next = new block<node>(*this);
             root->next->prior = root;
             root = root->next;
         }
@@ -60,7 +60,7 @@ public:
     {
     }
 private:
-    block_proxy_ptr<node> root;
+    block_ptr<node> root;
 };
 
 struct vector {
@@ -73,12 +73,14 @@ struct vector {
 };
 
 struct create_type {
+    create_type(block_proxy & x) : x_(x) {}
+    
     template<class T>
     void operator()(T) const {
         block_ptr<boost::array<char, T::value> >(x_, new block<boost::array<char, T::value> >());
     }
     
-    block_proxy x_;
+    block_proxy & x_;
 };
 
 int main() {
@@ -174,8 +176,9 @@ int main() {
     std::cout << "*** Test #7 ***" << std::endl;
     count = 0;
     {
+        block_proxy x;
         for(int i = 0; i < 500; ++i) {
-            boost::mpl::for_each<boost::mpl::range_c<int, 1, 100> >(create_type());
+            boost::mpl::for_each<boost::mpl::range_c<int, 1, 100> >(create_type(x));
         }
     }
     std::cout << count << std::endl;
