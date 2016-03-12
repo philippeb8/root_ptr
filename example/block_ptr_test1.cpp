@@ -66,12 +66,10 @@ int main()
     cout << endl;
 
     // The following don't work with MSVC:
-#if 0 //! defined(_MSC_VER)
+#if ! defined(_MSC_VER)
     cout << "Array access:" << endl;
     {
-        block_proxy x;
-        block_ptr<A[5]> s = block_ptr<A[5]>(x, new block<A[5]>(x));
-        block_ptr<char[9]> u = block_ptr<char[9]>(x, new block<char[9]>());
+        proxy_ptr<char[9]> u = proxy_ptr<char[9]>(new block<char[9]>());
 
         u[4] = 'Z';
 
