@@ -378,9 +378,9 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
 */
     
 template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
-    struct block_proxy_ptr : block_proxy, block_ptr<T, UserPool>
+    struct root_ptr : block_proxy, block_ptr<T, UserPool>
     {
-        block_proxy_ptr() : block_proxy(), block_ptr<T, UserPool>(* static_cast<block_proxy *>(this)) 
+        root_ptr() : block_proxy(), block_ptr<T, UserPool>(* static_cast<block_proxy *>(this)) 
         {
         }
         
@@ -392,7 +392,7 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
         */
         
         template <typename V>
-            explicit block_proxy_ptr(block<V, UserPool> * p) : block_ptr<T, UserPool>(*this, p)
+            explicit root_ptr(block<V, UserPool> * p) : block_ptr<T, UserPool>(*this, p)
             {
             }
             
@@ -404,13 +404,11 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
     };
 
 
-/*
 template <typename V, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
     block_ptr<V, UserPool> make_block()
     {
         return block_ptr<V, UserPool>(new block<V, UserPool>());
     }
-*/
 
 template <typename V, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
     block_ptr<V, UserPool> make_block(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy, UserPool> & q)
