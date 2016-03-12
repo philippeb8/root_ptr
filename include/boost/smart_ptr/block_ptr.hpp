@@ -66,7 +66,6 @@ struct block_base;
 
 struct block_proxy
 {
-    long count_;                                    /**< Count of the number of pointers from the stack referencing the same @c block_proxy .*/
     bool destroying_;                                   /**< Destruction sequence initiated. */
     smart_ptr::detail::intrusive_list block_list_;                     /**< List of all pointee objects belonging to a @c block_proxy . */
 
@@ -83,7 +82,7 @@ struct block_proxy
         Initialization of a single @c block_proxy .
     */
     
-    block_proxy() : count_(0), destroying_(false)
+    block_proxy() : destroying_(false)
     {
     }
     
