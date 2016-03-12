@@ -131,7 +131,7 @@ int main() {
     count = 0;
     {
         block_proxy x;
-        vector v; //<- Heap block not referenced from the stack
+        vector v;
         v.elements.push_back(block_ptr<vector>(x, new block<vector>()));
         v.elements.push_back(block_ptr<vector>(x, new block<vector>()));
         v.elements.push_back(block_ptr<vector>(x, new block<vector>()));
@@ -144,7 +144,7 @@ int main() {
     count = 0;
     {
         block_proxy x;
-        node * v = new node(x); //<- Heap block not referenced from the stack
+        node * v = new node(x);
         v->next = block_ptr<node>(x, new block<node>(x));
         v->next->next = v->next;
         v->next->prior = v->next;
