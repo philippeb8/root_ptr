@@ -399,6 +399,11 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
         {
             return block_ptr<T, UserPool>::operator = (p);
         }
+
+        block_ptr<T, UserPool> & operator = (block<T, UserPool> * p)
+        {
+            return block_ptr<T, UserPool>::operator = (p);
+        }
     };
 
 
