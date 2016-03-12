@@ -67,9 +67,7 @@ struct vector {
     vector() { ++count; std::cout << __FUNCTION__ << "(): " << this << std::endl; }
     ~vector() { --count; std::cout << __FUNCTION__ << "(): " << this << std::endl; }
     vector(const vector& other) : elements(other.elements) { ++count; }
-    //std::vector<block_ptr<vector> > elements;
-    //std::list<block_ptr<vector> > elements;
-    boost::container::list<block_ptr<vector> > elements; //! works fine
+    boost::container::list<block_ptr<vector> > elements;
 };
 
 struct create_type {
