@@ -297,6 +297,8 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
         template <typename V>
             block_ptr & operator = (block<V, UserPool> * p)
             {
+                const_cast<block_proxy &>(x_).init(p);
+
                 base::operator = (p);
                 
                 return * this;
