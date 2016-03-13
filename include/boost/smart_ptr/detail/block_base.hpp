@@ -45,11 +45,11 @@
 #include <boost/preprocessor/punctuation/comma_if.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
+#include <boost/concept_check.hpp>
 
 #include <boost/smart_ptr/detail/intrusive_list.hpp>
 #include <boost/smart_ptr/detail/intrusive_stack.hpp>
 #include <boost/smart_ptr/detail/classof.hpp>
-#include <boost/smart_ptr/detail/system_pool.hpp>
 
 
 namespace boost
@@ -78,6 +78,10 @@ struct block_base : public boost::detail::sp_counted_base
     {
     }
 
+    virtual ~block_base()
+    {
+    }
+
 protected:
     virtual void dispose() 				                    {} 				/**< dublocky */
     virtual void * get_deleter( std::type_info const & ti ) { return 0; } 	/**< dublocky */
@@ -93,17 +97,30 @@ protected:
 #define ARGUMENT_DECL(z, n, text) BOOST_PP_COMMA_IF(n) T ## n const & t ## n
 #define PARAMETER_DECL(z, n, text) BOOST_PP_COMMA_IF(n) t ## n
 
-#define CONSTRUCT_BLOCK(z, n, text)																			    \
+#define CONSTRUCT_BLOCK1(z, n, text)																			    \
     template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>										                        \
         text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : elem_(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)) {}																										
+
+#define CONSTRUCT_BLOCK2(z, n, text)                                                                                \
+    template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                             \
+        text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : base(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)) {}                                                                                                        
 
 /**
     Object wrapper.
 */
 
-template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
+template <typename T, typename PoolAllocator = pool_allocator<T> >
     class block : public smart_ptr::detail::block_base
     {
+        typedef typename PoolAllocator::template rebind< block<T, PoolAllocator> >::other PoolType;
+        
+        static PoolType & static_pool() /**< Pool where all sets are allocated. */
+        {
+            static PoolType pool_;
+            
+            return pool_;
+        }
+
         typedef T data_type;
 
         T elem_; 									/**< Pointee object.  @note Needs alignas<long>. */
@@ -112,11 +129,11 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
         class classof;
         friend class classof;
 
-        block() : elem_() 
+        block() : elem_()
         {
         }
 
-        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_BLOCK, block)
+        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_BLOCK1, block)
 
 
         /**
@@ -159,33 +176,33 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
 
         
         /**
-            Allocates a new @c block using the pool.
+            Allocates a new @c block_proxy using the fast pool allocator.
             
-            @param	s	Size of the @c block .
-            @return		Pointer of the new memory block.
+            @param  s   Size of the @c block_proxy .
+            @return     Pointer of the new memory block.
         */
-        
+
         void * operator new (size_t s)
         {
-            return UserPool::ordered_malloc(s);
+            return static_pool().allocate(1);
         }
         
-
+        
         /**
-            Deallocates a @c block from the pool.
+            Deallocates a @c block_proxy from the fast pool allocator.
             
-            @param	p	Address of the @c block to deallocate.
+            @param  p   Address of the @c block_proxy to deallocate.
         */
         
         void operator delete (void * p)
         {
-            UserPool::ordered_free(p, sizeof(block));
+            static_pool().deallocate(static_cast<block<T, PoolAllocator> *>(p), 1);
         }
     };
 
 
-template <typename UserPool>
-    class block<void, UserPool> : public smart_ptr::detail::block_base
+template <typename PoolAllocator>
+    class block<void, PoolAllocator> : public smart_ptr::detail::block_base
     {
         typedef void data_type;
 
@@ -232,43 +249,20 @@ template <typename UserPool>
     };
 
 
-template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
-    class fastblock : public block<T, UserPool>
+template <typename T>
+    class fastblock : public block<T, fast_pool_allocator<T> >
     {
-        static fast_pool_allocator<block<T, UserPool> > & static_pool() /**< Pool where all sets are allocated. */
-        {
-            static fast_pool_allocator<block<T, UserPool> > pool_;
-            
-            return pool_;
-        }
-
     public:
-        /**
-            Allocates a new @c block_proxy using the fast pool allocator.
-            
-            @param  s   Size of the @c block_proxy .
-            @return     Pointer of the new memory block.
-        */
+        typedef block<T, fast_pool_allocator<T> > base;
+        
+        fastblock() : base()
+        {
+        }
 
-        void * operator new (size_t s)
-        {
-            return static_pool().allocate(1);
-        }
-        
-        
-        /**
-            Deallocates a @c block_proxy from the fast pool allocator.
-            
-            @param  p   Address of the @c block_proxy to deallocate.
-        */
-        
-        void operator delete (void * p)
-        {
-            static_pool().deallocate(static_cast<fastblock<T, UserPool> *>(p), 1);
-        }
+        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_BLOCK2, fastblock)
     };
-    
 
+    
 } // namespace boost
 
 

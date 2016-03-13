@@ -38,7 +38,6 @@
 #include <boost/smart_ptr/detail/intrusive_stack.hpp>
 #include <boost/smart_ptr/detail/classof.hpp>
 #include <boost/smart_ptr/detail/block_ptr_base.hpp>
-#include <boost/smart_ptr/detail/system_pool.hpp>
 
 
 namespace boost
@@ -140,34 +139,34 @@ struct block_proxy
 
 #define BEFRIEND_MAKE_BLOCK(z, n, text)																			    	\
     template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>										                    \
-        friend block_ptr<V, UserPool> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0));
+        friend block_ptr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0));
 
 #define CONSTRUCT_MAKE_BLOCK1(z, n, text)																			    \
-    template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >										                    \
-        block_ptr<V, UserPool> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))															\
+    template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename PoolAllocator = pool_allocator<V> >										                    \
+        block_ptr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))															\
         {																												\
-            return block_ptr<V, UserPool>(new block<V, UserPool>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));									\
+            return block_ptr<V>(new block<V, PoolAllocator>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));									\
         }
 
 #define CONSTRUCT_MAKE_BLOCK2(z, n, text)                                                                                \
-    template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >                                                          \
-        block_ptr<V, UserPool> text(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy, UserPool> & q, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                           \
+    template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename PoolAllocator = pool_allocator<V> >                                                          \
+        block_ptr<V> text(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy> & q, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                           \
         {                                                                                                               \
-            return block_ptr<V, UserPool>(q, new block<V, UserPool>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                                   \
+            return block_ptr<V>(q, new block<V, PoolAllocator>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                                   \
         }
 
 #define CONSTRUCT_MAKE_BLOCK3(z, n, text)                                                                               \
-    template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >                                                          \
-        block_ptr<V, UserPool> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                           \
+    template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename PoolAllocator = pool_allocator<V> >                                                          \
+        block_ptr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                           \
         {                                                                                                               \
-            return block_ptr<V, UserPool>(new fastblock<V, UserPool>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                                   \
+            return block_ptr<V>(new fastblock<V>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                                   \
         }
 
 #define CONSTRUCT_MAKE_BLOCK4(z, n, text)                                                                                \
-    template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >                                                          \
-        block_ptr<V, UserPool> text(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy, UserPool> & q, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                           \
+    template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename PoolAllocator = pool_allocator<V> >                                                          \
+        block_ptr<V> text(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy> & q, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                           \
         {                                                                                                               \
-            return block_ptr<V, UserPool>(q, new fastblock<V, UserPool>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                                   \
+            return block_ptr<V>(q, new fastblock<V>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                                   \
         }
 
 
@@ -177,12 +176,12 @@ struct block_proxy
     Complete memory management utility on top of standard reference counting.
 */
 
-template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
-    class block_ptr : public smart_ptr::detail::block_ptr_base<T, UserPool>
+template <typename T>
+    class block_ptr : public smart_ptr::detail::block_ptr_base<T>
     {
-        template <typename, typename> friend class block_ptr;
+        template <typename> friend class block_ptr;
 
-        typedef smart_ptr::detail::block_ptr_base<T, UserPool> base;
+        typedef smart_ptr::detail::block_ptr_base<T> base;
         
         using base::share;
         using base::po_;
@@ -207,8 +206,8 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
             @param	p	New pointee object to manage.
         */
         
-        template <typename V>
-            explicit block_ptr(block_proxy const & x, block<V, UserPool> * p) : base(p), x_(x)
+        template <typename V, typename PoolAllocator>
+            explicit block_ptr(block_proxy const & x, block<V, PoolAllocator> * p) : base(p), x_(x)
             {
                 const_cast<block_proxy &>(x_).init(p);
             }
@@ -225,7 +224,7 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
         */
 
         template <typename V>
-            block_ptr(block_ptr<V, UserPool> const & p) : base(p), x_(p.x_)
+            block_ptr(block_ptr<V> const & p) : base(p), x_(p.x_)
             {
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
@@ -239,7 +238,7 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
             @param	p	New pointer to manage.
         */
 
-            block_ptr(block_ptr<T, UserPool> const & p) : base(p), x_(p.x_)
+            block_ptr(block_ptr<T> const & p) : base(p), x_(p.x_)
             {
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
@@ -254,7 +253,7 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
         */
             
         template <typename V>
-            block_ptr & operator = (block_ptr<V, UserPool> const & p)
+            block_ptr & operator = (block_ptr<V> const & p)
             {
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
@@ -272,7 +271,7 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
             @param	p	New pointer to manage.
         */
 
-        block_ptr & operator = (block_ptr<T, UserPool> const & p)
+        block_ptr & operator = (block_ptr<T> const & p)
         {
             return operator = <T>(p);
         }
@@ -292,8 +291,8 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
             @param  p   New pointer to manage.
         */
 
-        template <typename V>
-            block_ptr & operator = (block<V, UserPool> * p)
+        template <typename V, typename PoolAllocator>
+            block_ptr & operator = (block<V, PoolAllocator> * p)
             {
                 const_cast<block_proxy &>(x_).init(p);
 
@@ -303,13 +302,13 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
             }
 
         template <typename V>
-            void reset(block_ptr<V, UserPool> const & p)
+            void reset(block_ptr<V> const & p)
             {
                 operator = <T>(p);
             }
         
-        template <typename V>
-            void reset(block<V, UserPool> * p)
+        template <typename V, typename PoolAllocator>
+            void reset(block<V, PoolAllocator> * p)
             {
                 operator = <T>(p);
             }
@@ -375,10 +374,10 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
     Helper.
 */
     
-template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
-    struct proxy_ptr : block_proxy, block_ptr<T, UserPool>
+template <typename T>
+    struct proxy_ptr : block_proxy, block_ptr<T>
     {
-        proxy_ptr() : block_proxy(), block_ptr<T, UserPool>(* static_cast<block_proxy *>(this)) 
+        proxy_ptr() : block_proxy(), block_ptr<T>(* static_cast<block_proxy *>(this)) 
         {
         }
         
@@ -389,56 +388,57 @@ template <typename T, typename UserPool = smart_ptr::detail::system_pool<smart_p
             @param  p   New pointee object to manage.
         */
         
-        template <typename V>
-            explicit proxy_ptr(block<V, UserPool> * p) : block_ptr<T, UserPool>(*this, p)
+        template <typename V, typename PoolAllocator>
+            explicit proxy_ptr(block<V, PoolAllocator> * p) : block_ptr<T>(*this, p)
             {
             }
             
             
-        block_ptr<T, UserPool> & operator = (block_ptr<T, UserPool> const & p)
+        block_ptr<T> & operator = (block_ptr<T> const & p)
         {
-            return block_ptr<T, UserPool>::operator = (p);
+            return block_ptr<T>::operator = (p);
         }
 
-        block_ptr<T, UserPool> & operator = (block<T, UserPool> * p)
-        {
-            return block_ptr<T, UserPool>::operator = (p);
-        }
+        template <typename V, typename PoolAllocator>
+            block_ptr<T> & operator = (block<V, PoolAllocator> * p)
+            {
+                return block_ptr<T>::operator = (p);
+            }
     };
 
 
-template <typename V, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
-    block_ptr<V, UserPool> make_block()
+template <typename V, typename PoolAllocator = pool_allocator<V> >
+    block_ptr<V> make_block()
     {
-        return block_ptr<V, UserPool>(new block<V, UserPool>());
+        return block_ptr<V>(new block<V, PoolAllocator>());
     }
 
-template <typename V, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
-    block_ptr<V, UserPool> make_block(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy, UserPool> & q)
+template <typename V, typename PoolAllocator = pool_allocator<V> >
+    block_ptr<V> make_block(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy> & q)
     {
-        return block_ptr<V, UserPool>(q, new block<V, UserPool>());
+        return block_ptr<V>(q, new block<V, PoolAllocator>());
     }
 
-template <typename V, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
-    block_ptr<V, UserPool> make_fastblock()
+template <typename V, typename PoolAllocator = pool_allocator<V> >
+    block_ptr<V> make_fastblock()
     {
-        return block_ptr<V, UserPool>(new fastblock<V, UserPool>());
+        return block_ptr<V>(new fastblock<V>());
     }
 
-template <typename V, typename UserPool = smart_ptr::detail::system_pool<smart_ptr::detail::system_pool_tag, sizeof(char)> >
-    block_ptr<V, UserPool> make_fastblock(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy, UserPool> & q)
+template <typename V, typename PoolAllocator = pool_allocator<V> >
+    block_ptr<V> make_fastblock(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy> & q)
     {
-        return block_ptr<V, UserPool>(q, new fastblock<V, UserPool>());
+        return block_ptr<V>(q, new fastblock<V>());
     }
 
-template <typename T, typename UserPool>
-    bool operator == (block_ptr<T, UserPool> const &a1, block_ptr<T, UserPool> const &a2)
+template <typename T>
+    bool operator == (block_ptr<T> const &a1, block_ptr<T> const &a2)
     {
         return a1.get() == a2.get();
     }
 
-template <typename T, typename UserPool>
-    bool operator != (block_ptr<T, UserPool> const &a1, block_ptr<T, UserPool> const &a2)
+template <typename T>
+    bool operator != (block_ptr<T> const &a1, block_ptr<T> const &a2)
     {
         return a1.get() != a2.get();
     }
