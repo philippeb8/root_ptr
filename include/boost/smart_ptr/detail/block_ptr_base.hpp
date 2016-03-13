@@ -53,16 +53,6 @@ template <typename T>
 
         value_type * po_;
 
-        block_ptr_common(T * p) : po_(p)
-        {
-        }
-
-        block_ptr_common & operator = (T * p)
-        {
-            po_ = p;
-            return * this;
-        }
-            
     public:
         block_ptr_common() : po_(0)
         {
@@ -200,15 +190,6 @@ template <typename T>
     protected:
         using base::po_;
 
-        block_ptr_base(value_type * p) : base(p)
-        {
-        }
-
-        block_ptr_base & operator = (value_type * p)
-        {
-            return static_cast<block_ptr_base &>(base::operator = (p));
-        }
-
     public:
         block_ptr_base() : base()
         {
@@ -267,15 +248,6 @@ template <typename T, size_t N>
     protected:
         using base::po_;
 
-        block_ptr_base(value_type * p) : base(p)
-        {
-        }
-
-        block_ptr_base & operator = (value_type * p)
-        {
-            return static_cast<block_ptr_base &>(base::operator = (p));
-        }
-
     public:
         block_ptr_base() : base()
         {
@@ -333,15 +305,6 @@ template <>
 
     protected:
         using base::po_;
-
-        block_ptr_base(value_type * p) : base(p)
-        {
-        }
-
-        block_ptr_base & operator = (value_type * p)
-        {
-            return static_cast<block_ptr_base &>(base::operator = (p));
-        }
 
     public:
         block_ptr_base() : base()

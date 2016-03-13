@@ -92,7 +92,7 @@ class block_proxy
     
     ~block_proxy()
     {
-        release();
+        reset();
     }
     
     
@@ -120,7 +120,7 @@ class block_proxy
     }
     
     
-    void release()
+    void reset()
     {
         using namespace smart_ptr::detail;
         
@@ -193,6 +193,8 @@ template <typename T>
         block_proxy const & x_;                      /**< Pointer to the @c block_proxy node @c block_ptr<> belongs to. */
         
     public:
+        using base::reset;
+
         /**
             Initialization of a pointer.
             
@@ -280,15 +282,6 @@ template <typename T>
             return operator = <T>(p);
         }
 
-        void reset()
-        {
-#ifndef BOOST_DISABLE_THREADS
-            mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
-#endif
-
-            release();
-        }
-        
         /**
             Assignment.
             
@@ -326,21 +319,8 @@ template <typename T>
         {
             if (cyclic())
                 base::po_ = 0;
-            else
-                release();
         }
 
-    private:
-        /**
-            Release of the pointee object with or without destroying the entire @c block_proxy it belongs to.
-        */
-        
-        void release()
-        {
-            base::reset();
-        }
-
-        
 #if 0 //defined(BOOST_HAS_RVALUE_REFS)
     public:
         block_ptr(block_ptr<T> && p): base(p.po_), x_(p.x_)
@@ -381,6 +361,8 @@ template <typename T>
 template <typename T>
     struct proxy_ptr : block_proxy, block_ptr<T>
     {
+        using block_ptr<T>::reset;
+        
         proxy_ptr() : block_proxy(), block_ptr<T>(* static_cast<block_proxy *>(this)) 
         {
         }
