@@ -1,7 +1,7 @@
-CXX             := g++
-CXXFLAGS        := -fpermissive -O3 -DBOOST_DISABLE_THREADS -std=c++11
+CXX             := g++-4.9
+CXXFLAGS        := -fpermissive -O3 -DBOOST_DISABLE_THREADS -std=c++14
 INCPATH         := -I../include -I/usr/local/include
-LINK            := g++
+LINK            := g++-4.9
 LFLAGS          := -L/usr/local/lib -lboost_thread -lboost_system
 RM              := rm
 HEADERS         := $(wildcard *.h)
