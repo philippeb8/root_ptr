@@ -46,7 +46,7 @@ int main()
 #if 1
     cout << "Cyclicism:" << endl;
     {
-        block_proxy x;
+        proxy_ptr<A> x;
         block_ptr<A> p = block_ptr<A>(x, new block<A>(x, 7));
         block_ptr<A> q = block_ptr<A>(x, new block<A>(x, 8));
         block_ptr<A> r = block_ptr<A>(x, new block<A>(x, 9));
@@ -81,7 +81,7 @@ int main()
 
     cout << "Order of destruction:" << endl;
     {
-        block_proxy x;
+        proxy_ptr<A> x;
         block_ptr<A> v = block_ptr<A>(x, new block<A>(x, 0));
         v->p = new block<A>(x, 1);
         v->p->p = new block<A>(x, 2);

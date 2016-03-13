@@ -41,17 +41,17 @@ struct node {
     block_ptr<node> next;
 };
 
-struct list : block_proxy {
+struct list {
 public:
-    list() : root(*this) {}
+    list() {}
     void clear() {
         root.reset();
     }
     void insert() {
         if(root.get() == 0) {
-            root = new block<node>(*this);
+            root = new block<node>(root);
         } else {
-            root->next = new block<node>(*this);
+            root->next = new block<node>(root);
             root->next->prior = root;
             root = root->next;
         }
@@ -60,7 +60,7 @@ public:
     {
     }
 private:
-    block_ptr<node> root;
+    proxy_ptr<node> root;
 };
 
 struct vector {
