@@ -100,9 +100,8 @@ int main() {
     std::cout << "*** Test #2 ***" << std::endl;
     count = 0;
     {
-        proxy_ptr<node> x;
-        block_ptr<node> v = block_ptr<node>(x, new block<node>(x));
-        v->next = v;
+        proxy_ptr<node> x = proxy_ptr<node>(new block<node>(x));
+        x->next = x;
     }
     std::cout << count << std::endl;
 #endif
