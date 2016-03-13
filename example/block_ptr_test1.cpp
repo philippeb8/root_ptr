@@ -52,11 +52,11 @@ int main()
         block_ptr<A> r = block_ptr<A>(x, new block<A>(x, 9));
 
         //block_ptr<void> t = make_block<A>(10);
-        block_ptr<int const volatile> v = block_ptr<int const volatile>(x, new block<int const volatile>(11));
+        block_ptr<int volatile> v = block_ptr<int volatile>(x, new block<int volatile>(11));
 
         p->p = p->p;
         q = r;
-        v = block_ptr<int const volatile>(x, new block<int const volatile>(12));
+        v = block_ptr<int volatile>(x, new block<int volatile>(12));
 
         cout << "p->i = " << p->i << endl;
         cout << "q->i = " << q->i << endl;
