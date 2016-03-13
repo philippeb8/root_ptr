@@ -111,14 +111,6 @@ struct block_new {
 };
 
 template<class T>
-struct block_new_noinit {
-    void operator()() {
-        p.reset(new boost::block<T>);
-    }
-    boost::proxy_ptr<T> p;
-};
-
-template<class T>
 struct block_make {
     void operator()() {
         p = boost::make_block<T>();
@@ -140,8 +132,6 @@ int main()
         << benchmark<shared_make_alloc_noinit<int> >()
         << "\nblock_ptr (new): "
         << benchmark<block_new<int> >()
-        << "\nblock_ptr (new_noinit): "
-        << benchmark<block_new_noinit<int> >()
         //<< "\nblock_ptr (make_block): "
         //<< benchmark<block_make<int> >()
         << std::endl;
