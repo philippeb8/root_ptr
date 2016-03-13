@@ -128,7 +128,7 @@ int main()
         << benchmark<shared_new<int> >()
         << "\nshared_ptr (make_shared): "
         << benchmark<shared_make<int> >()
-        << "\nshared_ptr (make_shared_alloc_noinit): "
+        << "\nshared_ptr (allocate_shared_noinit): "
         << benchmark<shared_make_alloc_noinit<int> >()
         << "\nblock_ptr (new): "
         << benchmark<block_new<int> >()
