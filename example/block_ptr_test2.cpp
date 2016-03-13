@@ -100,7 +100,7 @@ int main() {
     std::cout << "*** Test #2 ***" << std::endl;
     count = 0;
     {
-        block_proxy x;
+        proxy_ptr<node> x;
         block_ptr<node> v = block_ptr<node>(x, new block<node>(x));
         v->next = v;
     }
@@ -130,7 +130,7 @@ int main() {
     std::cout << "*** Test #4 ***" << std::endl;
     count = 0;
     {
-        block_proxy x;
+        proxy_ptr<vector> x;
         vector v;
         v.elements.push_back(block_ptr<vector>(x, new block<vector>()));
         v.elements.push_back(block_ptr<vector>(x, new block<vector>()));
@@ -143,7 +143,7 @@ int main() {
     std::cout << "*** Test #5 ***" << std::endl;
     count = 0;
     {
-        block_proxy x;
+        proxy_ptr<node> x;
         node * v = new node(x);
         v->next = new block<node>(x);
         v->next->next = v->next;
@@ -174,7 +174,7 @@ int main() {
     std::cout << "*** Test #7 ***" << std::endl;
     count = 0;
     {
-        block_proxy x;
+        proxy_ptr<int> x;
         for(int i = 0; i < 500; ++i) {
             boost::mpl::for_each<boost::mpl::range_c<int, 1, 100> >(create_type(x));
         }
