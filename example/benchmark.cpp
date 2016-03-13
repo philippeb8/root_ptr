@@ -3,7 +3,7 @@
     benchmark.cpp
 
     @note
-    Copyright (c) 2011 Phil Bouchard <pbouchard8@gmail.com>.
+    Copyright (c) 2011-2016 Phil Bouchard <pbouchard8@gmail.com>.
 
     Distributed under the Boost Software License, Version 1.0.
 
@@ -11,171 +11,138 @@
     http://www.boost.org/LICENSE_1_0.txt
 
     See http://www.boost.org/libs/smart_ptr/doc/index.html for documentation.
+
+
+    Thanks to: Glen Fernandes <glen.fernandes@gmail.com>
 */
 
-#include <sys/time.h>
-#include <sched.h>
-
-#include <memory>
-#include <iomanip>
+#include <chrono>
 #include <iostream>
+#include <memory>
 #include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
 #include <boost/smart_ptr/block_ptr.hpp>
+#include <boost/make_shared.hpp>
 
-using namespace std;
-using namespace boost;
-
-template <typename T>
-    auto_ptr<T> make_auto()
-    {
-        return auto_ptr<T>(new T);
+template<class T = std::chrono::high_resolution_clock>
+class timer {
+public:
+    timer()
+       : start(T::now()) { }
+    typename T::duration operator()() const {
+        return T::now() - start;
     }
-
-template <typename T, T (*P)()>
-    void worker_make()  
-    {         
-        T p;
-
-        for (int i = 0; i < 1000000; ++ i)
-            p = P();
-    }  
-
-template <typename T, typename A, T (*P)(A const &)>
-    void worker_make_alloc(A const & a)  
-    {         
-        T p;
-
-        for (int i = 0; i < 1000000; ++ i)
-            p = P(a);
-    }  
-
-template <typename T, typename U>
-    void worker_new()  
-    {         
-        T p;
-
-        for (int i = 0; i < 1000000; ++ i)
-            p.reset(new U);
-    }  
-
-timespec diff(timespec start, timespec end);
-
-int main(int argc, char* argv[])  
-{  
-    timespec ts[2];
-
-    const int n = 5;
-    long median[n][3];
-    
-    for (int i = 0; i < n; ++ i)
-    {
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-        worker_make< std::auto_ptr<int>, make_auto<int> >();
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
-        median[i][0] = diff(ts[0], ts[1]).tv_nsec;
-
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-        worker_make< boost::shared_ptr<int>, make_shared<int> >();
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
-        median[i][1] = diff(ts[0], ts[1]).tv_nsec;
-
-        //clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-        //worker_make< boost::proxy_ptr<int>, make_block<int> >();
-        //clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
-        //median[i][2] = diff(ts[0], ts[1]).tv_nsec;
+    void reset() {
+        start = T::now();
     }
-    
-    cout << "make:" << endl;
-    cout << "auto_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][0] << " ns" << endl;
-    cout << "shared_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][1] << " ns" << endl;
-    //cout << "block_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][2] << " ns" << endl;
-    cout << endl;
-    
-    for (int i = 0; i < n; ++ i)
-    {
-        //clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-        //worker_make< std::auto_ptr<int>, make_auto<int> >();
-        //clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
-        //median[i][0] = diff(ts[0], ts[1]).tv_nsec;
+private:
+    typename T::time_point start;
+};
 
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-        worker_make_alloc< boost::shared_ptr<int>, fast_pool_allocator<int>, allocate_shared<int> >(fast_pool_allocator<int>());
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
-        median[i][1] = diff(ts[0], ts[1]).tv_nsec;
-
-        //clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-        //worker_make< boost::proxy_ptr<int>, make_block<int> >();
-        //clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
-        //median[i][2] = diff(ts[0], ts[1]).tv_nsec;
-    }
-    
-    cout << "make alloc:" << endl;
-    //cout << "auto_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][0] << " ns" << endl;
-    cout << "shared_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][1] << " ns" << endl;
-    //cout << "block_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][2] << " ns" << endl;
-    cout << endl;
-    
-    for (int i = 0; i < n; ++ i)
-    {
-        //clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-        //worker_make< std::auto_ptr<int>, make_auto<int> >();
-        //clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
-        //median[i][0] = diff(ts[0], ts[1]).tv_nsec;
-
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-        worker_make_alloc< boost::shared_ptr<int>, fast_pool_allocator<int>, allocate_shared_noinit<int> >(fast_pool_allocator<int>());
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
-        median[i][1] = diff(ts[0], ts[1]).tv_nsec;
-
-        //clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-        //worker_make< boost::proxy_ptr<int>, make_block<int> >();
-        //clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
-        //median[i][2] = diff(ts[0], ts[1]).tv_nsec;
-    }
-    
-    cout << "make alloc noinit:" << endl;
-    //cout << "auto_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][0] << " ns" << endl;
-    cout << "shared_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][1] << " ns" << endl;
-    //cout << "block_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][2] << " ns" << endl;
-    cout << endl;
-    
-    for (int i = 0; i < n; ++ i)
-    {
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-        worker_new< std::auto_ptr<int>, int >();
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
-        median[i][0] = diff(ts[0], ts[1]).tv_nsec;
-
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-        worker_new< boost::shared_ptr<int>, int >();
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
-        median[i][1] = diff(ts[0], ts[1]).tv_nsec;
-
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
-        worker_new< boost::proxy_ptr<int>, fastblock<int> >();
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
-        median[i][2] = diff(ts[0], ts[1]).tv_nsec;
-    }
-
-    cout << "new:" << endl;
-    cout << "auto_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][0] << " ns" << endl;
-    cout << "shared_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][1] << " ns" << endl;
-    cout << "block_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][2] << " ns" << endl;
-    cout << endl;
-    
-    return 0;
-}  
-
-timespec diff(timespec start, timespec end)
+template<class T>
+double benchmark()
 {
-    timespec temp;
-    if ((end.tv_nsec-start.tv_nsec)<0) {
-        temp.tv_sec = end.tv_sec-start.tv_sec-1;
-        temp.tv_nsec = 1000000000+end.tv_nsec-start.tv_nsec;
-    } else {
-        temp.tv_sec = end.tv_sec-start.tv_sec;
-        temp.tv_nsec = end.tv_nsec-start.tv_nsec;
+    constexpr unsigned int count = 5000000;
+    T task;
+    double total = 0;
+    for (unsigned int i = 0; i < count; i++) {
+        timer<> watch;
+        task();
+        total += watch().count();
     }
-    return temp;
+    return total / count;
+}
+
+namespace std
+{
+template <typename T>
+    std::unique_ptr<T> make_unique()
+    {
+        return std::unique_ptr<T>(new T);
+    }
+}
+
+template<class T>
+struct unique_new {
+    void operator()() {
+        p.reset(new T());
+    }
+    std::unique_ptr<T> p;
+};
+
+template<class T>
+struct unique_make {
+    void operator()() {
+        p = std::make_unique<T>();
+    }
+    std::unique_ptr<T> p;
+};
+
+template<class T>
+struct shared_new {
+    void operator()() {
+        p.reset(new T());
+    }
+    boost::shared_ptr<T> p;
+};
+
+template<class T>
+struct shared_make {
+    void operator()() {
+        p = boost::make_shared<T>();
+    }
+    boost::shared_ptr<T> p;
+};
+
+template<class T>
+struct shared_make_alloc_noinit {
+    void operator()() {
+        p = boost::allocate_shared_noinit<T>(a);
+    }
+    boost::shared_ptr<T> p;
+    boost::fast_pool_allocator<T> a;
+};
+
+template<class T>
+struct block_new {
+    void operator()() {
+        p.reset(new boost::block<T>());
+    }
+    boost::proxy_ptr<T> p;
+};
+
+template<class T>
+struct block_new_noinit {
+    void operator()() {
+        p.reset(new boost::block<T>);
+    }
+    boost::proxy_ptr<T> p;
+};
+
+template<class T>
+struct block_make {
+    void operator()() {
+        p = boost::make_block<T>();
+    }
+    boost::proxy_ptr<T> p;
+};
+
+int main()
+{
+    std::cout << "unique_ptr (new): "
+        << benchmark<unique_new<int> >()
+        << "\nunique_ptr (make_unique): "
+        << benchmark<unique_make<int> >()
+        << "\nshared_ptr (new): "
+        << benchmark<shared_new<int> >()
+        << "\nshared_ptr (make_shared): "
+        << benchmark<shared_make<int> >()
+        << "\nshared_ptr (make_shared_alloc_noinit): "
+        << benchmark<shared_make_alloc_noinit<int> >()
+        << "\nblock_ptr (new): "
+        << benchmark<block_new<int> >()
+        << "\nblock_ptr (new_noinit): "
+        << benchmark<block_new_noinit<int> >()
+        //<< "\nblock_ptr (make_block): "
+        //<< benchmark<block_make<int> >()
+        << std::endl;
 }
