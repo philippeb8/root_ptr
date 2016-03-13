@@ -3,7 +3,7 @@
     Boost block_ptr.hpp header file.
 
     @author
-    Copyright (c) 2008 Phil Bouchard <pbouchard8@gmail.com>.
+    Copyright (c) 2008-2016 Phil Bouchard <pbouchard8@gmail.com>.
 
     @note
     Distributed under the Boost Software License, Version 1.0.
@@ -57,14 +57,18 @@ struct block_base;
 
 } // namespace smart_ptr
 
+
 /**
     Set header.
     
     Proxy object used to count the number of pointers from the stack are referencing pointee objects belonging to the same @c block_proxy .
 */
 
-struct block_proxy
+class block_proxy
 {
+    template <typename> friend class block_ptr;
+    template <typename> friend class proxy_ptr;
+
     bool destroying_;                                   /**< Destruction sequence initiated. */
     smart_ptr::detail::intrusive_list block_list_;                     /**< List of all pointee objects belonging to a @c block_proxy . */
 
