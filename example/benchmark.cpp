@@ -41,6 +41,15 @@ template <typename T, T (*P)()>
             p = P();
     }  
 
+template <typename T, typename A, T (*P)(A const &)>
+    void worker_make_alloc(A const & a)  
+    {         
+        T p;
+
+        for (int i = 0; i < 1000000; ++ i)
+            p = P(a);
+    }  
+
 template <typename T, typename U>
     void worker_new()  
     {         
@@ -79,6 +88,30 @@ int main(int argc, char* argv[])
     
     cout << "make:" << endl;
     cout << "auto_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][0] << " ns" << endl;
+    cout << "shared_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][1] << " ns" << endl;
+    //cout << "block_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][2] << " ns" << endl;
+    cout << endl;
+    
+    for (int i = 0; i < n; ++ i)
+    {
+        //clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
+        //worker_make< std::auto_ptr<int>, make_auto<int> >();
+        //clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
+        //median[i][0] = diff(ts[0], ts[1]).tv_nsec;
+
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
+        worker_make_alloc< boost::shared_ptr<int>, fast_pool_allocator<int>, allocate_shared<int> >(fast_pool_allocator<int>());
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
+        median[i][1] = diff(ts[0], ts[1]).tv_nsec;
+
+        //clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[0]); 
+        //worker_make< boost::proxy_ptr<int>, make_block<int> >();
+        //clock_gettime(CLOCK_PROCESS_CPUTIME_ID, & ts[1]);
+        //median[i][2] = diff(ts[0], ts[1]).tv_nsec;
+    }
+    
+    cout << "alloc:" << endl;
+    //cout << "auto_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][0] << " ns" << endl;
     cout << "shared_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][1] << " ns" << endl;
     //cout << "block_ptr:\t" << setw(numeric_limits<long>::digits10 + 2) << median[n/2][2] << " ns" << endl;
     cout << endl;
