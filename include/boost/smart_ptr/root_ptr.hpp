@@ -363,7 +363,12 @@ template <typename T>
     {
         using node_ptr<T>::reset;
         
-        root_ptr() : node_proxy(), node_ptr<T>(* static_cast<node_proxy *>(this)) 
+        root_ptr() : node_proxy(), node_ptr<T>(* static_cast<node_proxy *>(this))
+        {
+        }
+        
+        
+        root_ptr(root_ptr const & p) : node_proxy(const_cast<root_ptr &>(p)), node_ptr<T>(* static_cast<node_proxy *>(this))
         {
         }
         
@@ -375,7 +380,7 @@ template <typename T>
         */
         
         template <typename V, typename PoolAllocator>
-            explicit root_ptr(node<V, PoolAllocator> * p) : node_ptr<T>(*this, p)
+            root_ptr(node<V, PoolAllocator> * p) : node_ptr<T>(*this, p)
             {
             }
             

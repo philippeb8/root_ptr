@@ -100,10 +100,30 @@ protected:
     using base::impl;
 
 public:
-    pointer begin() 								{ return impl.next; }
-    pointer end() 									{ return & impl; }
+    intrusive_list()                                
+    {
+    }
+    
+    intrusive_list(intrusive_list & x)
+    {
+        merge(x);
+    }
+    
+    pointer begin() 
+    { 
+        return impl.next; 
+        
+    }
+    
+    pointer end()
+    {
+        return & impl; 
+    }
 
-    bool empty() const 								{ return impl.next == & impl; }
+    bool empty() const
+    { 
+        return impl.next == & impl; 
+    }
     
     void push_front(pointer i)
     {
