@@ -16,9 +16,12 @@ OBJECTS         := $(patsubst %.cpp,%.o,$(SOURCES))
 .PHONY : all depend clean
 
 
-all : benchmark root_ptr_test1 root_ptr_test2 root_ptr_test3 t100_test1
+all : benchmark allocator root_ptr_test1 root_ptr_test2 root_ptr_test3 t100_test1
 
 benchmark: benchmark.o
+	$(LINK) -o $@ $^ $(LFLAGS)
+
+allocator: allocator.o
 	$(LINK) -o $@ $^ $(LFLAGS)
 
 root_ptr_test1: root_ptr_test1.o
@@ -44,7 +47,7 @@ Makefile.dep: $(SOURCES)
 	$(CXX) ${INCPATH} -MM $^ > $@
 
 clean:
-	$(RM) -f benchmark root_ptr_test1 root_ptr_test2 root_ptr_test3 local_pool_test1 local_pool_test2 t100_test1
+	$(RM) -f benchmark allocator root_ptr_test1 root_ptr_test2 root_ptr_test3 local_pool_test1 local_pool_test2 t100_test1
 	$(RM) -f $(OBJECTS)
 	$(RM) -f *~ core
 
