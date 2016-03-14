@@ -39,9 +39,25 @@ struct A
     }
 };
 
+struct B
+{
+    int i;
+    
+    B() : i(9) {}
+};
+
+struct C : B
+{
+};
+
 root_ptr<int> foo()
 {
     return new node<int>(9);
+}
+
+void bar(node_ptr<B> p)
+{
+    cout << p->i << endl;
 }
 
 int main()
@@ -49,6 +65,13 @@ int main()
     cout << "R-value:" << endl;
     {
         cout << * foo() << endl;
+    }
+    cout << endl;
+
+    cout << "Slicing:" << endl;
+    {
+        root_ptr<C> p = new node<C>();
+        bar(p);
     }
     cout << endl;
 
