@@ -39,9 +39,18 @@ struct A
     }
 };
 
+root_ptr<int> foo()
+{
+    return new node<int>(9);
+}
 
 int main()
 {
+    cout << "R-value:" << endl;
+    {
+        cout << * foo() << endl;
+    }
+    cout << endl;
 
 #if 1
     cout << "Cyclicism:" << endl;
@@ -69,7 +78,7 @@ int main()
 #if ! defined(_MSC_VER)
     cout << "Array access:" << endl;
     {
-        root_ptr<char[9]> u = root_ptr<char[9]>(new node<char[9]>());
+        root_ptr<char[9]> u(new node<char[9]>());
 
         u[4] = 'Z';
 

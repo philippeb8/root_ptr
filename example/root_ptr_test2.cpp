@@ -110,7 +110,7 @@ int main() {
     std::cout << "*** Test #3 ***" << std::endl;
     count = 0;
     {
-        root_ptr<vector> v = root_ptr<vector>(new node<vector>());
+        root_ptr<vector> v(new node<vector>());
         v->elements.push_back(node_ptr<vector>(v, new node<vector>()));
         v->elements.push_back(node_ptr<vector>(v, new node<vector>()));
         v->elements.push_back(v->elements.back());
@@ -120,7 +120,7 @@ int main() {
 
     count = 0;
     {
-        root_ptr<vector> v = root_ptr<vector>(new node<vector>());
+        root_ptr<vector> v(new node<vector>());
         v->elements.push_back(v);
     }
     std::cout << count << std::endl;
@@ -163,7 +163,7 @@ int main() {
     std::cout << "*** Test #6 ***" << std::endl;
     count = 0;
     {
-        root_ptr<int> test = root_ptr<int>(new node<int>(5));
+        root_ptr<int> test(new node<int>(5));
         test = test;
         
         std::cout << "test = " << * test << std::endl;

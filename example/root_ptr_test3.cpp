@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(test_node_ptr) {
 
     count = 0;
     {
-        root_ptr<vector> v = root_ptr<vector>(new node<vector>());
+        root_ptr<vector> v(new node<vector>());
         v->elements.push_back(v);
     }
     BOOST_CHECK_EQUAL(count, 0);
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(test_node_ptr) {
 
     count = 0;
     {
-        root_ptr<int> test = root_ptr<int>(new node<int>(5));
+        root_ptr<int> test(new node<int>(5));
         test = test;
         
         BOOST_CHECK_NE(test.get(), static_cast<int*>(0));
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(test_node_ptr) {
 
     count = 0;
     {
-        root_ptr<vector> v = root_ptr<vector>(new node<vector>());
+        root_ptr<vector> v(new node<vector>());
         v->elements.push_back(v);
     }
     BOOST_CHECK_EQUAL(count, 0);
