@@ -105,7 +105,7 @@ struct shared_make_alloc_noinit {
 template<class T>
 struct root_new {
     void operator()() {
-        p.reset(new boost::node<T>());
+        p.reset(new boost::fastnode<T>());
     }
     boost::root_ptr<T> p;
 };
