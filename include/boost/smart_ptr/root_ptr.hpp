@@ -69,11 +69,11 @@ class node_proxy
     template <typename> friend class node_ptr;
     template <typename> friend class root_ptr;
 
-    bool destroying_;                                   /**< Destruction sequence initiated. */
-    smart_ptr::detail::intrusive_list node_list_;                     /**< List of all pointee objects belonging to a @c node_proxy . */
+    bool destroying_;                                       /**< Destruction sequence initiated. */
+    mutable smart_ptr::detail::intrusive_list node_list_;   /**< List of all pointee objects belonging to a @c node_proxy . */
 
 #ifndef BOOST_DISABLE_THREADS
-    static mutex & static_mutex()                   /**< Main global mutex used for thread safety */
+    static mutex & static_mutex()                           /**< Main global mutex used for thread safety */
     {
         static mutex mutex_;
         
@@ -86,6 +86,11 @@ class node_proxy
     */
     
     node_proxy() : destroying_(false)
+    {
+    }
+    
+    
+    node_proxy(node_proxy const & x) : destroying_(x.destroying_), node_list_(x.node_list_)
     {
     }
     
@@ -366,12 +371,10 @@ template <typename T>
         root_ptr() : node_proxy(), node_ptr<T>(* static_cast<node_proxy *>(this))
         {
         }
-        
-        
-        root_ptr(root_ptr const & p) : node_proxy(const_cast<root_ptr &>(p)), node_ptr<T>(* static_cast<node_proxy *>(this))
+                
+        root_ptr(root_ptr const & p) : node_proxy(p), node_ptr<T>(* static_cast<node_proxy *>(this))
         {
         }
-        
         
         /**
             Initialization of a pointer.
