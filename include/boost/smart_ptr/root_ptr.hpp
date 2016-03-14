@@ -119,7 +119,7 @@ class node_proxy
         @param  p   Pointee object to initialize.
     */
     
-    void init(smart_ptr::detail::node_base * p)
+    void init(smart_ptr::detail::node_base * p) const
     {
         node_list_.push_back(& p->node_tag_);
     }
@@ -220,7 +220,7 @@ template <typename T>
         template <typename V, typename PoolAllocator>
             explicit node_ptr(node_proxy const & x, node<V, PoolAllocator> * p) : base(p), x_(x)
             {
-                const_cast<node_proxy &>(x_).init(p);
+                x_.init(p);
             }
 
         
@@ -296,7 +296,7 @@ template <typename T>
         template <typename V, typename PoolAllocator>
             node_ptr & operator = (node<V, PoolAllocator> * p)
             {
-                const_cast<node_proxy &>(x_).init(p);
+                x_.init(p);
 
                 base::operator = (p);
                 
