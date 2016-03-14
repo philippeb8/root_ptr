@@ -199,15 +199,11 @@ class node_proxy
         else
         {
             // free current proxy & transfer ownership of nodes
-            for (intrusive_list::iterator<node_proxy, &node_proxy::proxy_tag_> i(&proxy_tag_), j(&proxy_tag_);;)
-            {
-                ++ j;
+            intrusive_list::iterator<node_proxy, &node_proxy::proxy_tag_> i(&proxy_tag_), j(&proxy_tag_);
+
+            ++ j;
                 
-                j->node_list_.merge(i->node_list_);
-                
-                if (j == intrusive_list::iterator<node_proxy, &node_proxy::proxy_tag_>(&proxy_tag_))
-                    break;
-            }
+            j->node_list_.merge(i->node_list_);
         }
     }
 };
