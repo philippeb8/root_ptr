@@ -81,10 +81,9 @@ template <typename T>
             return a.allocate(s);
         }
         
-        virtual void destroy()
+        void operator delete (void * p)
         {
-            this->~nodealloc();
-            a_.deallocate(this, sizeof(nodealloc));
+            static_cast<nodealloc *>(p)->a_.deallocate(static_cast<nodealloc *>(p), sizeof(nodealloc));
         }
     };
 
