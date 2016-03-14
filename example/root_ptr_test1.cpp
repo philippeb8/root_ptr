@@ -75,6 +75,16 @@ int main()
     }
     cout << endl;
 
+    cout << "Sharing:" << endl;
+    {
+        root_ptr<int> p = new node<int>(9);
+        root_ptr<int> q = p;
+        
+        cout << "p: " << * p << endl;
+        cout << "q: " << * q << endl;
+    }
+    cout << endl;
+
 #if 1
     cout << "Cyclicism:" << endl;
     {
