@@ -69,11 +69,12 @@ class node_proxy
     template <typename> friend class node_ptr;
     template <typename> friend class root_ptr;
 
-    bool destroying_;                                       /**< Destruction sequence initiated. */
-    mutable smart_ptr::detail::intrusive_list node_list_;   /**< List of all pointee objects belonging to a @c node_proxy . */
+    bool destroying_;                                               /**< Destruction sequence initiated. */
+    mutable smart_ptr::detail::intrusive_list::node proxy_tag_;     /**< Tag used to enlist to @c node_proxy::includes_ . */
+    mutable smart_ptr::detail::intrusive_list node_list_;           /**< List of all pointee objects belonging to a @c node_proxy . */
 
 #ifndef BOOST_DISABLE_THREADS
-    static mutex & static_mutex()                           /**< Main global mutex used for thread safety */
+    static mutex & static_mutex()                                   /**< Main global mutex used for thread safety */
     {
         static mutex mutex_;
         
@@ -92,6 +93,7 @@ class node_proxy
     
     node_proxy(node_proxy const & x) : destroying_(x.destroying_), node_list_(x.node_list_)
     {
+        unify(const_cast<node_proxy &>(x));
     }
     
     
@@ -111,8 +113,60 @@ class node_proxy
     {
         destroying_ = b;
     }
+    
+    
+    size_t size()
+    {
+        using namespace smart_ptr::detail;
+        
+        size_t c = 0;
+        
+        for (intrusive_list::iterator<node_proxy, &node_proxy::proxy_tag_> i(&proxy_tag_);;)
+        {
+            ++ c;
+            
+            if (++ i == intrusive_list::iterator<node_proxy, &node_proxy::proxy_tag_>(&proxy_tag_))
+                break;
+        }
+        
+        return c;
+    }
+
+    /**
+        Tells whether a proxy intersects with another one.
+        
+        @param  p   Proxy to compare with.
+    */
+    
+    bool intersects(node_proxy const & p) const
+    {
+        using namespace smart_ptr::detail;
+        
+        for (intrusive_list::iterator<node_proxy, &node_proxy::proxy_tag_> i(&proxy_tag_);;)
+        {
+            if (&* i == & p)
+                return true;
+            
+            if (++ i == intrusive_list::iterator<node_proxy, &node_proxy::proxy_tag_>(&proxy_tag_))
+                break;
+        }
+        
+        return false;
+    }
 
     
+    /**
+        Unification with a new @c node_proxy .
+        
+        @param p       New @c node_proxy to unify with.
+    */
+
+    void unify(node_proxy const & p) const
+    {
+        proxy_tag_.insert(& p.proxy_tag_);
+    }
+    
+
     /**
         Enlist & initialize pointee objects belonging to the same @c node_proxy .  This initialization occurs when a pointee object is affected to the first pointer living on the stack it encounters.
         
@@ -129,15 +183,32 @@ class node_proxy
     {
         using namespace smart_ptr::detail;
         
-        destroying(true);
-
-        for (intrusive_list::iterator<node_base, &node_base::node_tag_> m = node_list_.begin(), n = node_list_.begin(); m != node_list_.end(); m = n)
+        if (size() == 1)
         {
-            ++ n;
-            delete &* m;
+            // destroy for real
+            destroying(true);
+
+            for (intrusive_list::iterator<node_base, &node_base::node_tag_> m = node_list_.begin(), n = node_list_.begin(); m != node_list_.end(); m = n)
+            {
+                ++ n;
+                delete &* m;
+            }
+            
+            destroying(false);
         }
-        
-        destroying(false);
+        else
+        {
+            // free current proxy & transfer ownership of nodes
+            for (intrusive_list::iterator<node_proxy, &node_proxy::proxy_tag_> i(&proxy_tag_), j(&proxy_tag_);;)
+            {
+                ++ j;
+                
+                j->node_list_.merge(i->node_list_);
+                
+                if (j == intrusive_list::iterator<node_proxy, &node_proxy::proxy_tag_>(&proxy_tag_))
+                    break;
+            }
+        }
     }
 };
 
@@ -270,6 +341,9 @@ template <typename T>
                 mutex::scoped_lock scoped_lock(node_proxy::static_mutex());
 #endif
 
+                if (x_.intersects(p.x_))
+                    x_.unify(p.x_);
+                
                 base::operator = (p);
 
                 return * this;
@@ -372,7 +446,7 @@ template <typename T>
         {
         }
                 
-        root_ptr(root_ptr const & p) : node_proxy(p), node_ptr<T>(* static_cast<node_proxy *>(this))
+        root_ptr(root_ptr const & p) : node_proxy(p), node_ptr<T>(* static_cast<node_ptr<T> *>(this))
         {
         }
         
