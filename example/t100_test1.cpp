@@ -17,7 +17,7 @@
 #include <string>
 #include <iostream>
 #include <boost/regex.hpp>
-#include <boost/smart_ptr/block_ptr.hpp>
+#include <boost/smart_ptr/root_ptr.hpp>
 
 #include "t100.h"
 
@@ -28,10 +28,10 @@ using boost::detail::sh::neuron_sight;
 
 int main(int argv, char * argc[])
 {
-    proxy_ptr<neuron_sight> t100;
-    t100 = new block<neuron_sight>(t100, "I eat ([a-z]+) then drink ([a-z]+)");
-    t100->sub_[0].second = new block<neuron_sight>(t100, "beef|chicken");
-    t100->sub_[1].second = new block<neuron_sight>(t100, "vodka|water");
+    root_ptr<neuron_sight> t100;
+    t100 = new node<neuron_sight>(t100, "I eat ([a-z]+) then drink ([a-z]+)");
+    t100->sub_[0].second = new node<neuron_sight>(t100, "beef|chicken");
+    t100->sub_[1].second = new node<neuron_sight>(t100, "vodka|water");
 
     cout << (* t100)("I eat beef then drink vodka") << endl;
     cout << (* t100)("I eat beef then drink wine") << endl;

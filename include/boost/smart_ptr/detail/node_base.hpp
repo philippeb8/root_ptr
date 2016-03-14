@@ -1,6 +1,6 @@
 /**
     @file
-    Boost detail/block_base.hpp header file.
+    Boost detail/node_base.hpp header file.
 
     @note
     Copyright (c) 2008 Phil Bouchard <pbouchard8@gmail.com>.
@@ -14,8 +14,8 @@
 */
 
 
-#ifndef BOOST_DETAIL_BLOCK_BASE_HPP_INCLUDED
-#define BOOST_DETAIL_BLOCK_BASE_HPP_INCLUDED
+#ifndef BOOST_DETAIL_NODE_BASE_HPP_INCLUDED
+#define BOOST_DETAIL_NODE_BASE_HPP_INCLUDED
 
 // MS compatible compilers support #pragma once
 
@@ -62,30 +62,30 @@ namespace detail
 {
 
 
-struct block_proxy;
-struct block_base;
+struct node_proxy;
+struct node_base;
 
 
 /**
     Root class of all pointee objects.
 */
 
-struct block_base : public boost::detail::sp_counted_base
+struct node_base : public boost::detail::sp_counted_base
 {
-    intrusive_list::node block_tag_;					/**< Tag used to enlist to @c block_proxy::elements_ . */
+    intrusive_list::node node_tag_;					/**< Tag used to enlist to @c node_proxy::elements_ . */
 
-    block_base()
+    node_base()
     {
     }
 
-    virtual ~block_base()
+    virtual ~node_base()
     {
     }
 
 protected:
-    virtual void dispose() 				                    {} 				/**< dublocky */
-    virtual void * get_deleter( std::type_info const & ti ) { return 0; } 	/**< dublocky */
-    virtual void * get_untyped_deleter() 					{ return 0; } 	/**< dublocky */
+    virtual void dispose() 				                    {} 				/**< dunodey */
+    virtual void * get_deleter( std::type_info const & ti ) { return 0; } 	/**< dunodey */
+    virtual void * get_untyped_deleter() 					{ return 0; } 	/**< dunodey */
 };
 
 
@@ -97,11 +97,11 @@ protected:
 #define ARGUMENT_DECL(z, n, text) BOOST_PP_COMMA_IF(n) T ## n const & t ## n
 #define PARAMETER_DECL(z, n, text) BOOST_PP_COMMA_IF(n) t ## n
 
-#define CONSTRUCT_BLOCK1(z, n, text)																			    \
+#define CONSTRUCT_NODE1(z, n, text)																			    \
     template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>										                        \
         text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : elem_(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)) {}																										
 
-#define CONSTRUCT_BLOCK2(z, n, text)                                                                                \
+#define CONSTRUCT_NODE2(z, n, text)                                                                                \
     template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                             \
         text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : base(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)) {}                                                                                                        
 
@@ -110,9 +110,9 @@ protected:
 */
 
 template <typename T, typename PoolAllocator = pool_allocator<T> >
-    class block : public smart_ptr::detail::block_base
+    class node : public smart_ptr::detail::node_base
     {
-        typedef typename PoolAllocator::template rebind< block<T, PoolAllocator> >::other PoolType;
+        typedef typename PoolAllocator::template rebind< node<T, PoolAllocator> >::other PoolType;
         
         static PoolType & static_pool() /**< Pool where all sets are allocated. */
         {
@@ -129,11 +129,11 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         class classof;
         friend class classof;
 
-        block() : elem_()
+        node() : elem_()
         {
         }
 
-        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_BLOCK1, block)
+        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE1, node)
 
 
         /**
@@ -142,7 +142,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         
         data_type * element() 				{ return & elem_; }
 
-        virtual ~block()					
+        virtual ~node()					
         { 
             dispose();
         }
@@ -150,36 +150,36 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
     public:
         /**
-            Cast operator used by @c block_ptr_coblockon::header() .
+            Cast operator used by @c node_ptr_conodeon::header() .
         */
         
         class classof
         {
-            block * p_;							/**< Address of the @c block the element belong to. */
+            node * p_;							/**< Address of the @c node the element belong to. */
 
         public:
             /**
-                Casts from a @c data_type to its parent @c block object.
+                Casts from a @c data_type to its parent @c node object.
                 
                 @param	p	Address of a @c data_type member object to cast from.
             */
             
-            classof(data_type * p) : p_(smart_ptr::detail::classof((data_type block::*)(& block::elem_), p)) {}
+            classof(data_type * p) : p_(smart_ptr::detail::classof((data_type node::*)(& node::elem_), p)) {}
             
             
             /**
-                @return		Address of the parent @c block object.
+                @return		Address of the parent @c node object.
             */
             
-            operator block * () const { return p_; }
+            operator node * () const { return p_; }
         };
 
         
         /**
-            Allocates a new @c block_proxy using the fast pool allocator.
+            Allocates a new @c node_proxy using the fast pool allocator.
             
-            @param  s   Size of the @c block_proxy .
-            @return     Pointer of the new memory block.
+            @param  s   Size of the @c node_proxy .
+            @return     Pointer of the new memory node.
         */
 
         void * operator new (size_t s)
@@ -189,26 +189,26 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         
         
         /**
-            Deallocates a @c block_proxy from the fast pool allocator.
+            Deallocates a @c node_proxy from the fast pool allocator.
             
-            @param  p   Address of the @c block_proxy to deallocate.
+            @param  p   Address of the @c node_proxy to deallocate.
         */
         
         void operator delete (void * p)
         {
-            static_pool().deallocate(static_cast<block<T, PoolAllocator> *>(p), 1);
+            static_pool().deallocate(static_cast<node<T, PoolAllocator> *>(p), 1);
         }
     };
 
 
 template <typename PoolAllocator>
-    class block<void, PoolAllocator> : public smart_ptr::detail::block_base
+    class node<void, PoolAllocator> : public smart_ptr::detail::node_base
     {
         typedef void data_type;
 
         long elem_; 									/**< Pointee placeholder.  @note Aligned. */
 
-        block();
+        node();
 
     public:
         class classof;
@@ -216,54 +216,54 @@ template <typename PoolAllocator>
 
         data_type * element() 				{ return & elem_; }
 
-        virtual ~block()					{}
+        virtual ~node()					{}
         virtual void dispose() 				{}
 
         virtual void * static_deleter( std::type_info const & ti ) { return 0; }
 
     public:
         /**
-            Cast operator used by @c block_ptr_coblockon::header() .
+            Cast operator used by @c node_ptr_conodeon::header() .
         */
         
         class classof
         {
-            block * p_;							/**< Address of the @c block the element belong to. */
+            node * p_;							/**< Address of the @c node the element belong to. */
 
         public:
             /**
-                Casts from a @c data_type to its parent @c block object.
+                Casts from a @c data_type to its parent @c node object.
                 
                 @param	p	Address of a @c data_type member object to cast from.
             */
             
-            classof(data_type * p) : p_(smart_ptr::detail::classof((long block::*)(& block::elem_), static_cast<long *>(p))) {}
+            classof(data_type * p) : p_(smart_ptr::detail::classof((long node::*)(& node::elem_), static_cast<long *>(p))) {}
             
             
             /**
-                @return		Address of the parent @c block object.
+                @return		Address of the parent @c node object.
             */
             
-            operator block * () const { return p_; }
+            operator node * () const { return p_; }
         };
     };
 
 
 template <typename T>
-    class fastblock : public block<T, fast_pool_allocator<T> >
+    class fastnode : public node<T, fast_pool_allocator<T> >
     {
     public:
-        typedef block<T, fast_pool_allocator<T> > base;
+        typedef node<T, fast_pool_allocator<T> > base;
         
-        fastblock() : base()
+        fastnode() : base()
         {
         }
 
-        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_BLOCK2, fastblock)
+        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE2, fastnode)
     };
 
     
 } // namespace boost
 
 
-#endif  // #ifndef BOOST_DETAIL_BLOCK_BASE_HPP_INCLUDED
+#endif  // #ifndef BOOST_DETAIL_NODE_BASE_HPP_INCLUDED

@@ -1,6 +1,6 @@
 /**
     @file
-    block_ptr_test2.cpp
+    node_ptr_test2.cpp
 
     @note
     Copyright (c) 2008 Steven Watanabe <watanabesj@gmail.com>
@@ -14,7 +14,7 @@
 */
 
 
-#include <boost/smart_ptr/block_ptr.hpp>
+#include <boost/smart_ptr/root_ptr.hpp>
 
 #include <list>
 #include <vector>
@@ -30,15 +30,15 @@ static int count;
 
 using namespace boost;
 
-struct node {
-    node(block_proxy const & x) : prior(x), next(x) {
+struct list_node {
+    list_node(node_proxy const & x) : prior(x), next(x) {
         ++count;
     }
-    ~node() {
+    ~list_node() {
         --count;
     }
-    block_ptr<node> prior;
-    block_ptr<node> next;
+    node_ptr<list_node> prior;
+    node_ptr<list_node> next;
 };
 
 struct list {
@@ -49,9 +49,9 @@ public:
     }
     void insert() {
         if(root.get() == 0) {
-            root = new block<node>(root);
+            root = new node<list_node>(root);
         } else {
-            root->next = new block<node>(root);
+            root->next = new node<list_node>(root);
             root->next->prior = root;
             root = root->next;
         }
@@ -60,25 +60,25 @@ public:
     {
     }
 private:
-    proxy_ptr<node> root;
+    root_ptr<list_node> root;
 };
 
 struct vector {
     vector() { ++count; std::cout << __FUNCTION__ << "(): " << this << std::endl; }
     ~vector() { --count; std::cout << __FUNCTION__ << "(): " << this << std::endl; }
     vector(const vector& other) : elements(other.elements) { ++count; }
-    boost::container::list<block_ptr<vector> > elements;
+    boost::container::list<node_ptr<vector> > elements;
 };
 
 struct create_type {
-    create_type(block_proxy & x) : x_(x) {}
+    create_type(node_proxy & x) : x_(x) {}
     
     template<class T>
     void operator()(T) const {
-        block_ptr<boost::array<char, T::value> >(x_, new block<boost::array<char, T::value> >());
+        node_ptr<boost::array<char, T::value> >(x_, new node<boost::array<char, T::value> >());
     }
     
-    block_proxy & x_;
+    node_proxy & x_;
 };
 
 int main() {
@@ -100,8 +100,8 @@ int main() {
     std::cout << "*** Test #2 ***" << std::endl;
     count = 0;
     {
-        proxy_ptr<node> x;
-        block_ptr<node> v = block_ptr<node>(x, new block<node>(x));
+        root_ptr<list_node> x;
+        node_ptr<list_node> v = node_ptr<list_node>(x, new node<list_node>(x));
         v->next = v;
     }
     std::cout << count << std::endl;
@@ -110,9 +110,9 @@ int main() {
     std::cout << "*** Test #3 ***" << std::endl;
     count = 0;
     {
-        proxy_ptr<vector> v = proxy_ptr<vector>(new block<vector>());
-        v->elements.push_back(block_ptr<vector>(v, new block<vector>()));
-        v->elements.push_back(block_ptr<vector>(v, new block<vector>()));
+        root_ptr<vector> v = root_ptr<vector>(new node<vector>());
+        v->elements.push_back(node_ptr<vector>(v, new node<vector>()));
+        v->elements.push_back(node_ptr<vector>(v, new node<vector>()));
         v->elements.push_back(v->elements.back());
         v->elements.push_back(v);
     }
@@ -120,7 +120,7 @@ int main() {
 
     count = 0;
     {
-        proxy_ptr<vector> v = proxy_ptr<vector>(new block<vector>());
+        root_ptr<vector> v = root_ptr<vector>(new node<vector>());
         v->elements.push_back(v);
     }
     std::cout << count << std::endl;
@@ -130,11 +130,11 @@ int main() {
     std::cout << "*** Test #4 ***" << std::endl;
     count = 0;
     {
-        proxy_ptr<vector> x;
+        root_ptr<vector> x;
         vector v;
-        v.elements.push_back(block_ptr<vector>(x, new block<vector>()));
-        v.elements.push_back(block_ptr<vector>(x, new block<vector>()));
-        v.elements.push_back(block_ptr<vector>(x, new block<vector>()));
+        v.elements.push_back(node_ptr<vector>(x, new node<vector>()));
+        v.elements.push_back(node_ptr<vector>(x, new node<vector>()));
+        v.elements.push_back(node_ptr<vector>(x, new node<vector>()));
         v.elements.push_back(v.elements.back());
     }
     std::cout << count << std::endl;
@@ -143,12 +143,12 @@ int main() {
     std::cout << "*** Test #5 ***" << std::endl;
     count = 0;
     {
-        proxy_ptr<node> x;
-        node * v = new node(x);
-        v->next = new block<node>(x);
+        root_ptr<list_node> x;
+        list_node * v = new list_node(x);
+        v->next = new node<list_node>(x);
         v->next->next = v->next;
         v->next->prior = v->next;
-        v->prior = new block<node>(x);
+        v->prior = new node<list_node>(x);
         v->prior->next = v->next;
         v->prior->prior = v->next;
         v->prior.reset();
@@ -163,7 +163,7 @@ int main() {
     std::cout << "*** Test #6 ***" << std::endl;
     count = 0;
     {
-        proxy_ptr<int> test = proxy_ptr<int>(new block<int>(5));
+        root_ptr<int> test = root_ptr<int>(new node<int>(5));
         test = test;
         
         std::cout << "test = " << * test << std::endl;
@@ -174,7 +174,7 @@ int main() {
     std::cout << "*** Test #7 ***" << std::endl;
     count = 0;
     {
-        proxy_ptr<int> x;
+        root_ptr<int> x;
         for(int i = 0; i < 500; ++i) {
             boost::mpl::for_each<boost::mpl::range_c<int, 1, 100> >(create_type(x));
         }

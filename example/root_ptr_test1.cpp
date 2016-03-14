@@ -1,6 +1,6 @@
 /**
     @file
-    block_ptr_test2.cpp
+    node_ptr_test2.cpp
 
     @note
     Copyright (c) 2008 Phil Bouchard <pbouchard8@gmail.com>.
@@ -15,7 +15,7 @@
 
 #include <iostream>
 
-#include <boost/smart_ptr/block_ptr.hpp>
+#include <boost/smart_ptr/root_ptr.hpp>
 #include <boost/current_function.hpp>
 
 
@@ -26,9 +26,9 @@ using namespace boost;
 struct A
 {
     int i;
-    block_ptr<A> p;
+    node_ptr<A> p;
     
-    A(block_proxy const & x, int i = 0) : i(i), p(x)
+    A(node_proxy const & x, int i = 0) : i(i), p(x)
     {
         cout << BOOST_CURRENT_FUNCTION << ": " << i << endl;
     }
@@ -46,17 +46,17 @@ int main()
 #if 1
     cout << "Cyclicism:" << endl;
     {
-        proxy_ptr<A> x;
-        block_ptr<A> p = block_ptr<A>(x, new block<A>(x, 7));
-        block_ptr<A> q = block_ptr<A>(x, new block<A>(x, 8));
-        block_ptr<A> r = block_ptr<A>(x, new block<A>(x, 9));
+        root_ptr<A> x;
+        node_ptr<A> p = node_ptr<A>(x, new node<A>(x, 7));
+        node_ptr<A> q = node_ptr<A>(x, new node<A>(x, 8));
+        node_ptr<A> r = node_ptr<A>(x, new node<A>(x, 9));
 
-        //block_ptr<void> t = make_block<A>(10);
-        block_ptr<int volatile> v = block_ptr<int volatile>(x, new block<int volatile>(11));
+        //node_ptr<void> t = make_node<A>(10);
+        node_ptr<int volatile> v = node_ptr<int volatile>(x, new node<int volatile>(11));
 
         p->p = p->p;
         q = r;
-        v = block_ptr<int volatile>(x, new block<int volatile>(12));
+        v = node_ptr<int volatile>(x, new node<int volatile>(12));
 
         cout << "p->i = " << p->i << endl;
         cout << "q->i = " << q->i << endl;
@@ -69,7 +69,7 @@ int main()
 #if ! defined(_MSC_VER)
     cout << "Array access:" << endl;
     {
-        proxy_ptr<char[9]> u = proxy_ptr<char[9]>(new block<char[9]>());
+        root_ptr<char[9]> u = root_ptr<char[9]>(new node<char[9]>());
 
         u[4] = 'Z';
 
@@ -81,10 +81,10 @@ int main()
 
     cout << "Order of destruction:" << endl;
     {
-        proxy_ptr<A> x;
-        block_ptr<A> v = block_ptr<A>(x, new block<A>(x, 0));
-        v->p = new block<A>(x, 1);
-        v->p->p = new block<A>(x, 2);
+        root_ptr<A> x;
+        node_ptr<A> v = node_ptr<A>(x, new node<A>(x, 0));
+        v->p = new node<A>(x, 1);
+        v->p->p = new node<A>(x, 2);
         v->p->p->p = v->p;
     }
     cout << endl;

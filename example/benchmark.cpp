@@ -20,7 +20,7 @@
 #include <iostream>
 #include <memory>
 #include <boost/shared_ptr.hpp>
-#include <boost/smart_ptr/block_ptr.hpp>
+#include <boost/smart_ptr/root_ptr.hpp>
 #include <boost/make_shared.hpp>
 
 template<class T = std::chrono::high_resolution_clock>
@@ -103,19 +103,19 @@ struct shared_make_alloc_noinit {
 };
 
 template<class T>
-struct block_new {
+struct root_new {
     void operator()() {
-        p.reset(new boost::block<T>());
+        p.reset(new boost::node<T>());
     }
-    boost::proxy_ptr<T> p;
+    boost::root_ptr<T> p;
 };
 
 template<class T>
-struct block_make {
+struct root_make {
     void operator()() {
-        p = boost::make_block<T>();
+        p = boost::make_node<T>();
     }
-    boost::proxy_ptr<T> p;
+    boost::root_ptr<T> p;
 };
 
 int main()
@@ -130,9 +130,9 @@ int main()
         << benchmark<shared_make<int> >()
         << "\nshared_ptr (allocate_shared_noinit): "
         << benchmark<shared_make_alloc_noinit<int> >()
-        << "\nblock_ptr (new): "
-        << benchmark<block_new<int> >()
-        //<< "\nblock_ptr (make_block): "
-        //<< benchmark<block_make<int> >()
+        << "\nroot_ptr (new): "
+        << benchmark<root_new<int> >()
+        //<< "\nroot_ptr (make_node): "
+        //<< benchmark<root_make<int> >()
         << std::endl;
 }

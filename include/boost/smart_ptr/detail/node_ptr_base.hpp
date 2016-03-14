@@ -1,6 +1,6 @@
 /**
     @file
-    Boost block_ptr_base.hpp header file.
+    Boost node_ptr_base.hpp header file.
 
     @note
     Copyright (c) 2003 - 2008 Phil Bouchard <pbouchard8@gmail.com>.
@@ -15,12 +15,12 @@
 */
 
 
-#ifndef BOOST_DETAIL_BLOCK_PTR_BASE_HPP
-#define BOOST_DETAIL_BLOCK_PTR_BASE_HPP
+#ifndef BOOST_DETAIL_NODE_PTR_BASE_HPP
+#define BOOST_DETAIL_NODE_PTR_BASE_HPP
 
 
 #include <boost/smart_ptr/detail/classof.hpp>
-#include <boost/smart_ptr/detail/block_base.hpp>
+#include <boost/smart_ptr/detail/node_base.hpp>
 
 
 namespace boost
@@ -40,25 +40,25 @@ namespace detail
 */
 
 template <typename T>
-    class block_ptr_common
+    class node_ptr_common
     {
-        template <typename> friend class block_ptr_common;
+        template <typename> friend class node_ptr_common;
 
         // Borland 5.5.1 specific workaround
-        typedef block_ptr_common<T> this_type;
+        typedef node_ptr_common<T> this_type;
 
     protected:
         typedef T value_type;
-        //typedef block<value_type> element_type;
+        //typedef node<value_type> element_type;
 
         value_type * po_;
 
     public:
-        block_ptr_common() : po_(0)
+        node_ptr_common() : po_(0)
         {
         }
 
-        ~block_ptr_common()
+        ~node_ptr_common()
         {
             if (po_)
             {
@@ -67,28 +67,28 @@ template <typename T>
         }
 
         template <typename V, typename PoolAllocator>
-            block_ptr_common(block<V, PoolAllocator> * p) : po_(p->element())
+            node_ptr_common(node<V, PoolAllocator> * p) : po_(p->element())
             {
             }
 
         template <typename V>
-            block_ptr_common(block_ptr_common<V> const & p) : po_(p.share())
+            node_ptr_common(node_ptr_common<V> const & p) : po_(p.share())
             {
             }
 
-            block_ptr_common(block_ptr_common<value_type> const & p) : po_(p.share())
+            node_ptr_common(node_ptr_common<value_type> const & p) : po_(p.share())
             {
             }
 
         template <typename V, typename PoolAllocator>
-            block_ptr_common & operator = (block<V> * p)
+            node_ptr_common & operator = (node<V> * p)
             {
                 reset(p->element());
                 return * this;
             }
             
         template <typename V>
-            block_ptr_common & operator = (block_ptr_common<V> const & p)
+            node_ptr_common & operator = (node_ptr_common<V> const & p)
             {
                 if (p.po_ != po_)
                 {
@@ -97,7 +97,7 @@ template <typename T>
                 return * this;
             }
 
-            block_ptr_common & operator = (block_ptr_common<value_type> const & p)
+            node_ptr_common & operator = (node_ptr_common<value_type> const & p)
             {
                 return operator = <value_type>(p);
             }
@@ -174,56 +174,56 @@ template <typename T>
         }
 
     protected:
-        block_base * header() const
+        node_base * header() const
         {
-            return (typename block<value_type>::classof) static_cast<value_type *>(rootof<is_polymorphic<value_type>::value>::get(po_));
+            return (typename node<value_type>::classof) static_cast<value_type *>(rootof<is_polymorphic<value_type>::value>::get(po_));
         }
     };
 
 
 template <typename T>
-    class block_ptr_base : public block_ptr_common<T>
+    class node_ptr_base : public node_ptr_common<T>
     {
-        typedef block_ptr_common<T> base;
+        typedef node_ptr_common<T> base;
         typedef typename base::value_type value_type;
         
     protected:
         using base::po_;
 
     public:
-        block_ptr_base() : base()
+        node_ptr_base() : base()
         {
         }
 
         template <typename V, typename PoolAllocator>
-            block_ptr_base(block<V, PoolAllocator> * p) : base(p)
+            node_ptr_base(node<V, PoolAllocator> * p) : base(p)
             {
             }
 
         template <typename V>
-            block_ptr_base(block_ptr_base<V> const & p) : base(p)
+            node_ptr_base(node_ptr_base<V> const & p) : base(p)
             {
             }
 
-            block_ptr_base(block_ptr_base<value_type> const & p) : base(p)
+            node_ptr_base(node_ptr_base<value_type> const & p) : base(p)
             {
             }
 
         template <typename V, typename PoolAllocator>
-            block_ptr_base & operator = (block<V, PoolAllocator> * p)
+            node_ptr_base & operator = (node<V, PoolAllocator> * p)
             {
-                return static_cast<block_ptr_base &>(base::operator = (p));
+                return static_cast<node_ptr_base &>(base::operator = (p));
             }
 
         template <typename V>
-            block_ptr_base & operator = (block_ptr_base<V> const & p)
+            node_ptr_base & operator = (node_ptr_base<V> const & p)
             {
-                return static_cast<block_ptr_base &>(base::operator = (p));
+                return static_cast<node_ptr_base &>(base::operator = (p));
             }
 
-            block_ptr_base & operator = (block_ptr_base<value_type> const & p)
+            node_ptr_base & operator = (node_ptr_base<value_type> const & p)
             {
-                return static_cast<block_ptr_base &>(base::operator = (p));
+                return static_cast<node_ptr_base &>(base::operator = (p));
             }
 
         value_type & operator * () const
@@ -240,48 +240,48 @@ template <typename T>
 
 #if !defined(_MSC_VER)
 template <typename T, size_t N>
-    class block_ptr_base<T [N]> : public block_ptr_common<T [N]>
+    class node_ptr_base<T [N]> : public node_ptr_common<T [N]>
     {
-        typedef block_ptr_common<T [N]> base;
+        typedef node_ptr_common<T [N]> base;
         typedef typename base::value_type value_type;
 
     protected:
         using base::po_;
 
     public:
-        block_ptr_base() : base()
+        node_ptr_base() : base()
         {
         }
 
         template <typename V, typename PoolAllocator>
-            block_ptr_base(block<V, PoolAllocator> * p) : base(p)
+            node_ptr_base(node<V, PoolAllocator> * p) : base(p)
             {
             }
 
         template <typename V>
-            block_ptr_base(block_ptr_base<V> const & p) : base(p)
+            node_ptr_base(node_ptr_base<V> const & p) : base(p)
             {
             }
 
-            block_ptr_base(block_ptr_base<value_type> const & p) : base(p)
+            node_ptr_base(node_ptr_base<value_type> const & p) : base(p)
             {
             }
 
         template <typename V, typename PoolAllocator>
-            block_ptr_base & operator = (block<V, PoolAllocator> * p)
+            node_ptr_base & operator = (node<V, PoolAllocator> * p)
             {
-                return static_cast<block_ptr_base &>(base::operator = (p));
+                return static_cast<node_ptr_base &>(base::operator = (p));
             }
 
         template <typename V>
-            block_ptr_base & operator = (block_ptr_base<V> const & p)
+            node_ptr_base & operator = (node_ptr_base<V> const & p)
             {
-                return static_cast<block_ptr_base &>(base::operator = (p));
+                return static_cast<node_ptr_base &>(base::operator = (p));
             }
 
-            block_ptr_base & operator = (block_ptr_base<value_type> const & p)
+            node_ptr_base & operator = (node_ptr_base<value_type> const & p)
             {
-                return static_cast<block_ptr_base &>(base::operator = (p));
+                return static_cast<node_ptr_base &>(base::operator = (p));
             }
 
         T & operator [] (std::size_t n)
@@ -298,48 +298,48 @@ template <typename T, size_t N>
 
 
 template <>
-    class block_ptr_base<void> : public block_ptr_common<void>
+    class node_ptr_base<void> : public node_ptr_common<void>
     {
-        typedef block_ptr_common<void> base;
+        typedef node_ptr_common<void> base;
         typedef typename base::value_type value_type;
 
     protected:
         using base::po_;
 
     public:
-        block_ptr_base() : base()
+        node_ptr_base() : base()
         {
         }
 
         template <typename V, typename PoolAllocator>
-            block_ptr_base(block<V, PoolAllocator> * p) : base(p)
+            node_ptr_base(node<V, PoolAllocator> * p) : base(p)
             {
             }
 
         template <typename V>
-            block_ptr_base(block_ptr_base<V> const & p) : base(p)
+            node_ptr_base(node_ptr_base<V> const & p) : base(p)
             {
             }
 
-            block_ptr_base(block_ptr_base<value_type> const & p) : base(p)
+            node_ptr_base(node_ptr_base<value_type> const & p) : base(p)
             {
             }
 
         template <typename V, typename PoolAllocator>
-            block_ptr_base & operator = (block<V, PoolAllocator> * p)
+            node_ptr_base & operator = (node<V, PoolAllocator> * p)
             {
-                return static_cast<block_ptr_base &>(base::operator = (p));
+                return static_cast<node_ptr_base &>(base::operator = (p));
             }
 
         template <typename V>
-            block_ptr_base & operator = (block_ptr_base<V> const & p)
+            node_ptr_base & operator = (node_ptr_base<V> const & p)
             {
-                return static_cast<block_ptr_base &>(base::operator = (p));
+                return static_cast<node_ptr_base &>(base::operator = (p));
             }
 
-            block_ptr_base & operator = (block_ptr_base<value_type> const & p)
+            node_ptr_base & operator = (node_ptr_base<value_type> const & p)
             {
-                return static_cast<block_ptr_base &>(base::operator = (p));
+                return static_cast<node_ptr_base &>(base::operator = (p));
             }
     };
 

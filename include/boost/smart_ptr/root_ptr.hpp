@@ -1,6 +1,6 @@
 /**
     @file
-    Boost block_ptr.hpp header file.
+    Boost node_ptr.hpp header file.
 
     @author
     Copyright (c) 2008-2016 Phil Bouchard <pbouchard8@gmail.com>.
@@ -18,8 +18,8 @@
 */
 
 
-#ifndef BOOST_BLOCK_PTR_INCLUDED
-#define BOOST_BLOCK_PTR_INCLUDED
+#ifndef BOOST_NODE_PTR_INCLUDED
+#define BOOST_NODE_PTR_INCLUDED
 
 
 #if defined(_MSC_VER)
@@ -37,7 +37,7 @@
 #include <boost/smart_ptr/detail/intrusive_list.hpp>
 #include <boost/smart_ptr/detail/intrusive_stack.hpp>
 #include <boost/smart_ptr/detail/classof.hpp>
-#include <boost/smart_ptr/detail/block_ptr_base.hpp>
+#include <boost/smart_ptr/detail/node_ptr_base.hpp>
 
 
 namespace boost
@@ -50,7 +50,7 @@ namespace detail
 {
 
 
-struct block_base;
+struct node_base;
 
 
 } // namespace detail
@@ -61,16 +61,16 @@ struct block_base;
 /**
     Set header.
     
-    Proxy object used to count the number of pointers from the stack are referencing pointee objects belonging to the same @c block_proxy .
+    Proxy object used to count the number of pointers from the stack are referencing pointee objects belonging to the same @c node_proxy .
 */
 
-class block_proxy
+class node_proxy
 {
-    template <typename> friend class block_ptr;
-    template <typename> friend class proxy_ptr;
+    template <typename> friend class node_ptr;
+    template <typename> friend class root_ptr;
 
     bool destroying_;                                   /**< Destruction sequence initiated. */
-    smart_ptr::detail::intrusive_list block_list_;                     /**< List of all pointee objects belonging to a @c block_proxy . */
+    smart_ptr::detail::intrusive_list node_list_;                     /**< List of all pointee objects belonging to a @c node_proxy . */
 
 #ifndef BOOST_DISABLE_THREADS
     static mutex & static_mutex()                   /**< Main global mutex used for thread safety */
@@ -82,15 +82,15 @@ class block_proxy
 #endif
 
     /**
-        Initialization of a single @c block_proxy .
+        Initialization of a single @c node_proxy .
     */
     
-    block_proxy() : destroying_(false)
+    node_proxy() : destroying_(false)
     {
     }
     
     
-    ~block_proxy()
+    ~node_proxy()
     {
         reset();
     }
@@ -109,14 +109,14 @@ class block_proxy
 
     
     /**
-        Enlist & initialize pointee objects belonging to the same @c block_proxy .  This initialization occurs when a pointee object is affected to the first pointer living on the stack it encounters.
+        Enlist & initialize pointee objects belonging to the same @c node_proxy .  This initialization occurs when a pointee object is affected to the first pointer living on the stack it encounters.
         
         @param  p   Pointee object to initialize.
     */
     
-    void init(smart_ptr::detail::block_base * p)
+    void init(smart_ptr::detail::node_base * p)
     {
-        block_list_.push_back(& p->block_tag_);
+        node_list_.push_back(& p->node_tag_);
     }
     
     
@@ -126,7 +126,7 @@ class block_proxy
         
         destroying(true);
 
-        for (intrusive_list::iterator<block_base, &block_base::block_tag_> m = block_list_.begin(), n = block_list_.begin(); m != block_list_.end(); m = n)
+        for (intrusive_list::iterator<node_base, &node_base::node_tag_> m = node_list_.begin(), n = node_list_.begin(); m != node_list_.end(); m = n)
         {
             ++ n;
             delete &* m;
@@ -141,36 +141,36 @@ class block_proxy
 #define ARGUMENT_DECL(z, n, text) BOOST_PP_COMMA_IF(n) T ## n const & t ## n
 #define PARAMETER_DECL(z, n, text) BOOST_PP_COMMA_IF(n) t ## n
 
-#define BEFRIEND_MAKE_BLOCK(z, n, text)																			    	\
+#define BEFRIEND_MAKE_NODE(z, n, text)																			    	\
     template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>										                    \
-        friend block_ptr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0));
+        friend node_ptr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0));
 
-#define CONSTRUCT_MAKE_BLOCK1(z, n, text)																			    \
+#define CONSTRUCT_MAKE_NODE1(z, n, text)																			    \
     template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename PoolAllocator = pool_allocator<V> >										                    \
-        block_ptr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))															\
+        node_ptr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))															\
         {																												\
-            return block_ptr<V>(new block<V, PoolAllocator>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));									\
+            return node_ptr<V>(new node<V, PoolAllocator>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));									\
         }
 
-#define CONSTRUCT_MAKE_BLOCK2(z, n, text)                                                                                \
+#define CONSTRUCT_MAKE_NODE2(z, n, text)                                                                                \
     template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename PoolAllocator = pool_allocator<V> >                                                          \
-        block_ptr<V> text(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy> & q, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                           \
+        node_ptr<V> text(smart_ptr::detail::node_ptr_base<smart_ptr::detail::node_proxy> & q, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                           \
         {                                                                                                               \
-            return block_ptr<V>(q, new block<V, PoolAllocator>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                                   \
+            return node_ptr<V>(q, new node<V, PoolAllocator>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                                   \
         }
 
-#define CONSTRUCT_MAKE_BLOCK3(z, n, text)                                                                               \
+#define CONSTRUCT_MAKE_NODE3(z, n, text)                                                                               \
     template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename PoolAllocator = pool_allocator<V> >                                                          \
-        block_ptr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                           \
+        node_ptr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                           \
         {                                                                                                               \
-            return block_ptr<V>(new fastblock<V>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                                   \
+            return node_ptr<V>(new fastnode<V>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                                   \
         }
 
-#define CONSTRUCT_MAKE_BLOCK4(z, n, text)                                                                                \
+#define CONSTRUCT_MAKE_NODE4(z, n, text)                                                                                \
     template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename PoolAllocator = pool_allocator<V> >                                                          \
-        block_ptr<V> text(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy> & q, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                           \
+        node_ptr<V> text(smart_ptr::detail::node_ptr_base<smart_ptr::detail::node_proxy> & q, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                           \
         {                                                                                                               \
-            return block_ptr<V>(q, new fastblock<V>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                                   \
+            return node_ptr<V>(q, new fastnode<V>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                                   \
         }
 
 
@@ -181,16 +181,16 @@ class block_proxy
 */
 
 template <typename T>
-    class block_ptr : public smart_ptr::detail::block_ptr_base<T>
+    class node_ptr : public smart_ptr::detail::node_ptr_base<T>
     {
-        template <typename> friend class block_ptr;
+        template <typename> friend class node_ptr;
 
-        typedef smart_ptr::detail::block_ptr_base<T> base;
+        typedef smart_ptr::detail::node_ptr_base<T> base;
         
         using base::share;
         using base::po_;
 
-        block_proxy const & x_;                      /**< Pointer to the @c block_proxy node @c block_ptr<> belongs to. */
+        node_proxy const & x_;                      /**< Pointer to the @c node_proxy node @c node_ptr<> belongs to. */
         
     public:
         using base::reset;
@@ -201,7 +201,7 @@ template <typename T>
             @param  p   New pointee object to manage.
         */
         
-        explicit block_ptr(block_proxy const & x) : base(), x_(x)
+        explicit node_ptr(node_proxy const & x) : base(), x_(x)
         {
         }
 
@@ -213,9 +213,9 @@ template <typename T>
         */
         
         template <typename V, typename PoolAllocator>
-            explicit block_ptr(block_proxy const & x, block<V, PoolAllocator> * p) : base(p), x_(x)
+            explicit node_ptr(node_proxy const & x, node<V, PoolAllocator> * p) : base(p), x_(x)
             {
-                const_cast<block_proxy &>(x_).init(p);
+                const_cast<node_proxy &>(x_).init(p);
             }
 
         
@@ -230,10 +230,10 @@ template <typename T>
         */
 
         template <typename V>
-            block_ptr(block_ptr<V> const & p) : base(p), x_(p.x_)
+            node_ptr(node_ptr<V> const & p) : base(p), x_(p.x_)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
+                mutex::scoped_lock scoped_lock(node_proxy::static_mutex());
 #endif
             }
 
@@ -244,10 +244,10 @@ template <typename T>
             @param	p	New pointer to manage.
         */
 
-            block_ptr(block_ptr<T> const & p) : base(p), x_(p.x_)
+            node_ptr(node_ptr<T> const & p) : base(p), x_(p.x_)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
+                mutex::scoped_lock scoped_lock(node_proxy::static_mutex());
 #endif
             }
 
@@ -259,10 +259,10 @@ template <typename T>
         */
             
         template <typename V>
-            block_ptr & operator = (block_ptr<V> const & p)
+            node_ptr & operator = (node_ptr<V> const & p)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(block_proxy::static_mutex());
+                mutex::scoped_lock scoped_lock(node_proxy::static_mutex());
 #endif
 
                 base::operator = (p);
@@ -277,7 +277,7 @@ template <typename T>
             @param	p	New pointer to manage.
         */
 
-        block_ptr & operator = (block_ptr<T> const & p)
+        node_ptr & operator = (node_ptr<T> const & p)
         {
             return operator = <T>(p);
         }
@@ -289,9 +289,9 @@ template <typename T>
         */
 
         template <typename V, typename PoolAllocator>
-            block_ptr & operator = (block<V, PoolAllocator> * p)
+            node_ptr & operator = (node<V, PoolAllocator> * p)
             {
-                const_cast<block_proxy &>(x_).init(p);
+                const_cast<node_proxy &>(x_).init(p);
 
                 base::operator = (p);
                 
@@ -299,13 +299,13 @@ template <typename T>
             }
 
         template <typename V>
-            void reset(block_ptr<V> const & p)
+            void reset(node_ptr<V> const & p)
             {
                 operator = <T>(p);
             }
         
         template <typename V, typename PoolAllocator>
-            void reset(block<V, PoolAllocator> * p)
+            void reset(node<V, PoolAllocator> * p)
             {
                 operator = <T>(p);
             }
@@ -315,7 +315,7 @@ template <typename T>
             return x_.destroying();
         }
 
-        ~block_ptr()
+        ~node_ptr()
         {
             if (cyclic())
                 base::po_ = 0;
@@ -323,18 +323,18 @@ template <typename T>
 
 #if 0 //defined(BOOST_HAS_RVALUE_REFS)
     public:
-        block_ptr(block_ptr<T> && p): base(p.po_), x_(p.x_)
+        node_ptr(node_ptr<T> && p): base(p.po_), x_(p.x_)
         {
             p.po_ = 0;
         }
 
         template<class Y>
-            block_ptr(block_ptr<Y> && p): base(p.po_), x_(p.x_)
+            node_ptr(node_ptr<Y> && p): base(p.po_), x_(p.x_)
             {
                 p.po_ = 0;
             }
 
-        block_ptr<T> & operator = (block_ptr<T> && p)
+        node_ptr<T> & operator = (node_ptr<T> && p)
         {
             std::swap(po_, p.po_);
             std::swap(x_, p.x_);
@@ -343,7 +343,7 @@ template <typename T>
         }
 
         template<class Y>
-            block_ptr & operator = (block_ptr<Y> && p)
+            node_ptr & operator = (node_ptr<Y> && p)
             {
                 std::swap(po_, p.po_);
                 std::swap(x_, p.x_);
@@ -359,11 +359,11 @@ template <typename T>
 */
     
 template <typename T>
-    struct proxy_ptr : block_proxy, block_ptr<T>
+    struct root_ptr : node_proxy, node_ptr<T>
     {
-        using block_ptr<T>::reset;
+        using node_ptr<T>::reset;
         
-        proxy_ptr() : block_proxy(), block_ptr<T>(* static_cast<block_proxy *>(this)) 
+        root_ptr() : node_proxy(), node_ptr<T>(* static_cast<node_proxy *>(this)) 
         {
         }
         
@@ -375,65 +375,65 @@ template <typename T>
         */
         
         template <typename V, typename PoolAllocator>
-            explicit proxy_ptr(block<V, PoolAllocator> * p) : block_ptr<T>(*this, p)
+            explicit root_ptr(node<V, PoolAllocator> * p) : node_ptr<T>(*this, p)
             {
             }
             
             
-        block_ptr<T> & operator = (block_ptr<T> const & p)
+        node_ptr<T> & operator = (node_ptr<T> const & p)
         {
-            return block_ptr<T>::operator = (p);
+            return node_ptr<T>::operator = (p);
         }
 
         template <typename V, typename PoolAllocator>
-            block_ptr<T> & operator = (block<V, PoolAllocator> * p)
+            node_ptr<T> & operator = (node<V, PoolAllocator> * p)
             {
-                return block_ptr<T>::operator = (p);
+                return node_ptr<T>::operator = (p);
             }
     };
 
 
 template <typename V, typename PoolAllocator = pool_allocator<V> >
-    block_ptr<V> make_block()
+    node_ptr<V> make_node()
     {
-        return block_ptr<V>(new block<V, PoolAllocator>());
+        return node_ptr<V>(new node<V, PoolAllocator>());
     }
 
 template <typename V, typename PoolAllocator = pool_allocator<V> >
-    block_ptr<V> make_block(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy> & q)
+    node_ptr<V> make_node(smart_ptr::detail::node_ptr_base<smart_ptr::detail::node_proxy> & q)
     {
-        return block_ptr<V>(q, new block<V, PoolAllocator>());
+        return node_ptr<V>(q, new node<V, PoolAllocator>());
     }
 
 template <typename V, typename PoolAllocator = pool_allocator<V> >
-    block_ptr<V> make_fastblock()
+    node_ptr<V> make_fastnode()
     {
-        return block_ptr<V>(new fastblock<V>());
+        return node_ptr<V>(new fastnode<V>());
     }
 
 template <typename V, typename PoolAllocator = pool_allocator<V> >
-    block_ptr<V> make_fastblock(smart_ptr::detail::block_ptr_base<smart_ptr::detail::block_proxy> & q)
+    node_ptr<V> make_fastnode(smart_ptr::detail::node_ptr_base<smart_ptr::detail::node_proxy> & q)
     {
-        return block_ptr<V>(q, new fastblock<V>());
+        return node_ptr<V>(q, new fastnode<V>());
     }
 
 template <typename T>
-    bool operator == (block_ptr<T> const &a1, block_ptr<T> const &a2)
+    bool operator == (node_ptr<T> const &a1, node_ptr<T> const &a2)
     {
         return a1.get() == a2.get();
     }
 
 template <typename T>
-    bool operator != (block_ptr<T> const &a1, block_ptr<T> const &a2)
+    bool operator != (node_ptr<T> const &a1, node_ptr<T> const &a2)
     {
         return a1.get() != a2.get();
     }
 
 
-BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_BLOCK1, make_block)
-BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_BLOCK2, make_block)
-BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_BLOCK3, make_fastblock)
-BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_BLOCK4, make_fastblock)
+BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_NODE1, make_node)
+BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_NODE2, make_node)
+BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_NODE3, make_fastnode)
+BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_NODE4, make_fastnode)
 
 } // namespace boost
 
@@ -443,4 +443,4 @@ BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_BLOCK4, make_fastblock)
 #endif
 
 
-#endif // #ifndef BOOST_BLOCK_PTR_INCLUDED
+#endif // #ifndef BOOST_NODE_PTR_INCLUDED

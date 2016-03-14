@@ -1,6 +1,6 @@
 /**
 	@file
-	block_ptr_test3.cpp
+	node_ptr_test3.cpp
 
 	@note
 	Copyright (c) 2008 Steven Watanabe <watanabesj@gmail.com>
@@ -15,7 +15,7 @@
 
 
 
-#include <boost/smart_ptr/block_ptr.hpp>
+#include <boost/smart_ptr/root_ptr.hpp>
 
 #include <vector>
 #include <iostream>
@@ -34,15 +34,15 @@ static int count;
 
 using namespace boost;
 
-struct node {
-    node(block_proxy const & x) : prior(x), next(x) {
+struct list_node {
+    list_node(node_proxy const & x) : prior(x), next(x) {
         ++count;
     }
-    ~node() {
+    ~list_node() {
         --count;
     }
-    block_ptr<node> prior;
-    block_ptr<node> next;
+    node_ptr<list_node> prior;
+    node_ptr<list_node> next;
 };
 
 struct list {
@@ -53,9 +53,9 @@ public:
     }
     void insert() {
         if(root.get() == 0) {
-            root = new block<node>(root);
+            root = new node<list_node>(root);
         } else {
-            root->next = new block<node>(root);
+            root->next = new node<list_node>(root);
             root->next->prior = root;
             root = root->next;
         }
@@ -64,7 +64,7 @@ public:
     {
     }
 private:
-    proxy_ptr<node> root;
+    root_ptr<list_node> root;
 };
 
 
@@ -72,26 +72,26 @@ struct vector {
     vector() { ++count; }
     ~vector() { --count; }
     vector(const vector& other) : elements(other.elements) { ++count; }
-    boost::container::vector<block_ptr<vector> > elements;
+    boost::container::vector<node_ptr<vector> > elements;
 };
 
 struct create_type {
-    create_type(block_proxy & x) : x_(x) {}
+    create_type(node_proxy & x) : x_(x) {}
     
     template<class T>
     void operator()(T) const {
-        block_ptr<boost::array<char, T::value> >(x_, new block<boost::array<char, T::value> >());
+        node_ptr<boost::array<char, T::value> >(x_, new node<boost::array<char, T::value> >());
     }
     
-    block_proxy & x_;
+    node_proxy & x_;
 };
 
 
-BOOST_AUTO_TEST_CASE(test_block_ptr) {
+BOOST_AUTO_TEST_CASE(test_node_ptr) {
 
     count = 0;
     {
-        proxy_ptr<vector> v = proxy_ptr<vector>(new block<vector>());
+        root_ptr<vector> v = root_ptr<vector>(new node<vector>());
         v->elements.push_back(v);
     }
     BOOST_CHECK_EQUAL(count, 0);
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(test_block_ptr) {
 
     count = 0;
     {
-        proxy_ptr<int> test = proxy_ptr<int>(new block<int>(5));
+        root_ptr<int> test = root_ptr<int>(new node<int>(5));
         test = test;
         
         BOOST_CHECK_NE(test.get(), static_cast<int*>(0));
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(test_block_ptr) {
 
     count = 0;
     {
-        proxy_ptr<int> x;
+        root_ptr<int> x;
         for(int i = 0; i < 500; ++i) {
             boost::mpl::for_each<boost::mpl::range_c<int, 1, 100> >(create_type(x));
         }
@@ -128,15 +128,15 @@ BOOST_AUTO_TEST_CASE(test_block_ptr) {
 
     count = 0;
     {
-        proxy_ptr<vector> v = proxy_ptr<vector>(new block<vector>());
+        root_ptr<vector> v = root_ptr<vector>(new node<vector>());
         v->elements.push_back(v);
     }
     BOOST_CHECK_EQUAL(count, 0);
 
     {
-        proxy_ptr<vector> x;
+        root_ptr<vector> x;
         vector v;
-        v.elements.push_back(block_ptr<vector>(x, new block<vector>()));
+        v.elements.push_back(node_ptr<vector>(x, new node<vector>()));
     }
     BOOST_CHECK_EQUAL(count, 0);
 

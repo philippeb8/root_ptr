@@ -22,7 +22,7 @@
 #include <string>
 #include <iostream>
 #include <boost/regex.hpp>
-#include <boost/smart_ptr/block_ptr.hpp>
+#include <boost/smart_ptr/root_ptr.hpp>
 
 
 namespace boost
@@ -37,7 +37,7 @@ namespace sh
 
 struct neuron_base
 {
-    typedef boost::block_ptr<neuron_base> pointer;
+    typedef boost::node_ptr<neuron_base> pointer;
 
     enum sense_t {sight, sound, touch, smell, taste};
 
@@ -45,7 +45,7 @@ struct neuron_base
     //std::vector< std::pair<double, pointer> > sub_;
     std::pair<double, pointer> sub_[3];
 
-    neuron_base(block_proxy const & x, std::string const & s) : exp_(s), sub_({std::pair<double, pointer>(0., pointer(x)), std::pair<double, pointer>(0., pointer(x)), std::pair<double, pointer>(0., pointer(x))}) {}
+    neuron_base(node_proxy const & x, std::string const & s) : exp_(s), sub_({std::pair<double, pointer>(0., pointer(x)), std::pair<double, pointer>(0., pointer(x)), std::pair<double, pointer>(0., pointer(x))}) {}
     virtual ~neuron_base() {};
 
     virtual double operator () (std::string const & input) { return 0; };
@@ -65,11 +65,11 @@ struct neuron_base
 template <neuron_base::sense_t>
     class neuron : public neuron_base
     {
-        // disable non-"block<neuron>" allocations:
+        // disable non-"node<neuron>" allocations:
         void * operator new (size_t);
 
     public:
-        typedef boost::block<neuron> pointee;
+        typedef boost::node<neuron> pointee;
         
         /** 
             The following should be one of these multimap indexed by:
@@ -82,7 +82,7 @@ template <neuron_base::sense_t>
         
         static map_sn_t search_;
     
-        neuron(block_proxy const & x, std::string const & s) : neuron_base(x, s)
+        neuron(node_proxy const & x, std::string const & s) : neuron_base(x, s)
         {
             /// FIXME
             //search_[s] = (pointee *) (typename pointee::roofof) static_cast<neuron *>(rootof<is_polymorphic<neuron>::value>::get(this));
