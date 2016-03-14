@@ -79,12 +79,12 @@ int main()
     cout << "Cyclicism:" << endl;
     {
         root_ptr<A> x;
-        node_ptr<A> p = node_ptr<A>(x, new node<A>(x, 7));
-        node_ptr<A> q = node_ptr<A>(x, new node<A>(x, 8));
-        node_ptr<A> r = node_ptr<A>(x, new node<A>(x, 9));
+        node_ptr<A> p(x, new node<A>(x, 7));
+        node_ptr<A> q(x, new node<A>(x, 8));
+        node_ptr<A> r(x, new node<A>(x, 9));
 
         //node_ptr<void> t = make_node<A>(10);
-        node_ptr<int volatile> v = node_ptr<int volatile>(x, new node<int volatile>(11));
+        node_ptr<int volatile> v(x, new node<int volatile>(11));
 
         p->p = p->p;
         q = r;
@@ -114,7 +114,7 @@ int main()
     cout << "Order of destruction:" << endl;
     {
         root_ptr<A> x;
-        node_ptr<A> v = node_ptr<A>(x, new node<A>(x, 0));
+        node_ptr<A> v(x, new node<A>(x, 0));
         v->p = new node<A>(x, 1);
         v->p->p = new node<A>(x, 2);
         v->p->p->p = v->p;
