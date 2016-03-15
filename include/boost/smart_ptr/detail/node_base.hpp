@@ -23,9 +23,8 @@
 # pragma once
 #endif
 
-#include <list>
-#include <stack>
 #include <limits>
+#include <type_traits>
 
 #ifndef BOOST_DISABLE_THREADS
 #include <boost/thread.hpp>
@@ -97,19 +96,25 @@ protected:
 #define ARGUMENT_DECL(z, n, text) BOOST_PP_COMMA_IF(n) T ## n const & t ## n
 #define PARAMETER_DECL(z, n, text) BOOST_PP_COMMA_IF(n) t ## n
 
-#define CONSTRUCT_NODE1(z, n, text)																			    \
-    template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>										                        \
-        text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : a_(static_pool()), elem_(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)) {}																										
+#define CONSTRUCT_NODE1(z, n, text)                                                                             \
+    template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                             \
+        text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : a_(static_pool())                                          \
+        {                                                                                                       \
+            a_.construct(element());                                                                            \
+        }
 
 #define CONSTRUCT_NODE2(z, n, text)                                                                             \
     template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                             \
-        text(allocator_type & a, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : a_(a), elem_(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)) {}                                                                                                        
+        text(allocator_type & a, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : a_(a)                                  \
+        {                                                                                                       \
+            a_.construct(element(), BOOST_PP_REPEAT(n, PARAMETER_DECL, 0));                                     \
+        }
 
-#define CONSTRUCT_NODE3(z, n, text)                                                                                \
+#define CONSTRUCT_NODE3(z, n, text)                                                                             \
     template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                             \
         text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : base(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)) {}                                                                                                        
 
-#define CONSTRUCT_NODE4(z, n, text)                                                                                \
+#define CONSTRUCT_NODE4(z, n, text)                                                                             \
     template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                             \
         text(allocator_type & a, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : base(a, BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)) {}                                                                                                        
 
@@ -135,18 +140,20 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
         allocator_type & a_;
         
-        T elem_; 									/**< Pointee object.  @note Needs alignas<long>. */
+        typename std::aligned_storage<sizeof(T), alignof(T)>::type elem_;       /**< Pointee object. */
         
     public:
         class classof;
         friend class classof;
 
-        node() : a_(static_pool()), elem_()
+        node() : a_(static_pool())
         {
+            a_.construct(element());
         }
         
-        node(allocator_type & a) : a_(a), elem_()
+        node(allocator_type & a) : a_(a)
         {
+            a_.construct(element());
         }
 
         BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE1, node)
@@ -157,10 +164,11 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             @return		Pointee object address.
         */
         
-        data_type * element() 				{ return & elem_; }
+        data_type * element() 				{ return reinterpret_cast<data_type *>(& elem_); }
 
         virtual ~node()					
-        { 
+        {
+            a_.destroy(element());
             dispose();
         }
         virtual void dispose()              {}
