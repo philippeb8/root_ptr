@@ -84,11 +84,11 @@ int main()
     int n1 = 0, m1 = 0;
     int n2 = 0, m2 = 0;
     {
-        boost::root_ptr<U> p1, p2, p3;
-
         typedef boost::node<U, Allocator<U> > node;
         typedef typename node::allocator_type allocator_type;
         
+        boost::root_ptr<U> p1, p2, p3;
+
         allocator_type a1(n1, m1);
         p1 = new (a1) node(a1, 1, 'a');
 
