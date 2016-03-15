@@ -99,11 +99,19 @@ protected:
 
 #define CONSTRUCT_NODE1(z, n, text)																			    \
     template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>										                        \
-        text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : elem_(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)) {}																										
+        text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : a_(static_pool()), elem_(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)) {}																										
 
-#define CONSTRUCT_NODE2(z, n, text)                                                                                \
+#define CONSTRUCT_NODE2(z, n, text)                                                                             \
+    template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                             \
+        text(allocator_type & a, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : a_(a), elem_(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)) {}                                                                                                        
+
+#define CONSTRUCT_NODE3(z, n, text)                                                                                \
     template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                             \
         text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : base(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)) {}                                                                                                        
+
+#define CONSTRUCT_NODE4(z, n, text)                                                                                \
+    template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                             \
+        text(allocator_type & a, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : base(a, BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)) {}                                                                                                        
 
 /**
     Object wrapper.
@@ -112,28 +120,37 @@ protected:
 template <typename T, typename PoolAllocator = pool_allocator<T> >
     class node : public smart_ptr::detail::node_base
     {
-        typedef typename PoolAllocator::template rebind< node<T, PoolAllocator> >::other PoolType;
-        
-        static PoolType & static_pool() /**< Pool where all sets are allocated. */
+    public:
+        typedef T data_type;
+
+        typedef typename PoolAllocator::template rebind< node<T, PoolAllocator> >::other allocator_type;
+
+    private:
+        static allocator_type & static_pool() /**< Pool where all sets are allocated. */
         {
-            static PoolType pool_;
+            static allocator_type pool_;
             
             return pool_;
         }
 
-        typedef T data_type;
-
+        allocator_type & a_;
+        
         T elem_; 									/**< Pointee object.  @note Needs alignas<long>. */
         
     public:
         class classof;
         friend class classof;
 
-        node() : elem_()
+        node() : a_(static_pool()), elem_()
+        {
+        }
+        
+        node(allocator_type & a) : elem_(), a_(a) 
         {
         }
 
         BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE1, node)
+        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE2, node)
 
 
         /**
@@ -186,8 +203,13 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         {
             return static_pool().allocate(1);
         }
-        
-        
+
+        void * operator new (size_t s, allocator_type & c)
+        {
+            return c.allocate(1);
+        }
+
+
         /**
             Deallocates a @c node_proxy from the fast pool allocator.
             
@@ -196,7 +218,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         
         void operator delete (void * p)
         {
-            static_pool().deallocate(static_cast<node<T, PoolAllocator> *>(p), 1);
+            static_cast<node *>(p)->a_.deallocate(static_cast<node *>(p), 1);
         }
     };
 
@@ -255,11 +277,14 @@ template <typename T>
     public:
         typedef node<T, fast_pool_allocator<T> > base;
         
+        using typename base::allocator_type;
+        
         fastnode() : base()
         {
         }
 
-        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE2, fastnode)
+        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE3, fastnode)
+        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE4, fastnode)
     };
 
     
