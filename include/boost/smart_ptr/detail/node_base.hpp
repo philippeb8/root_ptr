@@ -145,7 +145,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         {
         }
         
-        node(allocator_type & a) : elem_(), a_(a) 
+        node(allocator_type & a) : a_(a), elem_()
         {
         }
 
