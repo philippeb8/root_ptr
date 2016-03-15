@@ -39,16 +39,18 @@ public:
         {
             typedef Allocator<Type> other;
         };
-
+        
     using value_type = T;
-    Allocator(int& state_)
-        : state(state_) { }
+    Allocator(int& state1_, int& state2_)
+        : state1(state1_),
+          state2(state2_) { }
     template<class U>
     Allocator(const Allocator<U>& other)
-        : state(other.state) { }
+        : state1(other.state1),
+          state2(other.state2) { }
     T* allocate(std::size_t n) {
         if (auto p = std::malloc(sizeof(T) * n)) {
-            ++state;
+            ++state1;
             return static_cast<T*>(p);
         } else {
             throw std::bad_alloc();
@@ -56,58 +58,48 @@ public:
     }
     void deallocate(T* p, std::size_t) {
         std::free(p);
-        --state;
+        --state1;
+    }
+    template<class U, class... Args>
+    void construct(U* p, Args&&... args) {
+        ::new(p) U(std::forward<Args>(args)...);
+        ++state2;
+    }
+    template<class U>
+    void destroy(U* p) {
+        p->~U();
+        --state2;
     }
 private:
-    int& state;
+    int& state1;
+    int& state2;
 };
 
-template <typename T>
-    class nodealloc : public boost::node<T, Allocator<boost::node<T> > >
-    {
-        typedef boost::node<T, Allocator<boost::node<T> > > base;
-        
-    public:
-        using typename boost::node<T, Allocator<boost::node<T> > >::PoolType;
-        
-        PoolType & a_;
-        
-        nodealloc(PoolType & a) : base(), a_(a)
-        {
-        }
-        
-        void * operator new (size_t s, PoolType & a)
-        {
-            return a.allocate(s);
-        }
-        
-        void operator delete (void * p)
-        {
-            static_cast<nodealloc *>(p)->a_.deallocate(static_cast<nodealloc *>(p), sizeof(nodealloc));
-        }
-    };
+struct U {
+    U(int, char) { }
+};
 
 int main()
 {
-    int n1 = 0;
-    int n2 = 0;
+    int n1 = 0, m1 = 0;
+    int n2 = 0, m2 = 0;
     {
-        boost::root_ptr<int> p1, p2, p3;
+        boost::root_ptr<U> p1, p2, p3;
+
+        boost::node<U, Allocator<U> >::allocator_type a1(n1, m1);
+        p1 = new (a1) boost::node<U, Allocator<U> >(a1, 1, 'a');
+
+        boost::node<U, Allocator<U> >::allocator_type a2(n2, m2);
+        p2 = new (a2) boost::node<U, Allocator<U> >(a2, 2, 'b');
+
+        boost::node<U, Allocator<U> >::allocator_type a3(n2, m2);
+        p3 = new (a3) boost::node<U, Allocator<U> >(a3, 3, 'c');
         
-        nodealloc<int>::PoolType a1(n1);
-        p1 = new (a1) nodealloc<int>(a1);
-
-        nodealloc<int>::PoolType a2(n2);
-        p2 = new (a2) nodealloc<int>(a2);
-
-        nodealloc<int>::PoolType a3(n2);
-        p3 = new (a3) nodealloc<int>(a3);
-
-        if (n1 != 1 || n2 != 2) {
+        if (n1 != 1 || m1 != 1 || n2 != 2 || m2 != 2) {
             throw 3;
         }
     }
-    if (n1 != 0 || n2 != 0) {
+    if (n1 != 0 || m1 != 0 || n2 != 0 || m2 != 0) {
         throw 4;
     }
 }
