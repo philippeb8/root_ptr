@@ -86,13 +86,15 @@ int main()
     {
         boost::root_ptr<U> p1, p2, p3;
 
-        boost::node<U, Allocator<U> >::allocator_type a1(n1, m1);
+        typedef typename boost::node<U, Allocator<U> >::allocator_type allocator_type;
+        
+        allocator_type a1(n1, m1);
         p1 = new (a1) boost::node<U, Allocator<U> >(a1, 1, 'a');
 
-        boost::node<U, Allocator<U> >::allocator_type a2(n2, m2);
+        allocator_type a2(n2, m2);
         p2 = new (a2) boost::node<U, Allocator<U> >(a2, 2, 'b');
 
-        boost::node<U, Allocator<U> >::allocator_type a3(n2, m2);
+        allocator_type a3(n2, m2);
         p3 = new (a3) boost::node<U, Allocator<U> >(a3, 3, 'c');
         
         if (n1 != 1 || m1 != 1 || n2 != 2 || m2 != 2) {
