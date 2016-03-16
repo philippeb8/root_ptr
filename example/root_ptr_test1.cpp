@@ -108,7 +108,7 @@ int main()
     cout << endl;
 
     // The following don't work with MSVC:
-#if ! defined(_MSC_VER)
+#if 0 //! defined(_MSC_VER)
     cout << "Array access:" << endl;
     {
         root_ptr<char[9]> u(new node<char[9]>());
