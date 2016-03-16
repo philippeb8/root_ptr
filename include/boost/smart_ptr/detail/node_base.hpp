@@ -116,7 +116,16 @@ protected:
 
 #define CONSTRUCT_NODE4(z, n, text)                                                                             \
     template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                             \
-        text(allocator_type & a, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : base(a, BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)) {}                                                                                                        
+        text(allocator_type const & a, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : base(a, BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)) \
+        {                                                                                                       \
+        }                                                                                                        
+
+#define ALLOCATE_NODE1(z, n, text)                                                                              \
+    template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                             \
+        static node * text(allocator_type const & a, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                   \
+        {                                                                                                       \
+            return new (a) node(a, BOOST_PP_REPEAT(n, PARAMETER_DECL, 0));                                   \
+        }
 
 /**
     Object wrapper.
@@ -215,6 +224,13 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         {
             return c.allocate(1);
         }
+
+        static node<T> * allocate(allocator_type const & c)
+        {
+            return new (c) node<T>(c);
+        }
+
+        BOOST_PP_REPEAT_FROM_TO(1, 10, ALLOCATE_NODE1, allocate)
 
         
         /**
