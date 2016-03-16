@@ -311,6 +311,13 @@ template <typename T>
     };
 
     
+template<class T, class Alloc, class... Args>
+    node<T, Alloc> * allocate_node(const Alloc& alloc, Args&&... args)
+    {
+        return node<T, Alloc>::allocate(alloc, args...);
+    }
+    
+    
 } // namespace boost
 
 
