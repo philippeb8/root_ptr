@@ -318,10 +318,31 @@ template<typename T, class Alloc, typename... Args>
     }
     
     
-template<template <typename...> class Alloc, typename T, typename... Args>
+template<template <typename, typename...> class Alloc, typename T, typename... Args>
     typename node<T, Alloc<T> >::allocator_type make_node_allocator(Args&&... args)
     {
         return typename node<T, Alloc<T> >::allocator_type(args...);
+    }
+    
+    
+template<template <typename, typename...> class Alloc, typename T, typename T1, typename... Args>
+    typename node<T, Alloc<T, T1> >::allocator_type make_node_allocator(Args&&... args)
+    {
+        return typename node<T, Alloc<T, T1> >::allocator_type(args...);
+    }
+    
+    
+template<template <typename, typename...> class Alloc, typename T, typename T1, typename T2, typename... Args>
+    typename node<T, Alloc<T, T1, T2> >::allocator_type make_node_allocator(Args&&... args)
+    {
+        return typename node<T, Alloc<T, T1, T2> >::allocator_type(args...);
+    }
+    
+    
+template<template <typename, typename...> class Alloc, typename T, typename T1, typename T2, typename T3, typename... Args>
+    typename node<T, Alloc<T, T1, T2, T3> >::allocator_type make_node_allocator(Args&&... args)
+    {
+        return typename node<T, Alloc<T, T1, T2, T3> >::allocator_type(args...);
     }
     
     
