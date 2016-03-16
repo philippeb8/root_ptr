@@ -311,10 +311,17 @@ template <typename T>
     };
 
     
-template<class T, class Alloc, class... Args>
+template<typename T, class Alloc, typename... Args>
     node<T, Alloc> * allocate_node(const Alloc& alloc, Args&&... args)
     {
         return node<T, Alloc>::allocate(alloc, args...);
+    }
+    
+    
+template<template <typename> class Alloc, typename T, typename... Args>
+    typename node<T, Alloc<T> >::allocator_type make_node_allocator(Args&&... args)
+    {
+        return typename node<T, Alloc<T> >::allocator_type(args...);
     }
     
     
