@@ -85,18 +85,16 @@ int main()
     int n2 = 0, m2 = 0;
     {
         typedef boost::node<U, Allocator<U> > node;
-        typedef typename node::allocator_type allocator_type;
         
         boost::root_ptr<U> p1, p2, p3;
 
-        allocator_type a1(n1, m1);
-        p1 = new (a1) node(a1, 1, 'a');
+        node::allocator_type a1(n1, m1);
+        node::allocator_type a2(n2, m2);
+        node::allocator_type a3(n2, m2);
 
-        allocator_type a2(n2, m2);
-        p2 = new (a2) node(a2, 2, 'b');
-
-        allocator_type a3(n2, m2);
-        p3 = new (a3) node(a3, 3, 'c');
+        p1 = node::allocate(a1, 1, 'a');
+        p2 = node::allocate(a2, 2, 'b');
+        p3 = node::allocate(a3, 3, 'c');
         
         if (n1 != 1 || m1 != 1 || n2 != 2 || m2 != 2) {
             throw 3;
