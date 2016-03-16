@@ -29,9 +29,9 @@ void operator delete(void*, std::size_t)
     throw 2;
 }
 
-template<class T>
+template<class T, class V = int>
 class Allocator {
-    template<class U>
+    template<class, class>
     friend class Allocator;
 public:
     template <class Type> 
@@ -86,8 +86,8 @@ int main()
     {
         boost::root_ptr<U> p1, p2, p3;
         p1 = boost::allocate_node<U>(boost::make_node_allocator<Allocator, U>(n1, m1), 1, 'a');
-        p2 = boost::allocate_node<U>(boost::make_node_allocator<Allocator, U>(n2, m2), 2, 'b');
-        p3 = boost::allocate_node<U>(boost::make_node_allocator<Allocator, U>(n2, m2), 3, 'c');
+        p2 = boost::allocate_node<U>(boost::make_node_allocator<Allocator, U, long>(n2, m2), 2, 'b');
+        p3 = boost::allocate_node<U>(boost::make_node_allocator<Allocator, U, unsigned>(n2, m2), 3, 'c');
         
         if (n1 != 1 || m1 != 1 || n2 != 2 || m2 != 2) {
             throw 3;
