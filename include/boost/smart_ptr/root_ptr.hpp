@@ -111,7 +111,15 @@ class node_proxy
     
     void destroying(bool b)
     {
-        destroying_ = b;
+        using namespace smart_ptr::detail;
+        
+        for (intrusive_list::iterator<node_proxy, &node_proxy::proxy_tag_> i(&proxy_tag_);;)
+        {
+            i->destroying_ = b;
+            
+            if (++ i == intrusive_list::iterator<node_proxy, &node_proxy::proxy_tag_>(&proxy_tag_))
+                break;
+        }
     }
     
     
