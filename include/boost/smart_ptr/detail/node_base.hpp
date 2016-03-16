@@ -45,6 +45,7 @@
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
 #include <boost/concept_check.hpp>
+#include <boost/container/allocator_traits.hpp>
 
 #include <boost/smart_ptr/detail/intrusive_list.hpp>
 #include <boost/smart_ptr/detail/intrusive_stack.hpp>
@@ -101,14 +102,14 @@ protected:
     template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                                             \
         text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : a_(static_pool())                                                          \
         {                                                                                                                       \
-            a_.construct(element());                                                                                            \
+            container::allocator_traits<allocator_type>::construct(a_, element(), BOOST_PP_REPEAT(n, PARAMETER_DECL, 0));       \
         }
 
 #define CONSTRUCT_NODE2(z, n, text)                                                                                             \
     template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                                             \
         text(allocator_type const & a, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : a_(a)                                            \
         {                                                                                                                       \
-            a_.construct(element(), BOOST_PP_REPEAT(n, PARAMETER_DECL, 0));                                                     \
+            container::allocator_traits<allocator_type>::construct(a_, element(), BOOST_PP_REPEAT(n, PARAMETER_DECL, 0));       \
         }
 
 #define CONSTRUCT_NODE3(z, n, text)                                                                                             \
@@ -164,12 +165,12 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
         node() : a_(static_pool())
         {
-            a_.construct(element());
+            container::allocator_traits<allocator_type>::construct(a_, element());
         }
         
         node(allocator_type const & a) : a_(a)
         {
-            a_.construct(element());
+            container::allocator_traits<allocator_type>::construct(a_, element());
         }
 
         BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE1, node)
@@ -182,9 +183,9 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         
         data_type * element() 				{ return reinterpret_cast<data_type *>(& elem_); }
 
-        virtual ~node()					
+        virtual ~node()
         {
-            a_.destroy(element());
+            container::allocator_traits<allocator_type>::destroy(a_, element());
             dispose();
         }
         virtual void dispose()              {}
