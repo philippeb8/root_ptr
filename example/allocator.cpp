@@ -29,7 +29,7 @@ void operator delete(void*, std::size_t)
     throw 2;
 }
 
-template<class T, class V = int>
+template<class T, class V = float>
 class Allocator {
     template<class, class>
     friend class Allocator;
