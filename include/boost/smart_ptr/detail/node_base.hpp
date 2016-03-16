@@ -211,7 +211,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             return static_pool().allocate(1);
         }
 
-        void * operator new (size_t s, allocator_type & c)
+        void * operator new (size_t s, allocator_type const & c)
         {
             return c.allocate(1);
         }
