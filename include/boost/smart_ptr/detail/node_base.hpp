@@ -146,9 +146,9 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             return pool_;
         }
 
-        allocator_type const & a_;
-        
         typename std::aligned_storage<sizeof(T), alignof(T)>::type elem_;       /**< Pointee object. */
+        
+        allocator_type a_;
         
     public:
         class classof;
@@ -222,7 +222,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
         void * operator new (size_t s, allocator_type const & c)
         {
-            return c.allocate(1);
+            return const_cast<allocator_type &>(c).allocate(1);
         }
 
         static node<T> * allocate(allocator_type const & c)

@@ -93,7 +93,7 @@ class node_proxy
     
     node_proxy(node_proxy const & x) : destroying_(x.destroying_), node_list_(x.node_list_)
     {
-        unify(const_cast<node_proxy &>(x));
+        unify(x);
     }
     
     
