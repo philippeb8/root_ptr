@@ -88,13 +88,9 @@ int main()
         
         boost::root_ptr<U> p1, p2, p3;
 
-        node::allocator_type a1(n1, m1);
-        node::allocator_type a2(n2, m2);
-        node::allocator_type a3(n2, m2);
-
-        p1 = node::allocate(a1, 1, 'a');
-        p2 = node::allocate(a2, 2, 'b');
-        p3 = node::allocate(a3, 3, 'c');
+        p1 = node::allocate(node::allocator_type(n1, m1), 1, 'a');
+        p2 = node::allocate(node::allocator_type(n2, m2), 2, 'b');
+        p3 = node::allocate(node::allocator_type(n2, m2), 3, 'c');
         
         if (n1 != 1 || m1 != 1 || n2 != 2 || m2 != 2) {
             throw 3;
