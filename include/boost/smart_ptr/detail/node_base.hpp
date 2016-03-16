@@ -92,41 +92,49 @@ protected:
 
 } // namespace smart_ptr
 
+#define TEMPLATEARGUMENT_DECL(z, n, text) BOOST_PP_COMMA_IF(n) T ## n
 #define TEMPLATE_DECL(z, n, text) BOOST_PP_COMMA_IF(n) typename T ## n
 #define ARGUMENT_DECL(z, n, text) BOOST_PP_COMMA_IF(n) T ## n const & t ## n
 #define PARAMETER_DECL(z, n, text) BOOST_PP_COMMA_IF(n) t ## n
 
-#define CONSTRUCT_NODE1(z, n, text)                                                                             \
-    template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                             \
-        text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : a_(static_pool())                                          \
-        {                                                                                                       \
-            a_.construct(element());                                                                            \
+#define CONSTRUCT_NODE1(z, n, text)                                                                                             \
+    template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                                             \
+        text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : a_(static_pool())                                                          \
+        {                                                                                                                       \
+            a_.construct(element());                                                                                            \
         }
 
-#define CONSTRUCT_NODE2(z, n, text)                                                                             \
-    template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                             \
-        text(allocator_type const & a, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : a_(a)                                  \
-        {                                                                                                       \
-            a_.construct(element(), BOOST_PP_REPEAT(n, PARAMETER_DECL, 0));                                     \
+#define CONSTRUCT_NODE2(z, n, text)                                                                                             \
+    template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                                             \
+        text(allocator_type const & a, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : a_(a)                                            \
+        {                                                                                                                       \
+            a_.construct(element(), BOOST_PP_REPEAT(n, PARAMETER_DECL, 0));                                                     \
         }
 
-#define CONSTRUCT_NODE3(z, n, text)                                                                             \
-    template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                             \
+#define CONSTRUCT_NODE3(z, n, text)                                                                                             \
+    template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                                             \
         text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : base(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)) {}                                                                                                        
 
-#define CONSTRUCT_NODE4(z, n, text)                                                                             \
-    template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                             \
-        text(allocator_type const & a, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : base(a, BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)) \
-        {                                                                                                       \
+#define CONSTRUCT_NODE4(z, n, text)                                                                                             \
+    template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                                             \
+        text(allocator_type const & a, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : base(a, BOOST_PP_REPEAT(n, PARAMETER_DECL, 0))   \
+        {                                                                                                                       \
         }                                                                                                        
 
-#define ALLOCATE_NODE1(z, n, text)                                                                              \
-    template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                             \
-        static node * text(allocator_type const & a, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                   \
-        {                                                                                                       \
-            return new (a) node(a, BOOST_PP_REPEAT(n, PARAMETER_DECL, 0));                                   \
+#define ALLOCATE_NODE1(z, n, text)                                                                                              \
+    template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                                             \
+        static node * text(allocator_type const & a, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                      \
+        {                                                                                                                       \
+            return new (a) node(a, BOOST_PP_REPEAT(n, PARAMETER_DECL, 0));                                                      \
         }
 
+#define MAKE_NODE_ALLOCATOR1(z, n, text)                                                                                        \
+    template<template <typename, typename...> class Alloc, typename T, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename... Args>  \
+        typename node<T, Alloc<T, BOOST_PP_REPEAT(n, TEMPLATEARGUMENT_DECL, 0)> >::allocator_type text(Args&&... args)          \
+        {                                                                                                                       \
+            return typename node<T, Alloc<T, BOOST_PP_REPEAT(n, TEMPLATEARGUMENT_DECL, 0)> >::allocator_type(args...);          \
+        }
+    
 /**
     Object wrapper.
 */
@@ -325,25 +333,7 @@ template<template <typename, typename...> class Alloc, typename T, typename... A
     }
     
     
-template<template <typename, typename...> class Alloc, typename T, typename T1, typename... Args>
-    typename node<T, Alloc<T, T1> >::allocator_type make_node_allocator(Args&&... args)
-    {
-        return typename node<T, Alloc<T, T1> >::allocator_type(args...);
-    }
-    
-    
-template<template <typename, typename...> class Alloc, typename T, typename T1, typename T2, typename... Args>
-    typename node<T, Alloc<T, T1, T2> >::allocator_type make_node_allocator(Args&&... args)
-    {
-        return typename node<T, Alloc<T, T1, T2> >::allocator_type(args...);
-    }
-    
-    
-template<template <typename, typename...> class Alloc, typename T, typename T1, typename T2, typename T3, typename... Args>
-    typename node<T, Alloc<T, T1, T2, T3> >::allocator_type make_node_allocator(Args&&... args)
-    {
-        return typename node<T, Alloc<T, T1, T2, T3> >::allocator_type(args...);
-    }
+BOOST_PP_REPEAT_FROM_TO(1, 10, MAKE_NODE_ALLOCATOR1, make_node_allocator)
     
     
 } // namespace boost
