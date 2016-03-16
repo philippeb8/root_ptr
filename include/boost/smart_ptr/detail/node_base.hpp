@@ -105,7 +105,7 @@ protected:
 
 #define CONSTRUCT_NODE2(z, n, text)                                                                             \
     template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                             \
-        text(allocator_type & a, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : a_(a)                                  \
+        text(allocator_type const & a, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : a_(a)                                  \
         {                                                                                                       \
             a_.construct(element(), BOOST_PP_REPEAT(n, PARAMETER_DECL, 0));                                     \
         }
@@ -127,7 +127,6 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
     {
     public:
         typedef T data_type;
-
         typedef typename PoolAllocator::template rebind< node<T, PoolAllocator> >::other allocator_type;
 
     private:
@@ -138,7 +137,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             return pool_;
         }
 
-        allocator_type & a_;
+        allocator_type const & a_;
         
         typename std::aligned_storage<sizeof(T), alignof(T)>::type elem_;       /**< Pointee object. */
         
@@ -151,7 +150,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             a_.construct(element());
         }
         
-        node(allocator_type & a) : a_(a)
+        node(allocator_type const & a) : a_(a)
         {
             a_.construct(element());
         }
@@ -217,7 +216,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             return c.allocate(1);
         }
 
-
+        
         /**
             Deallocates a @c node_proxy from the fast pool allocator.
             
