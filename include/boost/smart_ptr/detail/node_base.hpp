@@ -318,7 +318,7 @@ template<typename T, class Alloc, typename... Args>
     }
     
     
-template<template <typename> class Alloc, typename T, typename... Args>
+template<template <typename...> class Alloc, typename T, typename... Args>
     typename node<T, Alloc<T> >::allocator_type make_node_allocator(Args&&... args)
     {
         return typename node<T, Alloc<T> >::allocator_type(args...);
