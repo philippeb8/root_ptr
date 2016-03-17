@@ -176,7 +176,7 @@ template <typename T>
     protected:
         node_base * header() const
         {
-            return (typename node<value_type>::classof) static_cast<value_type *>(rootof<is_polymorphic<value_type>::value>::get(po_));
+            return static_cast<node_base *>((typename node<value_type>::classof)(static_cast<value_type *>(rootof<is_polymorphic<value_type>::value>::get(po_))));
         }
     };
 
