@@ -196,10 +196,49 @@ template <typename T>
 
     
 template <>
-    class node_element<void> : public node_element<long>
+    class node_element<void> : public smart_ptr::detail::node_base
     {
+        friend class classof;
+        
+    public:
+        typedef int data_type;
+
+        /**
+            Cast operator used by @c node_ptr_conodeon::header() .
+        */
+        
+        class classof
+        {
+            node_element * p_;                                                  /**< Address of the @c node the element belong to. */
+
+        public:
+            /**
+                Casts from a @c data_type to its parent @c node object.
+                
+                @param  p   Address of a @c data_type member object to cast from.
+            */
+            
+            classof(void * p) 
+            : p_(smart_ptr::detail::classof((data_type node_element::*)(& node_element::elem_), static_cast<data_type *>(p))) 
+            {
+            }
+            
+            
+            /**
+                @return     Address of the parent @c node object.
+            */
+            
+            operator node_element * () const 
+            { 
+                return p_; 
+            }
+        };
+
+    protected:
+
+        typename std::aligned_storage<sizeof(data_type), alignof(data_type)>::type elem_;       /**< Pointee object.*/
     };
-    
+
     
 template <typename T, typename PoolAllocator = pool_allocator<T> >
     class node : public node_element<T>

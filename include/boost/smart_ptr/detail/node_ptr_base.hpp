@@ -188,7 +188,7 @@ template <typename T>
                     (
                         rootof<is_polymorphic<value_type>::value>::get
                         (
-                            static_cast<typename node_element<value_type>::data_type *>(po_)
+                            po_
                         )
                     )
                 )
