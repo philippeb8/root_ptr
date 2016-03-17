@@ -72,7 +72,7 @@ struct node_base;
 
 struct node_base : public boost::detail::sp_counted_base
 {
-    intrusive_list::node node_tag_;					/**< Tag used to enlist to @c node_proxy::elements_ . */
+    intrusive_list::node node_tag_;                                             /**< Tag used to enlist to @c node_proxy::elements_ . */
 
     node_base()
     {
@@ -83,9 +83,19 @@ struct node_base : public boost::detail::sp_counted_base
     }
 
 protected:
-    virtual void dispose() 				                    {} 				/**< dunodey */
-    virtual void * get_deleter( std::type_info const & ti ) { return 0; } 	/**< dunodey */
-    virtual void * get_untyped_deleter() 					{ return 0; } 	/**< dunodey */
+    virtual void dispose()
+    {
+    }
+    
+    virtual void * get_deleter(std::type_info const &)
+    { 
+        return 0; 
+    }
+    
+    virtual void * get_untyped_deleter()
+    { 
+        return 0; 
+    }
 };
 
 
@@ -148,14 +158,14 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         typedef typename PoolAllocator::template rebind< node<T, PoolAllocator> >::other allocator_type;
 
     private:
-        static allocator_type & static_pool() /**< Pool where all sets are allocated. */
+        static allocator_type & static_pool()                                   /**< Pool where all sets are allocated. */
         {
             static allocator_type pool_;
             
             return pool_;
         }
 
-        typename std::aligned_storage<sizeof(T), alignof(T)>::type elem_;       /**< Pointee object. */
+        typename std::aligned_storage<sizeof(T), alignof(T)>::type elem_;       /**< Pointee object. @note Needs to be the first member variable because of further casts to different allocator types.*/
         
         allocator_type a_;
         
@@ -181,14 +191,19 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             @return		Pointee object address.
         */
         
-        data_type * element() 				{ return reinterpret_cast<data_type *>(& elem_); }
+        data_type * element() 				
+        { 
+            return reinterpret_cast<data_type *>(& elem_); 
+        }
 
         virtual ~node()
         {
             container::allocator_traits<allocator_type>::destroy(a_, element());
-            dispose();
         }
-        virtual void dispose()              {}
+        
+        virtual void dispose()              
+        {
+        }
 
     public:
         /**
@@ -197,7 +212,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         
         class classof
         {
-            node * p_;							/**< Address of the @c node the element belong to. */
+            node * p_;                                                          /**< Address of the @c node the element belong to. */
 
         public:
             /**
@@ -206,14 +221,20 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
                 @param	p	Address of a @c data_type member object to cast from.
             */
             
-            classof(data_type * p) : p_(smart_ptr::detail::classof((data_type node::*)(& node::elem_), p)) {}
+            classof(data_type * p) 
+            : p_(smart_ptr::detail::classof((data_type node::*)(& node::elem_), p)) 
+            {
+            }
             
             
             /**
                 @return		Address of the parent @c node object.
             */
             
-            operator node * () const { return p_; }
+            operator node * () const 
+            { 
+                return p_; 
+            }
         };
 
         
@@ -260,7 +281,7 @@ template <typename PoolAllocator>
     {
         typedef void data_type;
 
-        long elem_; 									/**< Pointee placeholder.  @note Aligned. */
+        long elem_;                                                             /**< Pointee placeholder.*/
 
         node();
 
@@ -268,12 +289,23 @@ template <typename PoolAllocator>
         class classof;
         friend class classof;
 
-        data_type * element() 				{ return & elem_; }
+        data_type * element()
+        { 
+            return & elem_; 
+        }
 
-        virtual ~node()					{}
-        virtual void dispose() 				{}
+        virtual ~node()
+        {
+        }
+        
+        virtual void dispose()
+        {
+        }
 
-        virtual void * static_deleter( std::type_info const & ti ) { return 0; }
+        virtual void * static_deleter(std::type_info const &) 
+        {
+            return 0; 
+        }
 
     public:
         /**
@@ -282,7 +314,7 @@ template <typename PoolAllocator>
         
         class classof
         {
-            node * p_;							/**< Address of the @c node the element belong to. */
+            node * p_;                                                          /**< Address of the @c node the element belong to. */
 
         public:
             /**
@@ -291,14 +323,20 @@ template <typename PoolAllocator>
                 @param	p	Address of a @c data_type member object to cast from.
             */
             
-            classof(data_type * p) : p_(smart_ptr::detail::classof((long node::*)(& node::elem_), static_cast<long *>(p))) {}
+            classof(data_type * p) 
+            : p_(smart_ptr::detail::classof((long node::*)(& node::elem_), static_cast<long *>(p))) 
+            {
+            }
             
             
             /**
                 @return		Address of the parent @c node object.
             */
             
-            operator node * () const { return p_; }
+            operator node * () const 
+            { 
+                return p_; 
+            }
         };
     };
 
