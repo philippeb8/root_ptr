@@ -150,28 +150,102 @@ protected:
     Object wrapper.
 */
 
+template <typename T>
+    class node_element : public smart_ptr::detail::node_base
+    {
+        friend class classof;
+        
+    public:
+        typedef T data_type;
+
+        /**
+            Cast operator used by @c node_ptr_conodeon::header() .
+        */
+        
+        class classof
+        {
+            node_element * p_;                                                  /**< Address of the @c node the element belong to. */
+
+        public:
+            /**
+                Casts from a @c data_type to its parent @c node object.
+                
+                @param  p   Address of a @c data_type member object to cast from.
+            */
+            
+            classof(data_type * p) 
+            : p_(smart_ptr::detail::classof((data_type node_element::*)(& node_element::elem_), p)) 
+            {
+            }
+            
+            
+            /**
+                @return     Address of the parent @c node object.
+            */
+            
+            operator node_element * () const 
+            { 
+                return p_; 
+            }
+        };
+
+    protected:
+
+        typename std::aligned_storage<sizeof(data_type), alignof(data_type)>::type elem_;       /**< Pointee object.*/
+    };
+
+    
+template <>
+    class node_element<void> : public smart_ptr::detail::node_base
+    {
+        friend class classof;
+        
+    public:
+        typedef long data_type;
+
+        /**
+            Cast operator used by @c node_ptr_conodeon::header() .
+        */
+        
+        class classof
+        {
+            node_element * p_;                                                  /**< Address of the @c node the element belong to. */
+
+        public:
+            /**
+                Casts from a @c data_type to its parent @c node object.
+                
+                @param  p   Address of a @c data_type member object to cast from.
+            */
+            
+            classof(data_type * p) 
+            : p_(smart_ptr::detail::classof((data_type node_element::*)(& node_element::elem_), p)) 
+            {
+            }
+            
+            
+            /**
+                @return     Address of the parent @c node object.
+            */
+            
+            operator node_element * () const 
+            { 
+                return p_; 
+            }
+        };
+
+    protected:
+
+        typename std::aligned_storage<sizeof(data_type), alignof(data_type)>::type elem_;       /**< Pointee object.*/
+    };
+    
+    
 template <typename T, typename PoolAllocator = pool_allocator<T> >
-    class node : public smart_ptr::detail::node_base
+    class node : public node_element<T>
     {
     public:
         typedef T data_type;
         typedef typename PoolAllocator::template rebind< node<T, PoolAllocator> >::other allocator_type;
-
-    private:
-        static allocator_type & static_pool()                                   /**< Pool where all sets are allocated. */
-        {
-            static allocator_type pool_;
-            
-            return pool_;
-        }
-
-        typename std::aligned_storage<sizeof(T), alignof(T)>::type elem_;       /**< Pointee object. @note Needs to be the first member variable because of further casts to different allocator types.*/
-        
-        allocator_type a_;
-        
-    public:
-        class classof;
-        friend class classof;
 
         node() 
         : a_(static_pool())
@@ -207,39 +281,6 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         {
         }
 
-    public:
-        /**
-            Cast operator used by @c node_ptr_conodeon::header() .
-        */
-        
-        class classof
-        {
-            node * p_;                                                          /**< Address of the @c node the element belong to. */
-
-        public:
-            /**
-                Casts from a @c data_type to its parent @c node object.
-                
-                @param	p	Address of a @c data_type member object to cast from.
-            */
-            
-            classof(data_type * p) 
-            : p_(smart_ptr::detail::classof((data_type node::*)(& node::elem_), p)) 
-            {
-            }
-            
-            
-            /**
-                @return		Address of the parent @c node object.
-            */
-            
-            operator node * () const 
-            { 
-                return p_; 
-            }
-        };
-
-        
         /**
             Allocates a new @c node_proxy using the fast pool allocator.
             
@@ -275,71 +316,18 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         {
             static_cast<node *>(p)->a_.deallocate(static_cast<node *>(p), 1);
         }
-    };
 
-
-template <typename PoolAllocator>
-    class node<void, PoolAllocator> : public smart_ptr::detail::node_base
-    {
-        typedef void data_type;
-
-        long elem_;                                                             /**< Pointee placeholder.*/
-
-        node();
-
-    public:
-        class classof;
-        friend class classof;
-
-        data_type * element()
-        { 
-            return & elem_; 
-        }
-
-        virtual ~node()
-        {
-        }
+    private:
+        using node_element<T>::elem_;
         
-        virtual void dispose()
+        static allocator_type & static_pool()                                   /**< Pool where all sets are allocated. */
         {
+            static allocator_type pool_;
+            
+            return pool_;
         }
 
-        virtual void * static_deleter(std::type_info const &) 
-        {
-            return 0; 
-        }
-
-    public:
-        /**
-            Cast operator used by @c node_ptr_conodeon::header() .
-        */
-        
-        class classof
-        {
-            node * p_;                                                          /**< Address of the @c node the element belong to. */
-
-        public:
-            /**
-                Casts from a @c data_type to its parent @c node object.
-                
-                @param	p	Address of a @c data_type member object to cast from.
-            */
-            
-            classof(data_type * p) 
-            : p_(smart_ptr::detail::classof((long node::*)(& node::elem_), static_cast<long *>(p))) 
-            {
-            }
-            
-            
-            /**
-                @return		Address of the parent @c node object.
-            */
-            
-            operator node * () const 
-            { 
-                return p_; 
-            }
-        };
+        allocator_type a_;        
     };
 
 
