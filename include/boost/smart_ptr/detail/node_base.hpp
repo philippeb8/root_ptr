@@ -190,7 +190,6 @@ template <typename T>
         };
 
     protected:
-
         typename std::aligned_storage<sizeof(data_type), alignof(data_type)>::type elem_;       /**< Pointee object.*/
     };
 
@@ -235,7 +234,6 @@ template <>
         };
 
     protected:
-
         typename std::aligned_storage<sizeof(data_type), alignof(data_type)>::type elem_;       /**< Pointee object.*/
     };
 
