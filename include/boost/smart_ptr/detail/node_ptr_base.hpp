@@ -183,7 +183,15 @@ template <typename T>
             return static_cast<node_base *>
             (
                 (typename node_element<value_type>::classof)
-                (static_cast<value_type *>(rootof<is_polymorphic<value_type>::value>::get(po_)))
+                (
+                    static_cast<value_type *>
+                    (
+                        rootof<is_polymorphic<value_type>::value>::get
+                        (
+                            static_cast<typename node_element<value_type>::data_type *>(po_)
+                        )
+                    )
+                )
             );
         }
     };
