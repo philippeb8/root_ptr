@@ -54,7 +54,8 @@ template <typename T>
         value_type * po_;
 
     public:
-        node_ptr_common() : po_(0)
+        node_ptr_common() 
+        : po_(0)
         {
         }
 
@@ -67,16 +68,19 @@ template <typename T>
         }
 
         template <typename V, typename PoolAllocator>
-            node_ptr_common(node<V, PoolAllocator> * p) : po_(p->element())
+            node_ptr_common(node<V, PoolAllocator> * p) 
+            : po_(p->element())
             {
             }
 
         template <typename V>
-            node_ptr_common(node_ptr_common<V> const & p) : po_(p.share())
+            node_ptr_common(node_ptr_common<V> const & p) 
+            : po_(p.share())
             {
             }
 
-            node_ptr_common(node_ptr_common<value_type> const & p) : po_(p.share())
+            node_ptr_common(node_ptr_common<value_type> const & p) 
+            : po_(p.share())
             {
             }
 
@@ -191,21 +195,25 @@ template <typename T>
         using base::po_;
 
     public:
-        node_ptr_base() : base()
+        node_ptr_base() 
+        : base()
         {
         }
 
         template <typename V, typename PoolAllocator>
-            node_ptr_base(node<V, PoolAllocator> * p) : base(p)
+            node_ptr_base(node<V, PoolAllocator> * p) 
+            : base(p)
             {
             }
 
         template <typename V>
-            node_ptr_base(node_ptr_base<V> const & p) : base(p)
+            node_ptr_base(node_ptr_base<V> const & p) 
+            : base(p)
             {
             }
 
-            node_ptr_base(node_ptr_base<value_type> const & p) : base(p)
+            node_ptr_base(node_ptr_base<value_type> const & p) 
+            : base(p)
             {
             }
 
@@ -249,21 +257,25 @@ template <typename T, size_t N>
         using base::po_;
 
     public:
-        node_ptr_base() : base()
+        node_ptr_base() 
+        : base()
         {
         }
 
         template <typename V, typename PoolAllocator>
-            node_ptr_base(node<V, PoolAllocator> * p) : base(p)
+            node_ptr_base(node<V, PoolAllocator> * p) 
+            : base(p)
             {
             }
 
         template <typename V>
-            node_ptr_base(node_ptr_base<V> const & p) : base(p)
+            node_ptr_base(node_ptr_base<V> const & p) 
+            : base(p)
             {
             }
 
-            node_ptr_base(node_ptr_base<value_type> const & p) : base(p)
+            node_ptr_base(node_ptr_base<value_type> const & p) 
+            : base(p)
             {
             }
 
@@ -307,21 +319,25 @@ template <>
         using base::po_;
 
     public:
-        node_ptr_base() : base()
+        node_ptr_base() 
+        : base()
         {
         }
 
         template <typename V, typename PoolAllocator>
-            node_ptr_base(node<V, PoolAllocator> * p) : base(p)
+            node_ptr_base(node<V, PoolAllocator> * p) 
+            : base(p)
             {
             }
 
         template <typename V>
-            node_ptr_base(node_ptr_base<V> const & p) : base(p)
+            node_ptr_base(node_ptr_base<V> const & p) 
+            : base(p)
             {
             }
 
-            node_ptr_base(node_ptr_base<value_type> const & p) : base(p)
+            node_ptr_base(node_ptr_base<value_type> const & p) 
+            : base(p)
             {
             }
 

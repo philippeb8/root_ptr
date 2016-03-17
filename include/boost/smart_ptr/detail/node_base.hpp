@@ -173,12 +173,14 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         class classof;
         friend class classof;
 
-        node() : a_(static_pool())
+        node() 
+        : a_(static_pool())
         {
             container::allocator_traits<allocator_type>::construct(a_, element());
         }
         
-        node(allocator_type const & a) : a_(a)
+        node(allocator_type const & a) 
+        : a_(a)
         {
             container::allocator_traits<allocator_type>::construct(a_, element());
         }
@@ -349,7 +351,8 @@ template <typename T>
         
         using typename base::allocator_type;
         
-        fastnode() : base()
+        fastnode() 
+        : base()
         {
         }
 

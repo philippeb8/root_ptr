@@ -91,7 +91,9 @@ class node_proxy
     }
     
     
-    node_proxy(node_proxy const & x) : destroying_(x.destroying_), node_list_(x.node_list_)
+    node_proxy(node_proxy const & x) 
+    : destroying_(x.destroying_)
+    , node_list_(x.node_list_)
     {
         unify(x);
     }
@@ -281,7 +283,9 @@ template <typename T>
             @param  p   New pointee object to manage.
         */
         
-        explicit node_ptr(node_proxy const & x) : base(), x_(x)
+        explicit node_ptr(node_proxy const & x) 
+        : base()
+        , x_(x)
         {
         }
 
@@ -293,7 +297,9 @@ template <typename T>
         */
         
         template <typename V, typename PoolAllocator>
-            explicit node_ptr(node_proxy const & x, node<V, PoolAllocator> * p) : base(p), x_(x)
+            explicit node_ptr(node_proxy const & x, node<V, PoolAllocator> * p) 
+            : base(p)
+            , x_(x)
             {
                 x_.init(p);
             }
@@ -310,7 +316,9 @@ template <typename T>
         */
 
         template <typename V>
-            node_ptr(node_ptr<V> const & p) : base(p), x_(p.x_)
+            node_ptr(node_ptr<V> const & p) 
+            : base(p)
+            , x_(p.x_)
             {
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(node_proxy::static_mutex());
@@ -324,7 +332,9 @@ template <typename T>
             @param	p	New pointer to manage.
         */
 
-            node_ptr(node_ptr<T> const & p) : base(p), x_(p.x_)
+            node_ptr(node_ptr<T> const & p) 
+            : base(p)
+            , x_(p.x_)
             {
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(node_proxy::static_mutex());
@@ -446,11 +456,15 @@ template <typename T>
     {
         using node_ptr<T>::reset;
         
-        root_ptr() : node_proxy(), node_ptr<T>(* static_cast<node_proxy *>(this))
+        root_ptr() 
+        : node_proxy()
+        , node_ptr<T>(* static_cast<node_proxy *>(this))
         {
         }
                 
-        root_ptr(root_ptr const & p) : node_proxy(p), node_ptr<T>(* static_cast<node_ptr<T> *>(this))
+        root_ptr(root_ptr const & p) 
+        : node_proxy(p)
+        , node_ptr<T>(* static_cast<node_ptr<T> *>(this))
         {
         }
         
@@ -461,7 +475,8 @@ template <typename T>
         */
         
         template <typename V, typename PoolAllocator>
-            root_ptr(node<V, PoolAllocator> * p) : node_ptr<T>(*this, p)
+            root_ptr(node<V, PoolAllocator> * p) 
+            : node_ptr<T>(*this, p)
             {
             }
             
