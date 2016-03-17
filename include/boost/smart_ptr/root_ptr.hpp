@@ -69,12 +69,12 @@ class node_proxy
     template <typename> friend class node_ptr;
     template <typename> friend class root_ptr;
 
-    bool destroying_;                                               /**< Destruction sequence initiated. */
-    mutable smart_ptr::detail::intrusive_list::node proxy_tag_;     /**< Tag used to enlist to @c node_proxy::includes_ . */
-    mutable smart_ptr::detail::intrusive_list node_list_;           /**< List of all pointee objects belonging to a @c node_proxy . */
+    bool destroying_;                                                           /**< Destruction sequence initiated. */
+    mutable smart_ptr::detail::intrusive_list::node proxy_tag_;                 /**< Tag used to enlist to @c node_proxy::includes_ . */
+    mutable smart_ptr::detail::intrusive_list node_list_;                       /**< List of all pointee objects belonging to a @c node_proxy . */
 
 #ifndef BOOST_DISABLE_THREADS
-    static mutex & static_mutex()                                   /**< Main global mutex used for thread safety */
+    static mutex & static_mutex()                                               /**< Main global mutex used for thread safety */
     {
         static mutex mutex_;
         
@@ -176,7 +176,7 @@ class node_proxy
     
 
     /**
-        Enlist & initialize pointee objects belonging to the same @c node_proxy .  This initialization occurs when a pointee object is affected to the first pointer living on the stack it encounters.
+        Enlist & initialize pointee objects belonging to the same @c node_proxy .
         
         @param  p   Pointee object to initialize.
     */
@@ -193,7 +193,7 @@ class node_proxy
         
         if (size() == 1)
         {
-            // destroy for real
+            // destroy
             destroying(true);
 
             for (intrusive_list::iterator<node_base, &node_base::node_tag_> m = node_list_.begin(), n = node_list_.begin(); m != node_list_.end(); m = n)
@@ -270,7 +270,7 @@ template <typename T>
         using base::share;
         using base::po_;
 
-        node_proxy const & x_;                      /**< Pointer to the @c node_proxy node @c node_ptr<> belongs to. */
+        node_proxy const & x_;                                                  /**< Pointer to the @c node_proxy node @c node_ptr<> belongs to. */
         
     public:
         using base::reset;
@@ -300,7 +300,7 @@ template <typename T>
 
         
     public:
-        typedef T                           value_type;
+        typedef T value_type;
 
 
         /**
