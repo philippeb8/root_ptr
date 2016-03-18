@@ -143,13 +143,7 @@ int main(int argv, char * argc[])
     }
     cout << endl;
     
-    for (list<neuron_base::pointer>::iterator i = t100->sub_.begin(); i != t100->sub_.end(); ++ i)
-    {
-        cout << (* i)->exp_ << endl;
-
-        for (list<neuron_base::pointer>::iterator j = (* i)->sub_.begin(); j != (* i)->sub_.end(); ++ j)
-            cout << "  " << (* j)->exp_ << endl;
-    }
+    cout << * t100 << endl;
     
     return 0;
 }

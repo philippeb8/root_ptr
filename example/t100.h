@@ -51,6 +51,8 @@ inline std::ostream & operator << (std::ostream & out, neuron_base const & n)
     
     for (std::list<neuron_base::pointer>::const_iterator i = n.sub_.begin(); i != n.sub_.end(); ++ i)
         out << ** i << std::endl;
+    
+    return out;
 }
 
 
