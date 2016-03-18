@@ -23,9 +23,11 @@
 #include <iterator>
 #include <boost/regex.hpp>
 #include <boost/smart_ptr/root_ptr.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim_all.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
-#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/algorithm/string/classification.hpp>
 
 #include "t100.h"
 
@@ -37,20 +39,18 @@ using boost::detail::sh::neuron_sight;
 void foo()
 {
     pstream page(string("lynx --dump http://www.unifiedfieldtheoryfinite.com/files/experiment.pdf | pdftotext - -"), pstreams::pstdout);
-    stringstream formatted;
-    
-    for (string line; getline(page.out(), line, '.');)
-    {
-        boost::algorithm::trim_all(line);
-        boost::algorithm::to_lower(line);
-        boost::algorithm::replace_all(line, "\n", " ");
-
-        formatted << line << '.' << endl;
-    }
     
     list<string> sentence;
-    for (string line; getline(formatted, line, '.');)
+
+    for (string line; getline(page.out(), line, '.');)
     {
+        boost::algorithm::replace_all(line, "\n", " ");
+        boost::algorithm::trim_all(line);
+        boost::algorithm::to_lower(line);
+        boost::algorithm::replace_all(line, "'", "\\'");
+        boost::algorithm::replace_all(line, "\"", "\\\"");
+        boost::algorithm::trim_if(line, ! boost::algorithm::is_alpha());
+
         sentence.push_back(line);
     }
     
@@ -72,13 +72,13 @@ void foo()
     
     for (set<string>::iterator i = mind.begin(); i != mind.end(); ++ i)
         cout << *i << endl;
-    
-    return 0;
 }
 
 
 int main(int argv, char * argc[])
 {
+    foo();
+    
     root_ptr<neuron_sight> t100;
     t100 = new node<neuron_sight>(t100, "I eat ([a-z]+) then drink ([a-z]+)");
     t100->sub_[0].second = new node<neuron_sight>(t100, "beef|chicken");
