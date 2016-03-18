@@ -40,7 +40,7 @@ void foo()
 {
     pstream page(string("lynx --dump http://www.unifiedfieldtheoryfinite.com/files/experiment.pdf | pdftotext - -"), pstreams::pstdout);
     
-    list<string> sentence;
+    list<string> text;
 
     for (string line; getline(page.out(), line, '.');)
     {
@@ -51,23 +51,62 @@ void foo()
         boost::algorithm::replace_all(line, "\"", "\\\"");
         boost::algorithm::trim_if(line, ! boost::algorithm::is_alpha());
 
-        sentence.push_back(line);
+        text.push_back(line);
     }
     
     set<string> mind;
-    for (list<string>::iterator i = sentence.begin(); i != sentence.end(); ++ i)
+    
+    for (list<string>::iterator i = text.begin(); i != text.end(); ++ i)
     {
-        for (list<string>::iterator j = sentence.begin(); j != sentence.end(); ++ j)
+        for (list<string>::iterator j = text.begin(); j != text.end(); ++ j)
         {
             if (i == j)
                 continue;
             
             pstream proc(string("bash -c \"wdiff <(echo '") + *i + string("' ) <(echo '") + *j + string("')\""), pstreams::pstdout);
             
+            string output;
             for (string line; getline(proc.out(), line);)
-                mind.insert(line);
+                output += line;
+
+            struct
+            {
+                string operator () (string const & input)
+                {
+                    static boost::regex exp("(.*)\\[\\-(.*)\\-\\] \\{\\+(.*)\\+\\}(.*)");
+
+                    string res;
+                    boost::match_results<std::string::const_iterator> what;
+
+                    if (boost::regex_match(input, what, exp, boost::match_default | boost::match_partial))
+                    {
+                        if (what[0].matched)
+                        {
+                            for (unsigned i = 1; i < what.size(); ++ i)
+                            {
+                                if (what[i].matched)
+                                {
+                                    switch (i)
+                                    {
+                                    case 1: res += what[i].str(); break;
+                                    case 2: res += ".*"; break;
+                                    case 3: break;
+                                    case 4: res += what[i].str(); break;
+                                    }
+                                }
+                            }
+                            
+                            return operator () (res);
+                        }
+                    }
+                    
+                    return input;
+                }
+            } parse;
+            
+            mind.insert(parse(output));
         }
-        cout << distance(sentence.begin(), i) * 100 / distance(sentence.begin(), sentence.end()) << "%..." << endl;
+        cout << distance(text.begin(), i) * 100 / distance(text.begin(), text.end()) << "%..." << endl;
     }
     
     for (set<string>::iterator i = mind.begin(); i != mind.end(); ++ i)
