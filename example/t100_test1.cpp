@@ -49,6 +49,8 @@ void foo()
         boost::algorithm::to_lower(line);
         boost::algorithm::replace_all(line, "'", "\\'");
         boost::algorithm::replace_all(line, "\"", "\\\"");
+        boost::algorithm::replace_all(line, "(", "\\(");
+        boost::algorithm::replace_all(line, ")", "\\)");
         boost::algorithm::trim_if(line, ! boost::algorithm::is_alpha());
 
         text.push_back(line);
@@ -92,8 +94,8 @@ void foo()
                                         switch (i)
                                         {
                                         case 1: res += what[i].str(); break;
-                                        case 2: res += "(" + what[i].str() + "|"; break;
-                                        case 3: res += what[i].str() + ")"; break;
+                                        case 2: res += "(.*|"; break;
+                                        case 3: res += ".*)"; break;
                                         case 4: res += what[i].str(); break;
                                         }
                                         break;
@@ -103,7 +105,7 @@ void foo()
                                         switch (i)
                                         {
                                         case 1: res += what[i].str(); break;
-                                        case 2: res += "(" + what[i].str() + ")?"; break;
+                                        case 2: res += "(.*)?"; break;
                                         case 3: res += what[i].str(); break;
                                         }
                                         break;
