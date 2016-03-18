@@ -18,7 +18,7 @@
 #define T100_HPP_INCLUDED
 
 
-#include <set>
+#include <list>
 #include <string>
 #include <iostream>
 #include <boost/regex.hpp>
@@ -36,7 +36,7 @@ struct neuron_base
 
     node_proxy const & x_;
     boost::regex exp_;
-    std::set<pointer> sub_;
+    std::list<pointer> sub_;
 
     neuron_base(node_proxy const & x, std::string const & s) : x_(x), exp_(s) {}
     virtual ~neuron_base() {};
@@ -49,18 +49,8 @@ inline std::ostream & operator << (std::ostream & out, neuron_base const & n)
 {
     out << n.exp_ << ":" << std::endl;
     
-    for (std::set<neuron_base::pointer>::const_iterator i = n.sub_.begin(); i != n.sub_.end(); ++ i)
+    for (std::list<neuron_base::pointer>::const_iterator i = n.sub_.begin(); i != n.sub_.end(); ++ i)
         out << ** i << std::endl;
-}
-
-inline bool operator < (boost::neuron_base const & x1, boost::neuron_base const & x2)
-{
-    return x1.exp_ < x2.exp_;
-}
-
-inline bool operator < (boost::node_ptr<boost::neuron_base> const & x1, boost::node_ptr<boost::neuron_base> const & x2)
-{
-    return * x1 < * x2;
 }
 
 

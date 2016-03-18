@@ -103,7 +103,7 @@ int main(int argv, char * argc[])
                                             break;
                                         case 3: 
                                             res += ")"; 
-                                            n.sub_.insert(node_ptr<neuron_base>(n.x_, new node<neuron_base>(n.x_, temp + "|" + what[i].str())));
+                                            n.sub_.push_back(node_ptr<neuron_base>(n.x_, new node<neuron_base>(n.x_, temp + "|" + what[i].str())));
                                             break;
                                         case 4: res += what[i].str(); break;
                                         }
@@ -116,7 +116,7 @@ int main(int argv, char * argc[])
                                         case 1: res += what[i].str(); break;
                                         case 2: 
                                             res += "(.*)?"; 
-                                            n.sub_.insert(node_ptr<neuron_base>(n.x_, new node<neuron_base>(n.x_, what[i].str()))); 
+                                            n.sub_.push_back(node_ptr<neuron_base>(n.x_, new node<neuron_base>(n.x_, what[i].str()))); 
                                             break;
                                         case 3: res += what[i].str(); break;
                                         }
@@ -135,7 +135,7 @@ int main(int argv, char * argc[])
             
             node_ptr<neuron_base> n = node_ptr<neuron_base>(t100, new node<neuron_base>(t100, "(.*)"));
             n->exp_ = parse(parse(parse(output, * n, 0), * n, 1), * n, 2);
-            t100->sub_.insert(n);
+            t100->sub_.push_back(n);
         }
         
         cout << "\r" << distance(text.begin(), i) * 100 / distance(text.begin(), text.end()) << "%...";
@@ -143,11 +143,11 @@ int main(int argv, char * argc[])
     }
     cout << endl;
     
-    for (set<neuron_base::pointer>::iterator i = t100->sub_.begin(); i != t100->sub_.end(); ++ i)
+    for (list<neuron_base::pointer>::iterator i = t100->sub_.begin(); i != t100->sub_.end(); ++ i)
     {
         cout << (* i)->exp_ << endl;
 
-        for (set<neuron_base::pointer>::iterator j = (* i)->sub_.begin(); j != (* i)->sub_.end(); ++ j)
+        for (list<neuron_base::pointer>::iterator j = (* i)->sub_.begin(); j != (* i)->sub_.end(); ++ j)
             cout << "  " << (* j)->exp_ << endl;
     }
     
