@@ -23,6 +23,7 @@
 #include <iostream>
 #include <boost/regex.hpp>
 #include <boost/smart_ptr/root_ptr.hpp>
+#include "indent_facet.hpp"
 
 
 namespace boost
@@ -47,10 +48,16 @@ struct neuron_base
 
 inline std::ostream & operator << (std::ostream & out, neuron_base const & n)
 {
-    out << n.exp_ << ":" << std::endl;
+    std::ios_base::sync_with_stdio(false);
+
+    out << "- " << n.exp_ << std::endl;
+    
+    out << indent_manip::push;
     
     for (std::list<neuron_base::pointer>::const_iterator i = n.sub_.begin(); i != n.sub_.end(); ++ i)
         out << ** i << std::endl;
+    
+    out << indent_manip::pop;
     
     return out;
 }
