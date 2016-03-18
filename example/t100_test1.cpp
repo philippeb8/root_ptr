@@ -92,8 +92,8 @@ void foo()
                                         switch (i)
                                         {
                                         case 1: res += what[i].str(); break;
-                                        case 2: res += "(.*)"; break;
-                                        case 3: break;
+                                        case 2: res += "(" + what[i].str() + "|"; break;
+                                        case 3: res += what[i].str() + ")"; break;
                                         case 4: res += what[i].str(); break;
                                         }
                                         break;
@@ -103,7 +103,7 @@ void foo()
                                         switch (i)
                                         {
                                         case 1: res += what[i].str(); break;
-                                        case 2: res += "(.*)"; break;
+                                        case 2: res += "(" + what[i].str() + ")?"; break;
                                         case 3: res += what[i].str(); break;
                                         }
                                         break;
