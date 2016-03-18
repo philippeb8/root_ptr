@@ -103,7 +103,7 @@ int main(int argv, char * argc[])
                                             break;
                                         case 3: 
                                             res += ")"; 
-                                            n.sub_.push_back(node_ptr<neuron_base>(n.x_, new node<neuron_base>(n.x_, temp + "|" + what[i].str())));
+                                            n.sub_.push_front(node_ptr<neuron_base>(n.x_, new node<neuron_base>(n.x_, temp + "|" + what[i].str())));
                                             break;
                                         case 4: res += what[i].str(); break;
                                         }
@@ -116,7 +116,7 @@ int main(int argv, char * argc[])
                                         case 1: res += what[i].str(); break;
                                         case 2: 
                                             res += "(.*)?"; 
-                                            n.sub_.push_back(node_ptr<neuron_base>(n.x_, new node<neuron_base>(n.x_, what[i].str()))); 
+                                            n.sub_.push_front(node_ptr<neuron_base>(n.x_, new node<neuron_base>(n.x_, what[i].str()))); 
                                             break;
                                         case 3: res += what[i].str(); break;
                                         }
@@ -133,7 +133,7 @@ int main(int argv, char * argc[])
                 }
             } parse;
             
-            node_ptr<neuron_base> n = node_ptr<neuron_base>(t100, new node<neuron_base>(t100, "(.*)"));
+            node_ptr<neuron_base> n = node_ptr<neuron_base>(t100, new node<neuron_base>(t100, ""));
             n->exp_ = parse(parse(parse(output, * n, 0), * n, 1), * n, 2);
             t100->sub_.push_back(n);
         }
