@@ -18,7 +18,7 @@
 #define T100_HPP_INCLUDED
 
 
-#include <vector>
+#include <list>
 #include <string>
 #include <iostream>
 #include <boost/regex.hpp>
@@ -28,28 +28,30 @@
 namespace boost
 {
 
-namespace detail
-{
-
-namespace sh
-{
-
-
 struct neuron_base
 {
     typedef boost::node_ptr<neuron_base> pointer;
 
     enum sense_t {sight, sound, touch, smell, taste};
 
+    node_proxy const & x_;
     boost::regex exp_;
-    //std::vector< std::pair<double, pointer> > sub_;
-    std::pair<double, pointer> sub_[3];
+    std::list<pointer> sub_;
 
-    neuron_base(node_proxy const & x, std::string const & s) : exp_(s), sub_({std::pair<double, pointer>(0., pointer(x)), std::pair<double, pointer>(0., pointer(x)), std::pair<double, pointer>(0., pointer(x))}) {}
+    neuron_base(node_proxy const & x, std::string const & s) : x_(x), exp_(s) {}
     virtual ~neuron_base() {};
 
     virtual double operator () (std::string const & input) { return 0; };
 };
+
+
+inline std::ostream & operator << (std::ostream & out, neuron_base const & n)
+{
+    out << n.exp_ << ":" << std::endl;
+    
+    for (std::list<neuron_base::pointer>::const_iterator i = n.sub_.begin(); i != n.sub_.end(); ++ i)
+        out << ** i << std::endl;
+}
 
 
 /**
@@ -82,7 +84,7 @@ template <neuron_base::sense_t>
         
         static map_sn_t search_;
     
-        neuron(node_proxy const & x, std::string const & s) : neuron_base(x, s)
+        neuron(node_proxy & x, std::string const & s) : neuron_base(x, s)
         {
             /// FIXME
             //search_[s] = (pointee *) (typename pointee::roofof) static_cast<neuron *>(rootof<is_polymorphic<neuron>::value>::get(this));
@@ -92,6 +94,7 @@ template <neuron_base::sense_t>
             //if (p3) sub_[2].second = p3;
         }
 
+#if 0
         double operator () (std::string const & input)
         {
             boost::match_results<std::string::const_iterator> what;
@@ -148,6 +151,7 @@ template <neuron_base::sense_t>
             
             return accuracy;
         }
+#endif
     };
 
 template <neuron_base::sense_t I>
@@ -160,10 +164,6 @@ typedef neuron<neuron_base::touch> neuron_touch;
 typedef neuron<neuron_base::smell> neuron_smell;
 typedef neuron<neuron_base::taste> neuron_taste;
 
-
-} // namespace sh
-
-} // namespace detail
 
 } // namespace boost
 

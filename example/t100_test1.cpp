@@ -34,9 +34,9 @@
 using namespace std;
 using namespace redi;
 using namespace boost;
-using boost::detail::sh::neuron_sight;
 
-void foo()
+
+int main(int argv, char * argc[])
 {
     pstream page(string("lynx --dump http://www.unifiedfieldtheoryfinite.com/files/experiment.pdf | pdftotext - -"), pstreams::pstdout);
     
@@ -56,7 +56,8 @@ void foo()
         text.push_back(line);
     }
     
-    set<string> mind;
+    root_ptr<neuron_base> t100;
+    t100 = new node<neuron_base>(t100, "(.*)");
     
     for (list<string>::iterator i = text.begin(); i != text.end(); ++ i)
     {
@@ -73,7 +74,7 @@ void foo()
 
             struct
             {
-                string operator () (string const & input, int e)
+                string operator () (string const & input, boost::neuron_base & n, int e)
                 {
                     static boost::regex exp[] = {boost::regex("(.*)\\[\\-(.*)\\-\\] \\{\\+(.*)\\+\\}(.*)"), boost::regex("(.*)\\{\\+(.*)\\+\\}(.*)"), boost::regex("(.*)\\[\\-(.*)\\-\\](.*)")};
 
@@ -84,6 +85,8 @@ void foo()
                     {
                         if (what[0].matched)
                         {
+                            string temp;
+                            
                             for (unsigned i = 1; i < what.size(); ++ i)
                             {
                                 if (what[i].matched)
@@ -94,8 +97,14 @@ void foo()
                                         switch (i)
                                         {
                                         case 1: res += what[i].str(); break;
-                                        case 2: res += "(" + what[i].str() + "|"; break;
-                                        case 3: res += what[i].str() + ")"; break;
+                                        case 2: 
+                                            res += "(.*";
+                                            temp = what[i].str();
+                                            break;
+                                        case 3: 
+                                            res += ")"; 
+                                            n.sub_.push_back(node_ptr<neuron_base>(n.x_, new node<neuron_base>(n.x_, temp + "|" + what[i].str())));
+                                            break;
                                         case 4: res += what[i].str(); break;
                                         }
                                         break;
@@ -105,7 +114,10 @@ void foo()
                                         switch (i)
                                         {
                                         case 1: res += what[i].str(); break;
-                                        case 2: res += "(" + what[i].str() + ")?"; break;
+                                        case 2: 
+                                            res += "(.*)?"; 
+                                            n.sub_.push_back(node_ptr<neuron_base>(n.x_, new node<neuron_base>(n.x_, what[i].str()))); 
+                                            break;
                                         case 3: res += what[i].str(); break;
                                         }
                                         break;
@@ -113,7 +125,7 @@ void foo()
                                 }
                             }
                             
-                            return operator () (res, e);
+                            return operator () (res, n, e);
                         }
                     }
                     
@@ -121,27 +133,23 @@ void foo()
                 }
             } parse;
             
-            mind.insert(parse(parse(parse(output, 0), 1), 2));
+            node_ptr<neuron_base> n = node_ptr<neuron_base>(t100, new node<neuron_base>(t100, "(.*)"));
+            n->exp_ = parse(parse(parse(output, * n, 0), * n, 1), * n, 2);
+            t100->sub_.push_back(n);
         }
-        cout << distance(text.begin(), i) * 100 / distance(text.begin(), text.end()) << "%..." << endl;
+        
+        cout << "\r" << distance(text.begin(), i) * 100 / distance(text.begin(), text.end()) << "%...";
+        cout.flush();
+    }
+    cout << endl;
+    
+    for (list<neuron_base::pointer>::iterator i = t100->sub_.begin(); i != t100->sub_.end(); ++ i)
+    {
+        cout << (* i)->exp_ << endl;
+
+        for (list<neuron_base::pointer>::iterator j = (* i)->sub_.begin(); j != (* i)->sub_.end(); ++ j)
+            cout << "  " << (* j)->exp_ << endl;
     }
     
-    for (set<string>::iterator i = mind.begin(); i != mind.end(); ++ i)
-        cout << *i << endl;
-}
-
-
-int main(int argv, char * argc[])
-{
-    foo();
-    
-    root_ptr<neuron_sight> t100;
-    t100 = new node<neuron_sight>(t100, "I eat ([a-z]+) then drink ([a-z]+)");
-    t100->sub_[0].second = new node<neuron_sight>(t100, "beef|chicken");
-    t100->sub_[1].second = new node<neuron_sight>(t100, "vodka|water");
-
-    cout << (* t100)("I eat beef then drink vodka") << endl;
-    cout << (* t100)("I eat beef then drink wine") << endl;
-    cout << (* t100)("I eat fish then drink wine") << endl;
-    cout << (* t100)("I eat fish then drink beer") << endl;
+    return 0;
 }
