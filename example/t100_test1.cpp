@@ -71,14 +71,14 @@ void foo()
 
             struct
             {
-                string operator () (string const & input)
+                string operator () (string const & input, int e)
                 {
-                    static boost::regex exp("(.*)\\[\\-(.*)\\-\\] \\{\\+(.*)\\+\\}(.*)");
+                    static boost::regex exp[] = {boost::regex("(.*)\\[\\-(.*)\\-\\] \\{\\+(.*)\\+\\}(.*)"), boost::regex("(.*)\\{\\+(.*)\\+\\}(.*)"), boost::regex("(.*)\\[\\-(.*)\\-\\](.*)")};
 
                     string res;
                     boost::match_results<std::string::const_iterator> what;
 
-                    if (boost::regex_match(input, what, exp, boost::match_default | boost::match_partial))
+                    if (boost::regex_match(input, what, exp[e], boost::match_default | boost::match_partial))
                     {
                         if (what[0].matched)
                         {
@@ -86,17 +86,32 @@ void foo()
                             {
                                 if (what[i].matched)
                                 {
-                                    switch (i)
+                                    switch (e)
                                     {
-                                    case 1: res += what[i].str(); break;
-                                    case 2: res += ".*"; break;
-                                    case 3: break;
-                                    case 4: res += what[i].str(); break;
+                                    case 0:
+                                        switch (i)
+                                        {
+                                        case 1: res += what[i].str(); break;
+                                        case 2: res += "(.*)"; break;
+                                        case 3: break;
+                                        case 4: res += what[i].str(); break;
+                                        }
+                                        break;
+                                        
+                                    case 1:
+                                    case 2:
+                                        switch (i)
+                                        {
+                                        case 1: res += what[i].str(); break;
+                                        case 2: res += "(.*)"; break;
+                                        case 3: res += what[i].str(); break;
+                                        }
+                                        break;
                                     }
                                 }
                             }
                             
-                            return operator () (res);
+                            return operator () (res, e);
                         }
                     }
                     
@@ -104,7 +119,7 @@ void foo()
                 }
             } parse;
             
-            mind.insert(parse(output));
+            mind.insert(parse(parse(parse(output, 0), 1), 2));
         }
         cout << distance(text.begin(), i) * 100 / distance(text.begin(), text.end()) << "%..." << endl;
     }
