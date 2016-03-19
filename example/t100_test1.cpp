@@ -60,6 +60,7 @@ int main(int argv, char * argc[])
     
     root_ptr<neuron_base> t100;
     t100 = new node<neuron_base>(t100, "(.*)");
+    t100->sub_.push_front(std::list<neuron_base::pointer>());
     
     for (list<string>::iterator i = text.begin(); i != text.end(); ++ i)
     {
@@ -76,7 +77,7 @@ int main(int argv, char * argc[])
 
             node_ptr<neuron_base> n(t100, new node<neuron_base>(t100));
             n->exp_ = (*n)((*n)((*n)(output, 0), 1), 2);
-            t100->sub_.push_back(n);
+            t100->sub_.front().push_back(n);
         }
         
         cout << "\r" << distance(text.begin(), i) * 100 / distance(text.begin(), text.end()) << "%...";

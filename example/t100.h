@@ -37,7 +37,7 @@ struct neuron_base
 
     node_proxy const & x_;
     boost::regex exp_;
-    std::list<pointer> sub_;
+    std::list<std::list<pointer> > sub_;
 
     neuron_base(node_proxy const & x, std::string const & s = "") : x_(x), exp_(s) {}
     virtual ~neuron_base() {};
@@ -67,11 +67,12 @@ struct neuron_base
                             case 1: res += what[i].str(); break;
                             case 2: 
                                 res += "(.*";
-                                temp = what[i].str();
+                                sub_.push_front(std::list<pointer>());
+                                sub_.front().push_front(node_ptr<neuron_base>(x_, new node<neuron_base>(x_, what[i].str()))); 
                                 break;
                             case 3: 
                                 res += ")"; 
-                                sub_.push_front(node_ptr<neuron_base>(x_, new node<neuron_base>(x_, temp + "|" + what[i].str())));
+                                sub_.front().push_front(node_ptr<neuron_base>(x_, new node<neuron_base>(x_, what[i].str()))); 
                                 break;
                             case 4: res += what[i].str(); break;
                             }
@@ -84,7 +85,8 @@ struct neuron_base
                             case 1: res += what[i].str(); break;
                             case 2: 
                                 res += "(.*)?"; 
-                                sub_.push_front(node_ptr<neuron_base>(x_, new node<neuron_base>(x_, what[i].str()))); 
+                                sub_.push_front(std::list<pointer>());
+                                sub_.front().push_front(node_ptr<neuron_base>(x_, new node<neuron_base>(x_, what[i].str()))); 
                                 break;
                             case 3: res += what[i].str(); break;
                             }
@@ -109,9 +111,19 @@ inline std::ostream & operator << (std::ostream & out, neuron_base const & n)
     out << "- " << n.exp_ << std::endl;
     
     out << indent_manip::push;
-    
-    for (std::list<neuron_base::pointer>::const_iterator i = n.sub_.begin(); i != n.sub_.end(); ++ i)
-        out << ** i << std::endl;
+   
+    for (std::list<std::list<neuron_base::pointer> >::const_iterator i = n.sub_.begin(); i != n.sub_.end(); ++ i)
+    {
+        for (std::list<neuron_base::pointer>::const_iterator j = i->begin(); j != i->end(); ++ j)
+        {
+            if (i->size() > 1)
+                out << "| ";
+            
+            out << ** j;
+        }
+        
+        out << std::endl;
+    }
     
     out << indent_manip::pop;
     
