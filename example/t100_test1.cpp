@@ -72,69 +72,8 @@ int main(int argv, char * argc[])
             for (string line; getline(proc.out(), line);)
                 output += line;
 
-            struct
-            {
-                string operator () (string const & input, boost::neuron_base & n, int e)
-                {
-                    static boost::regex exp[] = {boost::regex("(.*)\\[\\-(.*)\\-\\] \\{\\+(.*)\\+\\}(.*)"), boost::regex("(.*)\\{\\+(.*)\\+\\}(.*)"), boost::regex("(.*)\\[\\-(.*)\\-\\](.*)")};
-
-                    string res;
-                    boost::match_results<std::string::const_iterator> what;
-
-                    if (boost::regex_match(input, what, exp[e], boost::match_default | boost::match_partial))
-                    {
-                        if (what[0].matched)
-                        {
-                            string temp;
-                            
-                            for (unsigned i = 1; i < what.size(); ++ i)
-                            {
-                                if (what[i].matched)
-                                {
-                                    switch (e)
-                                    {
-                                    case 0:
-                                        switch (i)
-                                        {
-                                        case 1: res += what[i].str(); break;
-                                        case 2: 
-                                            res += "(.*";
-                                            temp = what[i].str();
-                                            break;
-                                        case 3: 
-                                            res += ")"; 
-                                            n.sub_.push_front(node_ptr<neuron_base>(n.x_, new node<neuron_base>(n.x_, temp + "|" + what[i].str())));
-                                            break;
-                                        case 4: res += what[i].str(); break;
-                                        }
-                                        break;
-                                        
-                                    case 1:
-                                    case 2:
-                                        switch (i)
-                                        {
-                                        case 1: res += what[i].str(); break;
-                                        case 2: 
-                                            res += "(.*)?"; 
-                                            n.sub_.push_front(node_ptr<neuron_base>(n.x_, new node<neuron_base>(n.x_, what[i].str()))); 
-                                            break;
-                                        case 3: res += what[i].str(); break;
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
-                            
-                            return operator () (res, n, e);
-                        }
-                    }
-                    
-                    return input;
-                }
-            } parse;
-            
             node_ptr<neuron_base> n = node_ptr<neuron_base>(t100, new node<neuron_base>(t100, ""));
-            n->exp_ = parse(parse(parse(output, * n, 0), * n, 1), * n, 2);
+            n->exp_ = (*n )((*n )((*n )(output, 0), 1), 2);
             t100->sub_.push_back(n);
         }
         

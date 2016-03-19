@@ -42,7 +42,63 @@ struct neuron_base
     neuron_base(node_proxy const & x, std::string const & s) : x_(x), exp_(s) {}
     virtual ~neuron_base() {};
 
-    virtual double operator () (std::string const & input) { return 0; };
+    virtual std::string operator () (std::string const & input, int e)
+    {
+        static boost::regex exp[] = {boost::regex("(.*)\\[\\-(.*)\\-\\] \\{\\+(.*)\\+\\}(.*)"), boost::regex("(.*)\\{\\+(.*)\\+\\}(.*)"), boost::regex("(.*)\\[\\-(.*)\\-\\](.*)")};
+
+        std::string res;
+        boost::match_results<std::string::const_iterator> what;
+
+        if (boost::regex_match(input, what, exp[e], boost::match_default | boost::match_partial))
+        {
+            if (what[0].matched)
+            {
+                std::string temp;
+                
+                for (unsigned i = 1; i < what.size(); ++ i)
+                {
+                    if (what[i].matched)
+                    {
+                        switch (e)
+                        {
+                        case 0:
+                            switch (i)
+                            {
+                            case 1: res += what[i].str(); break;
+                            case 2: 
+                                res += "(.*";
+                                temp = what[i].str();
+                                break;
+                            case 3: 
+                                res += ")"; 
+                                sub_.push_front(node_ptr<neuron_base>(x_, new node<neuron_base>(x_, temp + "|" + what[i].str())));
+                                break;
+                            case 4: res += what[i].str(); break;
+                            }
+                            break;
+                            
+                        case 1:
+                        case 2:
+                            switch (i)
+                            {
+                            case 1: res += what[i].str(); break;
+                            case 2: 
+                                res += "(.*)?"; 
+                                sub_.push_front(node_ptr<neuron_base>(x_, new node<neuron_base>(x_, what[i].str()))); 
+                                break;
+                            case 3: res += what[i].str(); break;
+                            }
+                            break;
+                        }
+                    }
+                }
+                
+                return operator () (res, e);
+            }
+        }
+        
+        return input;
+    }
 };
 
 
