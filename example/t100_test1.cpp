@@ -72,7 +72,7 @@ int main(int argv, char * argc[])
             for (string line; getline(proc.out(), line);)
                 output += line;
 
-            node_ptr<neuron_base> n = node_ptr<neuron_base>(t100, new node<neuron_base>(t100));
+            node_ptr<neuron_base> n(t100, new node<neuron_base>(t100));
             n->exp_ = (*n)((*n)((*n)(output, 0), 1), 2);
             t100->sub_.push_back(n);
         }
