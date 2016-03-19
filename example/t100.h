@@ -114,8 +114,6 @@ struct neuron_base
     
     node_ptr<neuron_base> search(std::string const & input, int level = 0)
     {
-        std::cout << level << std::endl;
-        
         std::string res;
         boost::match_results<std::string::const_iterator> what;
 
