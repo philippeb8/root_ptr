@@ -114,23 +114,22 @@ struct neuron_base
     
     node_ptr<neuron_base> search(std::string const & input, int level = 0)
     {
+        std::cout << level << std::endl;
+        
         std::string res;
         boost::match_results<std::string::const_iterator> what;
 
         if (boost::regex_match(input, what, exp_, boost::match_default | boost::match_partial))
-        {
             if (what[0].matched)
-                for (unsigned i = 1; i < what.size(); ++ i)
-                    if (what[i].matched)
-                        return node_ptr<neuron_base>(x_, new node<neuron_base>(* this));
-        }
-        else
-        {
-            for (std::list<std::list<neuron_base::pointer> >::const_iterator i = sub_.begin(); i != sub_.end(); ++ i)
-                for (std::list<neuron_base::pointer>::const_iterator j = i->begin(); j != i->end(); ++ j)
-                    if (node_ptr<neuron_base> p = search(input, level + 1))
-                        return p;
-        }
+                for (unsigned k = 1; k < what.size(); ++ k)
+                    if (what[k].matched)
+                        if (sub_.size() <= 1)
+                            return node_ptr<neuron_base>(x_, new node<neuron_base>(* this));
+                        else
+                            for (std::list<std::list<neuron_base::pointer> >::const_iterator i = sub_.begin(); i != sub_.end(); ++ i)
+                                for (std::list<neuron_base::pointer>::const_iterator j = i->begin(); j != i->end(); ++ j)
+                                    if (node_ptr<neuron_base> p = search(what[k].str(), level + 1))
+                                        return p;
         
         return node_ptr<neuron_base>(x_);
     }
