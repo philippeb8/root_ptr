@@ -39,7 +39,7 @@ struct neuron_base
     boost::regex exp_;
     std::list<pointer> sub_;
 
-    neuron_base(node_proxy const & x, std::string const & s) : x_(x), exp_(s) {}
+    neuron_base(node_proxy const & x, std::string const & s = "") : x_(x), exp_(s) {}
     virtual ~neuron_base() {};
 
     virtual std::string operator () (std::string const & input, int e)
