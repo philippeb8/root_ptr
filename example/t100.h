@@ -18,6 +18,7 @@
 #define T100_HPP_INCLUDED
 
 
+#include <set>
 #include <list>
 #include <string>
 #include <iostream>
@@ -39,8 +40,13 @@ struct neuron_base
     boost::regex exp_;
     std::list<std::list<pointer> > sub_;
 
-    neuron_base(node_proxy const & x, std::string const & s = "") : x_(x), exp_(s) {}
-    virtual ~neuron_base() {};
+    neuron_base(node_proxy const & x, std::string const & s = "") : x_(x), exp_(s) 
+    {
+    }
+
+    virtual ~neuron_base() 
+    {
+    };
 
     virtual std::string parse(std::string const & input, int e)
     {
@@ -128,6 +134,16 @@ inline std::ostream & operator << (std::ostream & out, neuron_base const & n)
     out << indent_manip::pop;
     
     return out;
+}
+
+inline bool operator < (neuron_base const & x1, neuron_base const & x2)
+{
+    return x1.exp_ < x2.exp_;
+}
+
+inline bool operator < (node_ptr<neuron_base> const & x1, node_ptr<neuron_base> const & x2)
+{
+    return * x1 < * x2;
 }
 
 
