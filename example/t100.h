@@ -126,7 +126,7 @@ struct neuron_base
                         else
                             for (std::list<std::list<neuron_base::pointer> >::const_iterator i = sub_.begin(); i != sub_.end(); ++ i)
                                 for (std::list<neuron_base::pointer>::const_iterator j = i->begin(); j != i->end(); ++ j)
-                                    if (node_ptr<neuron_base> p = search(what[k].str()))
+                                    if (node_ptr<neuron_base> p = search(input))
                                         return p;
         
         return node_ptr<neuron_base>(x_);
