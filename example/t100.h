@@ -63,8 +63,6 @@ struct neuron_base
         {
             if (what[0].matched)
             {
-                std::string temp;
-                
                 for (unsigned i = 1; i < what.size(); ++ i)
                 {
                     if (what[i].matched)
@@ -152,8 +150,6 @@ inline std::ostream & operator << (std::ostream & out, neuron_base const & n)
             
             out << ** j;
         }
-        
-        out << std::endl;
     }
     
     out << indent_manip::pop;
