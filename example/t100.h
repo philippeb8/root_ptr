@@ -42,7 +42,7 @@ struct neuron_base
     neuron_base(node_proxy const & x, std::string const & s = "") : x_(x), exp_(s) {}
     virtual ~neuron_base() {};
 
-    virtual std::string operator () (std::string const & input, int e)
+    virtual std::string parse(std::string const & input, int e)
     {
         static boost::regex exp[] = {boost::regex("(.*)\\[\\-(.*)\\-\\] \\{\\+(.*)\\+\\}(.*)"), boost::regex("(.*)\\{\\+(.*)\\+\\}(.*)"), boost::regex("(.*)\\[\\-(.*)\\-\\](.*)")};
 
@@ -95,7 +95,7 @@ struct neuron_base
                     }
                 }
                 
-                return operator () (res, e);
+                return parse(res, e);
             }
         }
         

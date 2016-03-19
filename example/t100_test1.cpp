@@ -76,7 +76,7 @@ int main(int argv, char * argc[])
                 output += line;
 
             node_ptr<neuron_base> n(t100, new node<neuron_base>(t100));
-            n->exp_ = (*n)((*n)((*n)(output, 0), 1), 2);
+            n->exp_ = n->parse(n->parse(n->parse(output, 0), 1), 2);
             t100->sub_.front().push_back(n);
         }
         
