@@ -112,7 +112,6 @@ struct neuron_base
     
     node_ptr<neuron_base> search(std::string const & input)
     {
-        std::string res;
         boost::match_results<std::string::const_iterator> what;
 
         if (sub_.size() == 0 && exp_.str().find(input) != std::string::npos)
