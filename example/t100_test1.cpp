@@ -85,7 +85,8 @@ int main(int argv, char * argc[])
     }
     cout << endl;
     
-    cout << * t100 << endl;
+    if (node_ptr<neuron_base> p = t100->search("albert einstein"))
+        cout << * p << endl;
     
     return 0;
 }

@@ -44,6 +44,10 @@ struct neuron_base
     {
     }
 
+    neuron_base(neuron_base const & n) : x_(n.x_), exp_(n.exp_) , sub_(n.sub_)
+    {
+    }
+
     virtual ~neuron_base() 
     {
     };
@@ -107,6 +111,30 @@ struct neuron_base
         
         return input;
     }
+    
+    node_ptr<neuron_base> search(std::string const & input, int level = 0)
+    {
+        std::string res;
+        boost::match_results<std::string::const_iterator> what;
+
+        if (boost::regex_match(input, what, exp_, boost::match_default | boost::match_partial))
+        {
+            if (what[0].matched)
+                for (unsigned i = 1; i < what.size(); ++ i)
+                    if (what[i].matched)
+                        return node_ptr<neuron_base>(x_, new node<neuron_base>(* this));
+        }
+        else
+        {
+            for (std::list<std::list<neuron_base::pointer> >::const_iterator i = sub_.begin(); i != sub_.end(); ++ i)
+                for (std::list<neuron_base::pointer>::const_iterator j = i->begin(); j != i->end(); ++ j)
+                    if (node_ptr<neuron_base> p = search(input, level + 1))
+                        return p;
+        }
+        
+        return node_ptr<neuron_base>(x_);
+    }
+
 };
 
 
@@ -134,16 +162,6 @@ inline std::ostream & operator << (std::ostream & out, neuron_base const & n)
     out << indent_manip::pop;
     
     return out;
-}
-
-inline bool operator < (neuron_base const & x1, neuron_base const & x2)
-{
-    return x1.exp_ < x2.exp_;
-}
-
-inline bool operator < (node_ptr<neuron_base> const & x1, node_ptr<neuron_base> const & x2)
-{
-    return * x1 < * x2;
 }
 
 
