@@ -76,11 +76,21 @@ struct neuron_base
                             case 2: 
                                 res += "(.*";
                                 sub_.push_front(std::list<pointer>());
-                                sub_.front().push_front(node_ptr<neuron_base>(x_, new node<neuron_base>(x_, what[i].str()))); 
+                                
+                                if (node_ptr<neuron_base> p = search(input))
+                                    sub_.front().push_front(p);
+                                else
+                                    sub_.front().push_front(node_ptr<neuron_base>(x_, new node<neuron_base>(x_, what[i].str()))); 
+                                
                                 break;
                             case 3: 
                                 res += ")"; 
-                                sub_.front().push_front(node_ptr<neuron_base>(x_, new node<neuron_base>(x_, what[i].str()))); 
+                                
+                                if (node_ptr<neuron_base> p = search(input))
+                                    sub_.front().push_front(p);
+                                else
+                                    sub_.front().push_front(node_ptr<neuron_base>(x_, new node<neuron_base>(x_, what[i].str()))); 
+                                
                                 break;
                             case 4: res += what[i].str(); break;
                             }
@@ -94,7 +104,12 @@ struct neuron_base
                             case 2: 
                                 res += "(.*)?"; 
                                 sub_.push_front(std::list<pointer>());
-                                sub_.front().push_front(node_ptr<neuron_base>(x_, new node<neuron_base>(x_, what[i].str()))); 
+                                
+                                if (node_ptr<neuron_base> p = search(input))
+                                    sub_.front().push_front(p);
+                                else
+                                    sub_.front().push_front(node_ptr<neuron_base>(x_, new node<neuron_base>(x_, what[i].str()))); 
+                                
                                 break;
                             case 3: res += what[i].str(); break;
                             }
@@ -123,7 +138,7 @@ struct neuron_base
                         for (std::list<std::list<neuron_base::pointer> >::const_iterator i = sub_.begin(); i != sub_.end(); ++ i)
                             for (std::list<neuron_base::pointer>::const_iterator j = i->begin(); j != i->end(); ++ j)
                                 if (node_ptr<neuron_base> p = (* j)->search(input))
-                                    return * j;
+                                    return p;
         
         return node_ptr<neuron_base>(x_);
     }
