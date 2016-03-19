@@ -11,6 +11,8 @@
 	http://www.boost.org/LICENSE_1_0.txt
 
 	See http://www.boost.org/libs/smart_ptr/doc/index.html for documentation.
+	
+	@note Depends on: libpstreams-dev, wdiff, lynx and pdftotext
 */
 
 #include <pstreams/pstream.h>
