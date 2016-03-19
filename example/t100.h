@@ -123,7 +123,7 @@ struct neuron_base
                         for (std::list<std::list<neuron_base::pointer> >::const_iterator i = sub_.begin(); i != sub_.end(); ++ i)
                             for (std::list<neuron_base::pointer>::const_iterator j = i->begin(); j != i->end(); ++ j)
                                 if (node_ptr<neuron_base> p = (* j)->search(input))
-                                    return p;
+                                    return * j;
         
         return node_ptr<neuron_base>(x_);
     }
