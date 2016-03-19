@@ -36,11 +36,11 @@ struct neuron_base
 
     enum sense_t {sight, sound, touch, smell, taste};
 
-    node_proxy const & x_;
+    boost::node_proxy const & x_;
     boost::regex exp_;
     std::list<std::list<pointer> > sub_;
 
-    neuron_base(node_proxy const & x, std::string const & s = "") : x_(x), exp_(s) 
+    neuron_base(boost::node_proxy const & x, std::string const & s = "") : x_(x), exp_(s) 
     {
     }
 
@@ -122,7 +122,7 @@ struct neuron_base
                 for (unsigned k = 1; k < what.size(); ++ k)
                     if (what[k].matched)
                         if (sub_.size() <= 1)
-                            return node_ptr<neuron_base>(x_, new node<neuron_base>(* this));
+                            return make_node<neuron_base>(x_, * this);
                         else
                             for (std::list<std::list<neuron_base::pointer> >::const_iterator i = sub_.begin(); i != sub_.end(); ++ i)
                                 for (std::list<neuron_base::pointer>::const_iterator j = i->begin(); j != i->end(); ++ j)
