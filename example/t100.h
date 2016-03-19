@@ -119,6 +119,7 @@ inline std::ostream & operator << (std::ostream & out, neuron_base const & n)
 }
 
 
+#if 0
 /**
     Core brain kernel.
     
@@ -159,7 +160,6 @@ template <neuron_base::sense_t>
             //if (p3) sub_[2].second = p3;
         }
 
-#if 0
         double operator () (std::string const & input)
         {
             boost::match_results<std::string::const_iterator> what;
@@ -216,7 +216,6 @@ template <neuron_base::sense_t>
             
             return accuracy;
         }
-#endif
     };
 
 template <neuron_base::sense_t I>
@@ -228,6 +227,7 @@ typedef neuron<neuron_base::sound> neuron_sound;
 typedef neuron<neuron_base::touch> neuron_touch;
 typedef neuron<neuron_base::smell> neuron_smell;
 typedef neuron<neuron_base::taste> neuron_taste;
+#endif
 
 
 } // namespace boost
