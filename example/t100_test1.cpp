@@ -85,6 +85,10 @@ int main(int argv, char * argc[])
     }
     cout << endl;
     
+    cout << "Mind dump:" << endl;
+    cout << * t100 << endl;
+    
+    cout << "Searching for: \"albert einstein\"" << endl;
     if (node_ptr<neuron_base> p = t100->search("albert einstein"))
         cout << * p << endl;
     

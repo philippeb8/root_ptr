@@ -127,7 +127,6 @@ struct neuron_base
         
         return node_ptr<neuron_base>(x_);
     }
-
 };
 
 
