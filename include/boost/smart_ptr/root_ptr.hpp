@@ -465,9 +465,9 @@ template <typename T>
         }
 
         template <typename V, typename PoolAllocator>
-            node_ptr<T> & operator = (node<V, PoolAllocator> * p)
+            root_ptr<T> & operator = (node<V, PoolAllocator> * p)
             {
-                return node_ptr<T>::operator = (p);
+                return static_cast<root_ptr<T> &>(node_ptr<T>::operator = (p));
             }
     };
 
