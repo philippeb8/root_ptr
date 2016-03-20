@@ -351,8 +351,7 @@ template <typename T>
                 mutex::scoped_lock scoped_lock(node_proxy::static_mutex());
 #endif
 
-                if (! x_.intersects(p.x_))
-                    x_.unify(p.x_);
+                x_.unify(p.x_);
                 
                 base::operator = (p);
 
@@ -477,9 +476,14 @@ template <typename T>
             }
             
             
-        node_ptr<T> & operator = (node_ptr<T> const & p)
+        root_ptr<T> & operator = (node_ptr<T> const & p)
         {
-            return node_ptr<T>::operator = (p);
+            return static_cast<root_ptr<T> &>(node_ptr<T>::operator = (p));
+        }
+
+        root_ptr<T> & operator = (root_ptr<T> const & p)
+        {
+            return static_cast<root_ptr<T> &>(node_ptr<T>::operator = (p));
         }
 
         template <typename V, typename PoolAllocator>
