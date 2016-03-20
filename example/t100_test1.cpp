@@ -88,8 +88,8 @@ int main(int argv, char * argc[])
     cout << "Mind dump:" << endl;
     cout << * t100 << endl;
     
-    cout << "Searching for: \"albert einstein\"" << endl;
-    if (node_ptr<neuron_base> p = t100->search_tree("albert einstein"))
+    cout << "Searching for: \"einstein\"" << endl;
+    if (node_ptr<neuron_base> p = t100->search_tree("einstein"))
         cout << * p << endl;
     
     return 0;
