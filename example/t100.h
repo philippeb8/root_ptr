@@ -77,7 +77,7 @@ struct neuron_base
                                 res += "(.*";
                                 sub_.push_front(std::list<pointer>());
                                 
-                                if (node_ptr<neuron_base> p = search(input))
+                                if (node_ptr<neuron_base> p = search_exact(input))
                                     sub_.front().push_front(p);
                                 else
                                     sub_.front().push_front(make_node<neuron_base>(x_, x_, what[i].str())); 
@@ -86,7 +86,7 @@ struct neuron_base
                             case 3: 
                                 res += ")"; 
                                 
-                                if (node_ptr<neuron_base> p = search(input))
+                                if (node_ptr<neuron_base> p = search_exact(input))
                                     sub_.front().push_front(p);
                                 else
                                     sub_.front().push_front(make_node<neuron_base>(x_, x_, what[i].str())); 
@@ -105,7 +105,7 @@ struct neuron_base
                                 res += "(.*)?"; 
                                 sub_.push_front(std::list<pointer>());
                                 
-                                if (node_ptr<neuron_base> p = search(input))
+                                if (node_ptr<neuron_base> p = search_exact(input))
                                     sub_.front().push_front(p);
                                 else
                                     sub_.front().push_front(make_node<neuron_base>(x_, x_, what[i].str())); 
@@ -125,7 +125,25 @@ struct neuron_base
         return input;
     }
     
-    node_ptr<neuron_base> search(std::string const & input)
+    node_ptr<neuron_base> search_exact(std::string const & input)
+    {
+        boost::match_results<std::string::const_iterator> what;
+
+        if (sub_.size() == 0 && exp_.str() == input)
+            return make_node<neuron_base>(x_, * this);
+        else if (boost::regex_match(input, what, exp_, boost::match_default | boost::match_partial))
+            if (what[0].matched)
+            {
+                for (std::list<std::list<neuron_base::pointer> >::const_iterator i = sub_.begin(); i != sub_.end(); ++ i)
+                    for (std::list<neuron_base::pointer>::const_iterator j = i->begin(); j != i->end(); ++ j)
+                        if (node_ptr<neuron_base> p = (* j)->search_exact(input))
+                            return p;
+            }
+        
+        return node_ptr<neuron_base>(x_);
+    }
+
+    node_ptr<neuron_base> search_tree(std::string const & input)
     {
         boost::match_results<std::string::const_iterator> what;
 
@@ -133,10 +151,18 @@ struct neuron_base
             return make_node<neuron_base>(x_, * this);
         else if (boost::regex_match(input, what, exp_, boost::match_default | boost::match_partial))
             if (what[0].matched)
+            {
+                node_ptr<neuron_base> res = make_node<neuron_base>(x_, x_);
+                res->sub_.push_front(std::list<pointer>());
+                
                 for (std::list<std::list<neuron_base::pointer> >::const_iterator i = sub_.begin(); i != sub_.end(); ++ i)
                     for (std::list<neuron_base::pointer>::const_iterator j = i->begin(); j != i->end(); ++ j)
-                        if (node_ptr<neuron_base> p = (* j)->search(input))
-                            return p;
+                        if (node_ptr<neuron_base> p = (* j)->search_tree(input))
+                            res->sub_.front().push_front(p);
+                        
+                if (res->sub_.front().size() > 0)
+                    return res;
+            }
         
         return node_ptr<neuron_base>(x_);
     }
