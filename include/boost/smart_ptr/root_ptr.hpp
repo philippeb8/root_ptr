@@ -351,7 +351,7 @@ template <typename T>
                 mutex::scoped_lock scoped_lock(node_proxy::static_mutex());
 #endif
 
-                if (x_.intersects(p.x_))
+                if (! x_.intersects(p.x_))
                     x_.unify(p.x_);
                 
                 base::operator = (p);
