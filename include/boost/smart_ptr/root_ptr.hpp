@@ -142,28 +142,6 @@ class node_proxy
         return c;
     }
 
-    /**
-        Tells whether a proxy intersects with another one.
-        
-        @param  p   Proxy to compare with.
-    */
-    
-    bool intersects(node_proxy const & p) const
-    {
-        using namespace smart_ptr::detail;
-        
-        for (intrusive_list::iterator<node_proxy, &node_proxy::proxy_tag_> i(&proxy_tag_);;)
-        {
-            if (&* i == & p)
-                return true;
-            
-            if (++ i == intrusive_list::iterator<node_proxy, &node_proxy::proxy_tag_>(&proxy_tag_))
-                break;
-        }
-        
-        return false;
-    }
-
     
     /**
         Unification with a new @c node_proxy .
