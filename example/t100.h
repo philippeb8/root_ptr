@@ -40,19 +40,7 @@ struct neuron_base
     boost::regex exp_;
     std::list<std::list<pointer> > sub_;
 
-    neuron_base(boost::node_proxy const & x, std::string const & s = "") : x_(x), exp_(s) 
-    {
-    }
-
-    neuron_base(neuron_base const & n) : x_(n.x_), exp_(n.exp_) , sub_(n.sub_)
-    {
-    }
-
-    virtual ~neuron_base() 
-    {
-    };
-
-    virtual std::string parse(std::string const & input, int e)
+    virtual std::string parse_state(std::string const & input, int e)
     {
         static boost::regex exp[] = {boost::regex("(.*)\\[\\-(.*)\\-\\] \\{\\+(.*)\\+\\}(.*)"), boost::regex("(.*)\\{\\+(.*)\\+\\}(.*)"), boost::regex("(.*)\\[\\-(.*)\\-\\](.*)")};
 
@@ -118,7 +106,7 @@ struct neuron_base
                     }
                 }
                 
-                return parse(res, e);
+                return parse_state(res, e);
             }
         }
         
@@ -143,6 +131,24 @@ struct neuron_base
         return node_ptr<neuron_base>(x_);
     }
 
+public:
+    neuron_base(boost::node_proxy const & x, std::string const & s = "") : x_(x), exp_(s) 
+    {
+    }
+
+    neuron_base(neuron_base const & n) : x_(n.x_), exp_(n.exp_) , sub_(n.sub_)
+    {
+    }
+
+    virtual ~neuron_base() 
+    {
+    };
+
+    std::string parse(std::string const & input)
+    {
+        return parse_state(parse_state(parse_state(input, 0), 1), 2);
+    }
+    
     node_ptr<neuron_base> search(std::string const & input)
     {
         boost::match_results<std::string::const_iterator> what;
