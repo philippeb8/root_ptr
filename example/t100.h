@@ -80,7 +80,7 @@ struct neuron_base
                                 if (node_ptr<neuron_base> p = search(input))
                                     sub_.front().push_front(p);
                                 else
-                                    sub_.front().push_front(node_ptr<neuron_base>(x_, new node<neuron_base>(x_, what[i].str()))); 
+                                    sub_.front().push_front(make_node<neuron_base>(x_, x_, what[i].str())); 
                                 
                                 break;
                             case 3: 
@@ -89,7 +89,7 @@ struct neuron_base
                                 if (node_ptr<neuron_base> p = search(input))
                                     sub_.front().push_front(p);
                                 else
-                                    sub_.front().push_front(node_ptr<neuron_base>(x_, new node<neuron_base>(x_, what[i].str()))); 
+                                    sub_.front().push_front(make_node<neuron_base>(x_, x_, what[i].str())); 
                                 
                                 break;
                             case 4: res += what[i].str(); break;
@@ -108,7 +108,7 @@ struct neuron_base
                                 if (node_ptr<neuron_base> p = search(input))
                                     sub_.front().push_front(p);
                                 else
-                                    sub_.front().push_front(node_ptr<neuron_base>(x_, new node<neuron_base>(x_, what[i].str()))); 
+                                    sub_.front().push_front(make_node<neuron_base>(x_, x_, what[i].str())); 
                                 
                                 break;
                             case 3: res += what[i].str(); break;
