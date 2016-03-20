@@ -223,15 +223,11 @@ class node_proxy
 #define ARGUMENT_DECL(z, n, text) BOOST_PP_COMMA_IF(n) T ## n const & t ## n
 #define PARAMETER_DECL(z, n, text) BOOST_PP_COMMA_IF(n) t ## n
 
-#define BEFRIEND_MAKE_NODE(z, n, text)                                                                                  \
-    template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                         \
-        friend node_ptr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0));
-
-#define CONSTRUCT_MAKE_NODE1(z, n, text)                                                                                \
+#define CONSTRUCT_MAKE_ROOT1(z, n, text)                                                                                \
     template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename PoolAllocator = pool_allocator<V> >            \
-        node_ptr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                          \
+        root_ptr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                          \
         {                                                                                                               \
-            return node_ptr<V>(new node<V, PoolAllocator>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                      \
+            return root_ptr<V>(new node<V, PoolAllocator>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                      \
         }
 
 #define CONSTRUCT_MAKE_NODE2(z, n, text)                                                                                \
@@ -241,11 +237,11 @@ class node_proxy
             return node_ptr<V>(q, new node<V, PoolAllocator>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                   \
         }
 
-#define CONSTRUCT_MAKE_NODE3(z, n, text)                                                                                \
+#define CONSTRUCT_MAKE_ROOT3(z, n, text)                                                                                \
     template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename PoolAllocator = pool_allocator<V> >            \
-        node_ptr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                          \
+        root_ptr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                          \
         {                                                                                                               \
-            return node_ptr<V>(new fastnode<V>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                                 \
+            return root_ptr<V>(new fastnode<V>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                                 \
         }
 
 #define CONSTRUCT_MAKE_NODE4(z, n, text)                                                                                \
@@ -495,9 +491,9 @@ template <typename T>
 
 
 template <typename V, typename PoolAllocator = pool_allocator<V> >
-    node_ptr<V> make_node()
+    root_ptr<V> make_root()
     {
-        return node_ptr<V>(new node<V, PoolAllocator>());
+        return root_ptr<V>(new node<V, PoolAllocator>());
     }
 
 template <typename V, typename PoolAllocator = pool_allocator<V> >
@@ -507,9 +503,9 @@ template <typename V, typename PoolAllocator = pool_allocator<V> >
     }
 
 template <typename V, typename PoolAllocator = pool_allocator<V> >
-    node_ptr<V> make_fastnode()
+    root_ptr<V> make_fastroot()
     {
-        return node_ptr<V>(new fastnode<V>());
+        return root_ptr<V>(new fastnode<V>());
     }
 
 template <typename V, typename PoolAllocator = pool_allocator<V> >
@@ -531,10 +527,11 @@ template <typename T>
     }
 
 
-//BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_NODE1, make_node)
+BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_ROOT1, make_root)
 BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_NODE2, make_node)
-//BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_NODE3, make_fastnode)
+BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_ROOT3, make_fastroot)
 BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_NODE4, make_fastnode)
+
 
 } // namespace boost
 
