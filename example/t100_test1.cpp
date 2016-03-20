@@ -59,7 +59,7 @@ int main(int argv, char * argc[])
     }
     
     root_ptr<neuron_base> t100;
-    t100 = new node<neuron_base>(t100, "(.*)");
+    t100 = make_root<neuron_base>(t100, "(.*)");
     t100->sub_.push_front(std::list<neuron_base::pointer>());
     
     for (list<string>::iterator i = text.begin(); i != text.end(); ++ i)
