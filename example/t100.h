@@ -143,7 +143,7 @@ struct neuron_base
         return node_ptr<neuron_base>(x_);
     }
 
-    node_ptr<neuron_base> search_tree(std::string const & input)
+    node_ptr<neuron_base> search(std::string const & input)
     {
         boost::match_results<std::string::const_iterator> what;
 
@@ -157,7 +157,7 @@ struct neuron_base
                 
                 for (std::list<std::list<neuron_base::pointer> >::const_iterator i = sub_.begin(); i != sub_.end(); ++ i)
                     for (std::list<neuron_base::pointer>::const_iterator j = i->begin(); j != i->end(); ++ j)
-                        if (node_ptr<neuron_base> p = (* j)->search_tree(input))
+                        if (node_ptr<neuron_base> p = (* j)->search(input))
                             res->sub_.front().push_front(p);
                         
                 if (res->sub_.front().size() > 0)

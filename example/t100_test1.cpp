@@ -89,7 +89,7 @@ int main(int argv, char * argc[])
     cout << * t100 << endl;
     
     cout << "Searching for: \"einstein\"" << endl;
-    if (node_ptr<neuron_base> p = t100->search_tree("einstein"))
+    if (node_ptr<neuron_base> p = t100->search("einstein"))
         cout << * p << endl;
     
     return 0;
