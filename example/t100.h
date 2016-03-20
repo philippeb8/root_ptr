@@ -158,7 +158,7 @@ public:
         else if (boost::regex_match(input, what, exp_, boost::match_default | boost::match_partial))
             if (what[0].matched)
             {
-                node_ptr<neuron_base> res = make_node<neuron_base>(x_, x_, exp_.str());
+                node_ptr<neuron_base> res = make_node<neuron_base>(x_, * this);
                 res->sub_.push_front(std::list<pointer>());
                 
                 for (std::list<std::list<neuron_base::pointer> >::const_iterator i = sub_.begin(); i != sub_.end(); ++ i)
