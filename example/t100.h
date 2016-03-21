@@ -194,11 +194,11 @@ public:
 
     neuron_base & unique()
     {
-        std::unique(sub_.begin(), sub_.end());
+        sub_.erase(std::unique(sub_.begin(), sub_.end()), sub_.end());
 
         for (std::list<std::list<neuron_base::pointer> >::iterator i = sub_.begin(); i != sub_.end(); ++ i)
         {
-            std::unique(i->begin(), i->end());
+            i->erase(std::unique(i->begin(), i->end()), i->end());
             
             for (std::list<neuron_base::pointer>::const_iterator j = i->begin(); j != i->end(); ++ j)
                 (* j)->unique();
