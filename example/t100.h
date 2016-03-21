@@ -182,7 +182,12 @@ public:
         sub_.sort();
         
         for (std::list<std::list<neuron_base::pointer> >::iterator i = sub_.begin(); i != sub_.end(); ++ i)
+        {
             i->sort();
+            
+            for (std::list<neuron_base::pointer>::const_iterator j = i->begin(); j != i->end(); ++ j)
+                (* j)->sort();
+        }
         
         return * this;
     }
@@ -192,7 +197,12 @@ public:
         std::unique(sub_.begin(), sub_.end());
 
         for (std::list<std::list<neuron_base::pointer> >::iterator i = sub_.begin(); i != sub_.end(); ++ i)
+        {
             std::unique(i->begin(), i->end());
+            
+            for (std::list<neuron_base::pointer>::const_iterator j = i->begin(); j != i->end(); ++ j)
+                (* j)->unique();
+        }
         
         return * this;
     }
