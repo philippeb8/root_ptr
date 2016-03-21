@@ -90,7 +90,7 @@ int main(int argv, char * argc[])
     
     cout << "Searching for: \"einstein\"" << endl;
     if (node_ptr<neuron_base> p = t100->search("einstein"))
-        cout << * p << endl;
+        cout << p->sort().unique() << endl;
     
     return 0;
 }

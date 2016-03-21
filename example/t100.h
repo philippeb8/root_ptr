@@ -32,6 +32,10 @@ namespace boost
 
 struct neuron_base
 {
+    friend std::ostream & operator << (std::ostream & out, neuron_base const & n);
+    friend bool operator < (neuron_base const & n1, neuron_base const & n2);
+    friend bool operator == (neuron_base const & n1, neuron_base const & n2);
+
     typedef boost::node_ptr<neuron_base> pointer;
 
     enum sense_t {sight, sound, touch, smell, taste};
@@ -172,6 +176,37 @@ public:
         
         return node_ptr<neuron_base>(x_);
     }
+    
+    neuron_base & sort()
+    {
+        sub_.sort();
+        
+        for (std::list<std::list<neuron_base::pointer> >::iterator i = sub_.begin(); i != sub_.end(); ++ i)
+            i->sort();
+        
+        return * this;
+    }
+
+    neuron_base & unique()
+    {
+        std::unique(sub_.begin(), sub_.end());
+
+        for (std::list<std::list<neuron_base::pointer> >::iterator i = sub_.begin(); i != sub_.end(); ++ i)
+            std::unique(i->begin(), i->end());
+        
+        return * this;
+    }
+    
+    std::string id() const
+    {
+        std::string res = exp_.str();
+        
+        for (std::list<std::list<neuron_base::pointer> >::const_iterator i = sub_.begin(); i != sub_.end(); ++ i)
+            for (std::list<neuron_base::pointer>::const_iterator j = i->begin(); j != i->end(); ++ j)
+                res += (* j)->id();
+        
+        return res;
+    }
 };
 
 
@@ -197,6 +232,30 @@ inline std::ostream & operator << (std::ostream & out, neuron_base const & n)
     out << indent_manip::pop;
     
     return out;
+}
+
+
+inline bool operator < (neuron_base const & n1, neuron_base const & n2)
+{
+    return n1.id() < n2.id();
+}
+
+
+inline bool operator < (node_ptr<neuron_base> const & p1, node_ptr<neuron_base> const & p2)
+{
+    return * p1 < * p2;
+}
+
+
+inline bool operator == (neuron_base const & n1, neuron_base const & n2)
+{
+    return n1.id() == n2.id();
+}
+
+
+inline bool operator == (node_ptr<neuron_base> const & p1, node_ptr<neuron_base> const & p2)
+{
+    return * p1 == * p2;
 }
 
 
