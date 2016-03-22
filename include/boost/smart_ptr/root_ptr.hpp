@@ -617,8 +617,8 @@ template <typename V, typename PoolAllocator = pool_allocator<V> >
 /**
     Comparison operator.
     
-    @param  n1  Operand 1.
-    @param  n2  Operand 2.
+    @param  a1  Operand 1.
+    @param  a2  Operand 2.
 */
 
 template <typename T>
@@ -631,8 +631,8 @@ template <typename T>
 /**
     Comparison operator.
     
-    @param  n1  Operand 1.
-    @param  n2  Operand 2.
+    @param  a1  Operand 1.
+    @param  a2  Operand 2.
 */
 
 template <typename T>
