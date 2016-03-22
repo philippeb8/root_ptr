@@ -3,7 +3,7 @@
     Boost detail/node_base.hpp header file.
 
     @note
-    Copyright (c) 2008 Phil Bouchard <pbouchard8@gmail.com>.
+    Copyright (c) 2008-2016 Phil Bouchard <pbouchard8@gmail.com>.
 
     Distributed under the Boost Software License, Version 1.0.
 
@@ -72,7 +72,8 @@ struct node_base;
 
 struct node_base : public boost::detail::sp_counted_base
 {
-    intrusive_list::node node_tag_;                                             /**< Tag used to enlist to @c node_proxy::elements_ . */
+    /** Tag used to enlist to @c node_proxy::node_list_ . */
+    intrusive_list::node node_tag_;
 
     node_base()
     {
@@ -146,8 +147,9 @@ protected:
             return typename node<T, Alloc<T, BOOST_PP_REPEAT(n, TEMPLATEARGUMENT_DECL, 0)> >::allocator_type(args...);          \
         }
     
+    
 /**
-    Object wrapper.
+    Pointee object wrapper.
 */
 
 template <typename T>
@@ -159,12 +161,13 @@ template <typename T>
         typedef T data_type;
 
         /**
-            Cast operator used by @c node_ptr_conodeon::header() .
+            Cast operator used by @c node_ptr_common::header() .
         */
         
         class classof
         {
-            node_element * p_;                                                  /**< Address of the @c node the element belong to. */
+            /** Address of the @c node the element belong to. */
+            node_element * p_;
 
         public:
             /**
@@ -190,7 +193,8 @@ template <typename T>
         };
 
     protected:
-        typename std::aligned_storage<sizeof(data_type), alignof(data_type)>::type elem_;       /**< Pointee object.*/
+        /** Pointee object.*/
+        typename std::aligned_storage<sizeof(data_type), alignof(data_type)>::type elem_;
     };
 
     
@@ -203,12 +207,13 @@ template <>
         typedef int data_type;
 
         /**
-            Cast operator used by @c node_ptr_conodeon::header() .
+            Cast operator used by @c node_ptr_common::header() .
         */
         
         class classof
         {
-            node_element * p_;                                                  /**< Address of the @c node the element belong to. */
+            /** Address of the @c node the element belong to. */
+            node_element * p_;
 
         public:
             /**
@@ -234,10 +239,17 @@ template <>
         };
 
     protected:
-        typename std::aligned_storage<sizeof(data_type), alignof(data_type)>::type elem_;       /**< Pointee object.*/
+        /** Pointee object.*/
+        typename std::aligned_storage<sizeof(data_type), alignof(data_type)>::type elem_;
     };
 
+
+/**
+    Pointee object & allocator wrapper.
     
+    Main class used to instanciate pointee objects and a copy of the allocator desired.
+*/
+
 template <typename T, typename PoolAllocator = pool_allocator<T> >
     class node : public node_element<T>
     {
@@ -245,11 +257,25 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         typedef T data_type;
         typedef typename PoolAllocator::template rebind< node<T, PoolAllocator> >::other allocator_type;
 
+        
+        /**
+            Initialization of a pointee object.
+            
+            @note Will use a static copy of the allocator with no parameter.
+        */
+        
         node() 
         : a_(static_pool())
         {
             container::allocator_traits<allocator_type>::construct(a_, element());
         }
+        
+
+        /**
+            Initialization of a pointee object.
+            
+            @param  a   Allocator to copy.
+        */
         
         node(allocator_type const & a) 
         : a_(a)
@@ -265,25 +291,27 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             @return		Pointee object address.
         */
         
-        data_type * element() 				
+        data_type * element()
         { 
             return reinterpret_cast<data_type *>(& elem_); 
         }
 
+
+        /**
+            Destructor.
+        */
+        
         virtual ~node()
         {
             container::allocator_traits<allocator_type>::destroy(a_, element());
         }
-        
-        virtual void dispose()              
-        {
-        }
 
+        
         /**
-            Allocates a new @c node_proxy using the fast pool allocator.
+            Allocates a new @c node_proxy using the static copy of @c PoolAllocator to be used.
             
-            @param  s   Size of the @c node_proxy .
-            @return     Pointer of the new memory node.
+            @param  s   Disregarded.
+            @return     Pointer of the new node.
         */
 
         void * operator new (size_t s)
@@ -291,21 +319,38 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             return static_pool().allocate(1);
         }
 
-        void * operator new (size_t s, allocator_type c)
+
+        /**
+            Allocates a new @c node_proxy .
+            
+            @param  s   Disregarded.
+            @param  a   Copy of @c PoolAllocator to be used.
+            @return     Pointer of the new node.
+        */
+
+        void * operator new (size_t s, allocator_type a)
         {
-            return c.allocate(1);
+            return a.allocate(1);
         }
 
-        static node<T> * allocate(allocator_type const & c)
+
+        /**
+            Allocates a new @c node_proxy .
+            
+            @param  a   Copy of @c PoolAllocator to be used.
+            @return     Pointer of the new node.
+        */
+
+        static node<T> * allocate(allocator_type const & a)
         {
-            return new (c) node<T>(c);
+            return new (a) node<T>(a);
         }
 
         BOOST_PP_REPEAT_FROM_TO(1, 10, ALLOCATE_NODE1, allocate)
 
         
         /**
-            Deallocates a @c node_proxy from the fast pool allocator.
+            Deallocates a @c node_proxy from @c PoolAllocator .
             
             @param  p   Address of the @c node_proxy to deallocate.
         */
@@ -318,29 +363,60 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
     private:
         using node_element<T>::elem_;
         
-        static allocator_type & static_pool()                                   /**< Pool where all sets are allocated. */
+        /** Static pool where all related @c node are allocated when 
+         *  @c PoolAllocator is not explicitly specified in the constructor. */
+        static allocator_type & static_pool()
         {
             static allocator_type pool_;
             
             return pool_;
         }
 
+        /** Copy of the @c PoolAllocator to be used. */
         allocator_type a_;        
     };
 
 
+/**
+    Pointee object & allocator wrapper.
+    
+    Main class used to instanciate pointee objects and a copy of the allocator desired.
+    
+    @note Uses @c fast_pool_allocator to instanciate the pointee object.
+*/
+
 template <typename T>
     class fastnode : public node<T, fast_pool_allocator<T> >
     {
-    public:
         typedef node<T, fast_pool_allocator<T> > base;
         
+    public:
         using typename base::allocator_type;
+        
+        
+        /**
+            Initialization of a pointee object.
+            
+            @note Will use a static copy of the allocator with no parameter.
+        */
         
         fastnode() 
         : base()
         {
         }
+        
+
+        /**
+            Initialization of a pointee object.
+            
+            @param  a   Allocator to copy.
+        */
+        
+        fastnode(allocator_type const & a) 
+        : base(a)
+        {
+        }
+
 
         BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE3, fastnode)
         BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE4, fastnode)
