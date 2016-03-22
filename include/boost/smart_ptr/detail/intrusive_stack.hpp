@@ -48,7 +48,10 @@ class intrusive_stack_base
 protected:
     intrusive_stack_node impl;
     
-    intrusive_stack_base() 							{ clear(); }
+    intrusive_stack_base()
+    { 
+        clear(); 
+    }
 
     void clear()
     {
@@ -67,11 +70,11 @@ protected:
 
 class intrusive_stack : protected intrusive_stack_base
 {
-    typedef intrusive_stack_base					base;
+    typedef intrusive_stack_base base;
 
 public:
-    typedef intrusive_stack_node					node;
-    typedef intrusive_stack_node *					pointer;
+    typedef intrusive_stack_node node;
+    typedef intrusive_stack_node * pointer;
     template <typename T, intrusive_stack_node T::* P> 
         struct iterator;
 
@@ -79,10 +82,20 @@ protected:
     using base::impl;
 
 public:
-    pointer begin() 								{ return impl.next; }
-    pointer end() 									{ return & impl; }
+    pointer begin()
+    { 
+        return impl.next; 
+    }
+    
+    pointer end()
+    { 
+        return & impl; 
+    }
 
-    bool empty() const 								{ return impl.next == & impl; }
+    bool empty() const
+    { 
+        return impl.next == & impl; 
+    }
     
     void push(pointer i)
     {
@@ -94,14 +107,28 @@ public:
 template <typename T, intrusive_stack_node T::* P>
     struct intrusive_stack::iterator
     {
-        typedef iterator         						self_type;
-        typedef intrusive_stack_node               		node_type;
+        typedef iterator self_type;
+        typedef intrusive_stack_node node_type;
 
-        iterator() : node_() 							{}
-        iterator(intrusive_stack::pointer __x) : node_(__x) {}
+        iterator() 
+        : node_() 
+        {
+        }
+        
+        iterator(intrusive_stack::pointer __x) 
+        : node_(__x) 
+        {
+        }
 
-        T & operator * () const 						{ return * classof(P, node_); }
-        T * operator -> () const						{ return classof(P, node_); }
+        T & operator * () const
+        { 
+            return * classof(P, node_); 
+        }
+        
+        T * operator -> () const
+        { 
+            return classof(P, node_); 
+        }
 
         self_type & operator ++ ()
         {
@@ -109,8 +136,15 @@ template <typename T, intrusive_stack_node T::* P>
             return * this;
         }
 
-        bool operator == (const self_type & x) const 	{ return node_ == x.node_; }
-        bool operator != (const self_type & x) const 	{ return node_ != x.node_; }
+        bool operator == (const self_type & x) const 
+        { 
+            return node_ == x.node_; 
+        }
+        
+        bool operator != (const self_type & x) const 
+        { 
+            return node_ != x.node_; 
+        }
 
         node_type * node_;
     };

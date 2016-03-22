@@ -88,11 +88,11 @@ protected:
 
 class intrusive_list : protected intrusive_list_base
 {
-    typedef intrusive_list_base						base;
+    typedef intrusive_list_base base;
 
 public:
-    typedef intrusive_list_node						node;
-    typedef intrusive_list_node *					pointer;
+    typedef intrusive_list_node node;
+    typedef intrusive_list_node * pointer;
     template <typename T, intrusive_list_node T::* P> 
         struct iterator;
 
@@ -154,14 +154,23 @@ public:
 template <typename T, intrusive_list_node T::* P>
     struct intrusive_list::iterator
     {
-        typedef iterator           						self_type;
-        typedef intrusive_list_node               		node_type;
+        typedef iterator self_type;
+        typedef intrusive_list_node node_type;
 
-        //iterator() : node_() 							{}
-        iterator(intrusive_list::pointer __x) : node_(__x) {}
+        iterator(intrusive_list::pointer __x) 
+        : node_(__x) 
+        {
+        }
 
-        T & operator * () const 						{ return * classof(P, node_); }
-        T * operator -> () const						{ return classof(P, node_); }
+        T & operator * () const
+        { 
+            return * classof(P, node_); 
+        }
+
+        T * operator -> () const
+        { 
+            return classof(P, node_); 
+        }
 
         self_type & operator = (self_type const & x)
         {
@@ -181,8 +190,15 @@ template <typename T, intrusive_list_node T::* P>
             return * this;
         }
 
-        bool operator == (const self_type & x) const 	{ return node_ == x.node_; }
-        bool operator != (const self_type & x) const 	{ return node_ != x.node_; }
+        bool operator == (const self_type & x) const 
+        { 
+            return node_ == x.node_; 
+        }
+        
+        bool operator != (const self_type & x) const 
+        { 
+            return node_ != x.node_; 
+        }
 
         node_type * node_;
     };
