@@ -606,7 +606,7 @@ template <typename V, typename PoolAllocator = pool_allocator<V> >
 */
 
 template <typename V, typename PoolAllocator = pool_allocator<V> >
-    node_ptr<V> make_node(smart_ptr::detail::node_proxy const & x)
+    node_ptr<V> make_node(node_proxy const & x)
     {
         return node_ptr<V>(x, new node<V, PoolAllocator>());
     }
@@ -634,7 +634,7 @@ template <typename V, typename PoolAllocator = pool_allocator<V> >
 */
 
 template <typename V, typename PoolAllocator = pool_allocator<V> >
-    node_ptr<V> make_fastnode(smart_ptr::detail::node_proxy const & x)
+    node_ptr<V> make_fastnode(node_proxy const & x)
     {
         return node_ptr<V>(x, new fastnode<V>());
     }
