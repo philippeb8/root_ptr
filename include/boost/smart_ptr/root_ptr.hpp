@@ -61,7 +61,7 @@ struct node_base;
 /**
     Set header.
     
-    Proxy object used to count the number of pointers from the stack are referencing pointee objects belonging to the same @c node_proxy .
+    Proxy object used to link a list of @c node<> blocks and a list of @c node_proxy .
 */
 
 class node_proxy
@@ -69,12 +69,18 @@ class node_proxy
     template <typename> friend class node_ptr;
     template <typename> friend class root_ptr;
 
-    bool destroying_;                                                           /**< Destruction sequence initiated. */
-    mutable smart_ptr::detail::intrusive_list::node proxy_tag_;                 /**< Tag used to enlist to @c node_proxy::includes_ . */
-    mutable smart_ptr::detail::intrusive_list node_list_;                       /**< List of all pointee objects belonging to a @c node_proxy . */
+    /** Destruction sequence flag. */
+    bool destroying_;
+    
+    /** Tag used to enlist to @c node_proxy::includes_ . */
+    mutable smart_ptr::detail::intrusive_list::node proxy_tag_;
+    
+    /** List of all pointee objects belonging to a @c node_proxy . */
+    mutable smart_ptr::detail::intrusive_list node_list_;
 
 #ifndef BOOST_DISABLE_THREADS
-    static mutex & static_mutex()                                               /**< Main global mutex used for thread safety */
+    /** Main global mutex used for thread safety */
+    static mutex & static_mutex()
     {
         static mutex mutex_;
         
@@ -91,6 +97,10 @@ class node_proxy
     }
     
     
+    /**
+        Copy of a single @c node_proxy and unification.
+    */
+    
     node_proxy(node_proxy const & x) 
     : destroying_(x.destroying_)
     , node_list_(x.node_list_)
@@ -98,6 +108,10 @@ class node_proxy
         unify(x);
     }
     
+    
+    /**
+        Destruction of a single @c node_proxy and detaching itself from other @c node_proxy .
+    */
     
     ~node_proxy()
     {
@@ -167,6 +181,10 @@ class node_proxy
     }
     
     
+    /**
+        Get rid or delegate a serie of @c node_proxy .
+    */
+    
     void reset()
     {
         using namespace smart_ptr::detail;
@@ -210,9 +228,9 @@ class node_proxy
 
 #define CONSTRUCT_MAKE_NODE2(z, n, text)                                                                                \
     template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename PoolAllocator = pool_allocator<V> >            \
-        node_ptr<V> text(node_proxy const & q, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                    \
+        node_ptr<V> text(node_proxy const & x, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                    \
         {                                                                                                               \
-            return node_ptr<V>(q, new node<V, PoolAllocator>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                   \
+            return node_ptr<V>(x, new node<V, PoolAllocator>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                   \
         }
 
 #define CONSTRUCT_MAKE_ROOT3(z, n, text)                                                                                \
@@ -224,9 +242,9 @@ class node_proxy
 
 #define CONSTRUCT_MAKE_NODE4(z, n, text)                                                                                \
     template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename PoolAllocator = pool_allocator<V> >            \
-        node_ptr<V> text(node_proxy const & q, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                    \
+        node_ptr<V> text(node_proxy const & x, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                    \
         {                                                                                                               \
-            return node_ptr<V>(q, new fastnode<V>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                              \
+            return node_ptr<V>(x, new fastnode<V>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                              \
         }
 
 
@@ -234,6 +252,8 @@ class node_proxy
     Deterministic region based memory manager.
     
     Complete memory management utility on top of standard reference counting.
+    
+    @note Must be initialized with a reference to a @c node_proxy , given by a @c root_ptr<> .
 */
 
 template <typename T>
@@ -246,7 +266,8 @@ template <typename T>
         using base::share;
         using base::po_;
 
-        node_proxy const & x_;                                                  /**< Pointer to the @c node_proxy node @c node_ptr<> belongs to. */
+        /** Reference to the @c node_proxy node @c node_ptr<> belongs to. */
+        node_proxy const & x_;
         
     public:
         using base::reset;
@@ -254,7 +275,7 @@ template <typename T>
         /**
             Initialization of a pointer.
             
-            @param  p   New pointee object to manage.
+            @param  x   Reference to a @c node_proxy the pointer belongs to.
         */
         
         explicit node_ptr(node_proxy const & x) 
@@ -267,6 +288,7 @@ template <typename T>
         /**
             Initialization of a pointer.
             
+            @param  x   Reference to a @c node_proxy the pointer belongs to.
             @param	p	New pointee object to manage.
         */
         
@@ -348,6 +370,7 @@ template <typename T>
             return operator = <T>(p);
         }
 
+        
         /**
             Assignment.
             
@@ -364,22 +387,48 @@ template <typename T>
                 return * this;
             }
 
+
+        /**
+            Assignment.
+            
+            @param  p   New pointer to manage.
+        */
+
         template <typename V>
             void reset(node_ptr<V> const & p)
             {
                 operator = <T>(p);
             }
         
+
+        /**
+            Assignment.
+            
+            @param  p   New pointer to manage.
+        */
+
         template <typename V, typename PoolAllocator>
             void reset(node<V, PoolAllocator> * p)
             {
                 operator = <T>(p);
             }
         
+        
+        /**
+            Explicit cyclicism detection mechanism used inside destructors.
+            
+            @return Whether the pointer inside a destructor points to an object already destroyed.
+        */
+
         bool cyclic() const
         {
             return x_.destroying();
         }
+
+        
+        /**
+            Destructor.
+        */
 
         ~node_ptr()
         {
@@ -421,13 +470,26 @@ template <typename T>
 
 
 /**
-    Helper.
-*/
+    Deterministic region based memory manager.
     
+    Complete memory management utility on top of standard reference counting.
+    
+    @note Needs to be instanciated for the use of further @c node_ptr<> .
+*/
+
 template <typename T>
     struct root_ptr : node_proxy, node_ptr<T>
     {
+        /**
+            Resets the pointer.
+        */
+        
         using node_ptr<T>::reset;
+        
+        
+        /**
+            Initialization of a pointer.
+        */
         
         root_ptr() 
         : node_proxy()
@@ -435,11 +497,19 @@ template <typename T>
         {
         }
                 
+
+        /**
+            Initialization of a pointer.
+            
+            @param  p   New pointer to manage.
+        */
+        
         root_ptr(root_ptr const & p) 
         : node_proxy(p)
         , node_ptr<T>(* static_cast<node_ptr<T> *>(this))
         {
         }
+        
         
         /**
             Initialization of a pointer.
@@ -454,16 +524,36 @@ template <typename T>
             }
             
             
+        /**
+            Assignment.
+            
+            @param  p   New pointer to manage.
+        */
+        
         root_ptr<T> & operator = (node_ptr<T> const & p)
         {
             return static_cast<root_ptr<T> &>(node_ptr<T>::operator = (p));
         }
 
+
+        /**
+            Assignment.
+            
+            @param  p   New pointer to manage.
+        */
+        
         root_ptr<T> & operator = (root_ptr<T> const & p)
         {
             return static_cast<root_ptr<T> &>(node_ptr<T>::operator = (p));
         }
 
+
+        /**
+            Assignment.
+            
+            @param  p   New pointee object to manage.
+        */
+        
         template <typename V, typename PoolAllocator>
             root_ptr<T> & operator = (node<V, PoolAllocator> * p)
             {
@@ -472,17 +562,35 @@ template <typename T>
     };
 
 
+/**
+    Instanciates a new @c root_ptr<> .
+*/
+
 template <typename V, typename PoolAllocator = pool_allocator<V> >
     root_ptr<V> make_root()
     {
         return root_ptr<V>(new node<V, PoolAllocator>());
     }
 
+    
+/**
+    Instanciates a new @c node_ptr<> .
+    
+    @param  x   Reference to a @c node_proxy the pointer belongs to.
+*/
+
 template <typename V, typename PoolAllocator = pool_allocator<V> >
-    node_ptr<V> make_node(smart_ptr::detail::node_proxy const & q)
+    node_ptr<V> make_node(smart_ptr::detail::node_proxy const & x)
     {
-        return node_ptr<V>(q, new node<V, PoolAllocator>());
+        return node_ptr<V>(x, new node<V, PoolAllocator>());
     }
+
+
+/**
+    Instanciates a new @c root_ptr<> .
+    
+    @note Uses @c fast_pool_allocator to instanciate the pointee object.
+*/
 
 template <typename V, typename PoolAllocator = pool_allocator<V> >
     root_ptr<V> make_fastroot()
@@ -490,17 +598,42 @@ template <typename V, typename PoolAllocator = pool_allocator<V> >
         return root_ptr<V>(new fastnode<V>());
     }
 
+    
+/**
+    Instanciates a new @c node_ptr<> .
+    
+    @param  x   Reference to a @c node_proxy the pointer belongs to.
+
+    @note Uses @c fast_pool_allocator to instanciate the pointee object.
+*/
+
 template <typename V, typename PoolAllocator = pool_allocator<V> >
-    node_ptr<V> make_fastnode(smart_ptr::detail::node_proxy const & q)
+    node_ptr<V> make_fastnode(smart_ptr::detail::node_proxy const & x)
     {
-        return node_ptr<V>(q, new fastnode<V>());
+        return node_ptr<V>(x, new fastnode<V>());
     }
+
+
+/**
+    Comparison operator.
+    
+    @param  n1  Operand 1.
+    @param  n2  Operand 2.
+*/
 
 template <typename T>
     bool operator == (node_ptr<T> const &a1, node_ptr<T> const &a2)
     {
         return a1.get() == a2.get();
     }
+
+
+/**
+    Comparison operator.
+    
+    @param  n1  Operand 1.
+    @param  n2  Operand 2.
+*/
 
 template <typename T>
     bool operator != (node_ptr<T> const &a1, node_ptr<T> const &a2)
