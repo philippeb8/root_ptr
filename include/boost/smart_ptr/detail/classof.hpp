@@ -40,7 +40,7 @@ namespace detail
     Returns the absolute address of a non-polymorphic object.
     
     @note
-    Expects template value given by @sa is_polymorphic<>::value.
+    Expects template value given by @c is_polymorphic::value.
 */
 
 template <bool>
@@ -86,7 +86,32 @@ template <typename T, typename U>
     {
         typedef typename remove_const<typename remove_volatile<U>::type>::type unqualified_type;
     
-        return static_cast<T *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(const_cast<unqualified_type *>(p))) - ptrdiff_t(static_cast<char *>(static_cast<void *>(const_cast<unqualified_type *>(& ((T *)(0)->* q)))) - (char *)(0))));
+        return static_cast<T *>
+        (
+            static_cast<void *>
+            (
+                static_cast<char *>
+                (
+                    static_cast<void *>
+                    (
+                        const_cast<unqualified_type *>(p)
+                    )
+                ) 
+                - 
+                ptrdiff_t
+                (
+                    static_cast<char *>
+                    (
+                        static_cast<void *>
+                        (
+                            const_cast<unqualified_type *>(& ((T *)(0)->* q))
+                        )
+                    ) 
+                    - 
+                    (char *)(0)
+                )
+            )
+        );
     }
 
 
