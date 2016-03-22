@@ -481,7 +481,7 @@ template <typename T>
     struct root_ptr : node_proxy, node_ptr<T>
     {
         /**
-            Resets the pointer.
+            Assignment.
         */
         
         using node_ptr<T>::reset;
