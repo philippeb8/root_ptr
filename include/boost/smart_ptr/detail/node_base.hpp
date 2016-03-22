@@ -311,7 +311,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             Allocates a new @c node using the static copy of @c PoolAllocator to be used.
             
             @param  s   Disregarded.
-            @return     Pointer of the new node.
+            @return     Pointer of the new @c node.
         */
 
         void * operator new (size_t s)
@@ -325,7 +325,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             
             @param  s   Disregarded.
             @param  a   Copy of @c PoolAllocator to be used.
-            @return     Pointer of the new node.
+            @return     Pointer of the new @c node.
         */
 
         void * operator new (size_t s, allocator_type a)
@@ -338,7 +338,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             Allocates a new @c node .
             
             @param  a   Copy of @c PoolAllocator to be used.
-            @return     Pointer of the new node.
+            @return     Pointer of the new @c node.
         */
 
         static node<T> * allocate(allocator_type const & a)
@@ -363,8 +363,13 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
     private:
         using node_element<T>::elem_;
         
-        /** Static pool where all related @c node are allocated when 
-         *  @c PoolAllocator is not explicitly specified in the constructor. */
+        /** 
+            Static pool.
+            
+            This is where all @c node are allocated when @c PoolAllocator is not 
+            explicitly specified in the constructor. 
+         */
+        
         static allocator_type & static_pool()
         {
             static allocator_type pool_;
