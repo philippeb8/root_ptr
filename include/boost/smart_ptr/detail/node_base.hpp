@@ -261,7 +261,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         /**
             Initialization of a pointee object.
             
-            @note Will use a static copy of the allocator with no parameter.
+            @note Will use a static copy of the allocator which has no parameter.
         */
         
         node() 
