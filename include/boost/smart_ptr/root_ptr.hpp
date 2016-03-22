@@ -530,9 +530,22 @@ template <typename T>
             @param  p   New pointer to manage.
         */
         
-        root_ptr<T> & operator = (node_ptr<T> const & p)
+        template <typename V>
+            root_ptr & operator = (node_ptr<V> const & p)
+            {
+                return static_cast<root_ptr &>(node_ptr<T>::operator = (p));
+            }
+
+
+        /**
+            Assignment.
+            
+            @param  p   New pointer to manage.
+        */
+        
+        root_ptr & operator = (node_ptr<T> const & p)
         {
-            return static_cast<root_ptr<T> &>(node_ptr<T>::operator = (p));
+            return operator = <T>(p);
         }
 
 
@@ -542,9 +555,22 @@ template <typename T>
             @param  p   New pointer to manage.
         */
         
-        root_ptr<T> & operator = (root_ptr<T> const & p)
+        template <typename V>
+            root_ptr & operator = (root_ptr<V> const & p)
+            {
+                return static_cast<root_ptr &>(node_ptr<T>::operator = (p));
+            }
+
+
+        /**
+            Assignment.
+            
+            @param  p   New pointer to manage.
+        */
+        
+        root_ptr & operator = (root_ptr<T> const & p)
         {
-            return static_cast<root_ptr<T> &>(node_ptr<T>::operator = (p));
+            return operator = <T>(p);
         }
 
 
