@@ -308,7 +308,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
         
         /**
-            Allocates a new @c node_proxy using the static copy of @c PoolAllocator to be used.
+            Allocates a new @c node using the static copy of @c PoolAllocator to be used.
             
             @param  s   Disregarded.
             @return     Pointer of the new node.
@@ -321,7 +321,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
 
         /**
-            Allocates a new @c node_proxy .
+            Allocates a new @c node .
             
             @param  s   Disregarded.
             @param  a   Copy of @c PoolAllocator to be used.
@@ -335,7 +335,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
 
         /**
-            Allocates a new @c node_proxy .
+            Allocates a new @c node .
             
             @param  a   Copy of @c PoolAllocator to be used.
             @return     Pointer of the new node.
@@ -350,9 +350,9 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
         
         /**
-            Deallocates a @c node_proxy from @c PoolAllocator .
+            Deallocates a @c node from @c PoolAllocator .
             
-            @param  p   Address of the @c node_proxy to deallocate.
+            @param  p   Address of the @c node to deallocate.
         */
         
         void operator delete (void * p)
@@ -423,13 +423,30 @@ template <typename T>
     };
 
     
+/**
+    Allocates a new @c node using the respective allocator.
+    
+    @param  a   Allocator to be used.
+    @param  args Arguments forwarded to the new object's constructor.
+
+    @note Calls @c node::allocate .
+*/
+
 template<typename T, class Alloc, typename... Args>
-    node<T, Alloc> * allocate_node(const Alloc& alloc, Args&&... args)
+    node<T, Alloc> * allocate_node(const Alloc& a, Args&&... args)
     {
-        return node<T, Alloc>::allocate(alloc, args...);
+        return node<T, Alloc>::allocate(a, args...);
     }
     
     
+/**
+    Instanciates an allocator.
+    
+    @param  args Arguments forwarded to the allocator's constructor.
+
+    @note Instanciates a @c node::allocator_type .
+*/
+
 template<template <typename, typename...> class Alloc, typename T, typename... Args>
     typename node<T, Alloc<T> >::allocator_type make_node_allocator(Args&&... args)
     {
