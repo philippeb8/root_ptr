@@ -126,6 +126,12 @@
   root_ptr&#60;int&#62; p = make_fastroot&#60;int&#62;(10);
   </pre>
 
+  <p>Thirdly you can actually use the allocator of your choice using the following function calls:</p>
+  
+  <pre>
+  root_ptr&#60;int&#62; p = allocate_node&#60;int&#62;(make_node_allocator&#60;fast_root_allocator, int&#62;(), 12);
+  </pre>
+  
   <h2><a name="caveat" id="caveat"></a>Caveat</h2>
   
   <p>Hierarchies with multiple inheritance without virtual tables will cause undefined behavior if a pointer to a derived class is assigned to a pointer of one 
