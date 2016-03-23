@@ -68,9 +68,8 @@
   <h2><a name="introduction" id="introduction"></a>Introduction</h2>
 
   <p>Root Pointer introduces the concept of <i>set</i> where it is defined to be a one or many memory blocks referencing each other allocated on the heap pointed 
-  to by one or many <i>root_ptr&#60;T&#62;</i>s allocated on the stack or the data segment (non heap) of the application.  Each <i>set</i> is consequently composed of a 
-  list of all memory blocks constituting it and a counter tracking the number of times the <i>set</i> is referenced by a <i>root_ptr&#60;T&#62;</i> from the stack or the data 
-  segment.  For example:</p>
+  to by one or many <i>root_ptr&#60;T&#62;</i>s allocated elsewhere of the application.  Each <i>set</i> is consequently composed of a 
+  list of all memory blocks constituting it and a <i>node_proxy</i> linking each allocation and other potential <i>node_proxys</i>.  For example:</p>
   
   <center>
     <img src="Introduction.png"/>
@@ -78,10 +77,9 @@
 
   <h2><a name="cyclicism" id="cyclicism"></a>Cyclicism</h2>
   
-  <p>Therefore whenever a <i>set</i> counter finds out the number of <i>root_ptr&#60;T&#62;</i> referencing it to be zero, the deallocation of each memory block composing 
+  <p>Therefore whenever a <i>node_proxy</i> contained within a <i>root_ptr&#60;T&#62;</i> is about to be destroyed, the deallocation of each memory block composing 
   the <i>set</i> is enforced.  Thus whether the <i>set</i> was composed of memory blocks referencing each other in a cyclic way or not, all of them will be subject to 
-  destruction and deallocation indifferent from the cyclicism problem presented by the reference counters.  As we can see in the following example, the <i>set</i> counter reaches 
-  0 and consequently every elements composing the <i>set</i> will be destructed and deallocated:</p>
+  destruction and deallocation indifferent from the cyclicism problem presented by the reference counters.  As we can see in the following example, the <i>node_proxy</i> is destroyed and consequently every elements composing the <i>set</i> will be destructed and deallocated as well:</p>
   
   <center>
     <img src="Cyclicism1.png"/><img src="Cyclicism2.png"/>
@@ -89,10 +87,7 @@
 
   <h2><a name="union" id="union"></a>Union</h2>
 
-  <p>A <i>set</i> will be unified with another <i>set</i> whenever one of its member is found to reference a member from a different <i>set</i>.  The counter from the 
-  first <i>set</i> will be added to the counter from the second <i>set</i> and a redirection of the first counter to the second will occur so that all elements from the 
-  first <i>set</i> make direct use of the second counter.  Once two <i>set</i>s are unified they will stay unified even if the new reference responsible for unifying the 
-  <i>set</i>s is once again disjointed.</p>
+  <p>A <i>set</i> will be unified with another <i>set</i> whenever one of its member is found to reference a member from a different <i>set</i>.  Once two <i>set</i>s are unified they will stay unified even if the new reference responsible for unifying the <i>set</i>s is once again disjointed.</p>
   
   <center>
     <img src="Union1.png"/><img src="Union2.png"/>
@@ -105,10 +100,10 @@
   height="31" width="88"></a></p>
 
   <p>Revised 
-  <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->08
-  April, 2011<!--webbot bot="Timestamp" endspan i-checksum="38514" --></p>
+  <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->22
+  March, 2016<!--webbot bot="Timestamp" endspan i-checksum="38514" --></p>
 
-  <p><i>Copyright &copy; 2011 <a href=
+  <p><i>Copyright &copy; 2011-2016 <a href=
   "mailto:pbouchard8@gmail.com">Phil Bouchard</a></i></p>
 
   <p><i>Distributed under the Boost Software License, Version 1.0. (See
