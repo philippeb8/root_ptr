@@ -99,8 +99,6 @@
   {
       root_ptr&#60;A&#62; p;
   
-      void foo() {}
-      
       ~A()
       {
           if (! p.cyclic())
@@ -130,6 +128,21 @@
   
   <pre>
   root_ptr&#60;int&#62; p = allocate_node&#60;int&#62;(make_node_allocator&#60;fast_pool_allocator, int&#62;(), 12);
+  </pre>
+  
+  <p>Fourthly a <i>root_ptr</i> derives from <i>node_proxy</i> and <i>node_ptr</i>.  
+  You can propagate the information of the <i>node_proxy</i> by passing it as a reference:</p>
+  
+  <pre>
+  struct B
+  {
+      node_ptr&#60;A&#62; p;
+      
+      B(node_proxy const & x) : p(x) {}
+  };
+  
+  root_ptr&#60;B&#62; p;
+  node_ptr&#60;B&#62; q = make_node&#60;B&#62;(p, p);
   </pre>
   
   <h2><a name="caveat" id="caveat"></a>Caveat</h2>
