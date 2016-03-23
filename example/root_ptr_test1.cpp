@@ -52,7 +52,7 @@ struct C : B
 
 root_ptr<int> foo()
 {
-    return new node<int>(9);
+    return make_root<int>(9);
 }
 
 void bar(node_ptr<B> p)
@@ -70,14 +70,14 @@ int main()
 
     cout << "Slicing:" << endl;
     {
-        root_ptr<C> p = new node<C>();
+        root_ptr<C> p = make_root<C>();
         bar(p);
     }
     cout << endl;
 
     cout << "Sharing:" << endl;
     {
-        root_ptr<int> p = new node<int>(9);
+        root_ptr<int> p = make_root<int>(9);
         root_ptr<int> q = p;
         
         cout << "p: " << * p << endl;
@@ -89,16 +89,16 @@ int main()
     cout << "Cyclicism:" << endl;
     {
         root_ptr<A> x;
-        node_ptr<A> p(x, new node<A>(x, 7));
-        node_ptr<A> q(x, new node<A>(x, 8));
-        node_ptr<A> r(x, new node<A>(x, 9));
+        node_ptr<A> p = make_node<A>(x, x, 7);
+        node_ptr<A> q = make_node<A>(x, x, 8);
+        node_ptr<A> r = make_node<A>(x, x, 9);
 
         //node_ptr<void> t = make_node<A>(10);
-        node_ptr<int volatile> v(x, new node<int volatile>(11));
+        node_ptr<int volatile> v = make_node<int volatile>(x, 11);
 
         p->p = p->p;
         q = r;
-        v = node_ptr<int volatile>(x, new node<int volatile>(12));
+        v = make_node<int volatile>(x, 12);
 
         cout << "p->i = " << p->i << endl;
         cout << "q->i = " << q->i << endl;
@@ -124,9 +124,9 @@ int main()
     cout << "Order of destruction:" << endl;
     {
         root_ptr<A> x;
-        node_ptr<A> v(x, new node<A>(x, 0));
-        v->p = new node<A>(x, 1);
-        v->p->p = new node<A>(x, 2);
+        node_ptr<A> v = make_node<A>(x, x, 0);
+        v->p = make_node<A>(x, x, 1);
+        v->p->p = make_node<A>(x, x, 2);
         v->p->p->p = v->p;
     }
     cout << endl;
