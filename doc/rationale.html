@@ -91,13 +91,6 @@
     <img src="Cyclicism1.png"/><img src="Cyclicism2.png"/>
   </center>
 
-  <h2><a name="initialization" id="initialization"></a>Initialization</h2>
-
-  <p>A <i>root_ptr&#60;T&#62;</i> is initialized differently depending on the memory segment it is being instantiated on.  If it is found to be residing the stack or the data 
-  segment then a new <i>set</i> counter will also be instantiated.  If it is found to be living on the heap then a more complicated mechanism is involved to track the 
-  last memory block that was allocated in the same thread, find its address and stack up the <i>set</i> it will be part of until the first <i>root_ptr&#60;T&#62;</i> found on 
-  the stack is or data segment is initialized, where the new <i>set</i> counter will be shared with all of the newly allocated blocks of memory referencing each other.</p>
-
   <h2><a name="union" id="union"></a>Union</h2>
 
   <p>A <i>set</i> will be unified with another <i>set</i> whenever one of its member is found to reference a member from a different <i>set</i>.  The counter from the 
