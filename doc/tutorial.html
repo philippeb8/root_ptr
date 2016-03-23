@@ -129,7 +129,7 @@
   <p>Thirdly you can actually use the allocator of your choice using the following function calls:</p>
   
   <pre>
-  root_ptr&#60;int&#62; p = allocate_node&#60;int&#62;(make_node_allocator&#60;fast_root_allocator, int&#62;(), 12);
+  root_ptr&#60;int&#62; p = allocate_node&#60;int&#62;(make_node_allocator&#60;fast_pool_allocator, int&#62;(), 12);
   </pre>
   
   <h2><a name="caveat" id="caveat"></a>Caveat</h2>
