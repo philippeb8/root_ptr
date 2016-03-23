@@ -6,7 +6,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
   <link rel="stylesheet" type="text/css" href="http://www.boost.org/doc/libs/1_46_1/boost.css">
 
-  <title>Block Pointer - Tutorial - Boost 1.46.1</title>
+  <title>Root Pointer - Tutorial - Boost 1.46.1</title>
 <link rel="icon" href="http://www.boost.org/favicon.ico" type="image/ico"><link rel="stylesheet" type="text/css" href="http://www.boost.org/style-v2/section-basic.css"></head>
 
 <body link="#0000FF" vlink="#800080">  <div id="boost-common-heading-doc">
@@ -54,7 +54,7 @@
   <div id="boost-common-heading-doc-spacer"></div>
 
   
-        <h1 align="center">Block Pointer</h1>
+        <h1 align="center">Root Pointer</h1>
 
         <h2 align="center">Tutorial</h2>
       <dl class="index">
@@ -67,44 +67,37 @@
 
   <h2><a name="basic" id="basic"></a>Basic</h2>
   
-  <p>Block Pointer was designed to be easy to use and to be versatile in terms of object variants it can refer to.  Its only requirement is limited to the usage 
+  <p>Root Pointer was designed to be easy to use and to be versatile in terms of object variants it can refer to.  Its only requirement is limited to the usage 
   of a special type needed to instantiate objects referred to.  For example:</p>
 
   <pre>  
-  block_ptr&#60;int&#62; p = make_block&#60;int&#62;(11);
+  root_ptr&#60;int&#62; p = make_root&#60;int&#62;(11);
   </pre>
 
-  <p>Will instantiate a special object <i>block&#60;int&#62;</i> having an integer as one of its member.  The pointer to the object is then passed to the 
-  <i>block_ptr&#60;int&#62;</i> that will manage its existence and later destroy and deallocate it when it is found to be no longer referenced.<p>
+  <p>Will instantiate a special object <i>node&#60;int&#62;</i> having an integer as one of its member.  The pointer to the object is then passed to the 
+  <i>root_ptr&#60;int&#62;</i> that will manage its existence and later destroy and deallocate it when it is found to be no longer referenced.<p>
 
-  <p>Variants of the object type can also be used.  In order to instantiate an array of integer for example, all that will be needed is to change the 
-  type to the following:<p>
+  <p>The <i>root_ptr&#60;int&#62;</i> guarantees all associated allocations, cyclic or not, will be freed upon its destruction.
+  Once the root is defined, we can derive a <i>node_ptr&#60;int&#62;</i> from it:<p>
 
   <pre>  
-  block_ptr&#60;int[10]&#62; p = make_block&#60;int[10]&#62;();
+  node_ptr&#60;int&#62; q = make_node&#60;int&#62;(p, 12);
   </pre>
 
-  See the following <a href="../example/block_ptr_test1.cpp">example</a> for different cases of its usage.
+  <p>A <i>node_ptr&#60;int&#62;</i> is an internal pointer in a set of objects that is compact which uses the information of the associated 
+  <i>root_ptr&#60;int&#62;</i> to define its length of existence.  As its name suggest, this can be used as node pointers inside a container for a given root for example.<p>
+
+  See the following <a href="../example/root_ptr_test1.cpp">example</a> for different cases of its usage.
   
   <h2><a name="advanced" id="advanced"></a>Advanced</h2>
 
-  <p>Firstly when STL containers are made out of objects having members of type <i>block_ptr&#60;T&#62;</i> then it will be desirable to have all of the allocated nodes 
-  and its members part of the same <i>set</i>.  This way all of the newly allocated <i>block_ptr&#60;T&#62;</i> will be referring to the same <i>set</i> header.
-  In order to do so, we must tell the container in question a new allocator that will be used to instantiate the nodes.  This allocator is called: 
-  <i>block_allocator&#60;T&#62;</i>.  For example:</p>
-
-  <pre>  
-  list&#60; block_ptr&#60;int&#62;, block_allocator&#60; block_ptr&#60;int&#62; &#62; &#62; c;
-  c.push_back(make_block&#60;int&#62;(11));
-  </pre>
-
-  <p>Secondly in the case where a cyclic set is being destroyed, in order to prevent <i>block_ptr</i>s member pointers from accessing an object that has already been 
+  <p>Firstly in the case where a cyclic set is being destroyed, in order to prevent <i>root_ptr</i>s member pointers from accessing an object that has already been 
   destroyed the function <i>cyclic()</i> is provided to explicitly check the state of the pointee object:</p>
 
   <pre>  
   struct A
   {
-      block_ptr&#60;A&#62; p;
+      root_ptr&#60;A&#62; p;
   
       void foo() {}
       
@@ -115,8 +108,8 @@
       }
   };
   
-  block_ptr&#60;A&#62; p;
-  p = make_block&#60;A&#62;();
+  root_ptr&#60;A&#62; p;
+  p = make_root&#60;A&#62;();
   p-&#62;p = p;
   </pre>
 
@@ -127,18 +120,11 @@
   </tr>
   </table>
 
-  <p>Thirdly creating pointee objects in a faster way is possible by calling <i>operator new</i> directly with an object of type <i>block&#60;T&#62;</i>:</p>
+  <p>Secondly creating pointee objects in a faster way is possible by calling <i>make_fastroot</i>:</p>
   
   <pre>
-  block_ptr&#60;int&#62; p = new block&#60;int&#62;(10);
+  root_ptr&#60;int&#62; p = make_fastroot&#60;int&#62;(10);
   </pre>
-
-  <table>
-  <tr>
-  <td width="20"></td>
-  <td><i>Note: The assignment of a raw pointer needs to be the immediate next step after the allocation of the object.</i></td>
-  </tr>
-  </table>
 
   <h2><a name="caveat" id="caveat"></a>Caveat</h2>
   
@@ -150,9 +136,9 @@
   struct N { int i; };
   struct O : N, M { int i; };
 
-  block_ptr&#60;O&#62; po = make_block&#60;O&#62;();
-  block_ptr&#60;N&#62; pn = po; // incorrect
-  block_ptr&#60;M&#62; pm = po; // incorrect
+  root_ptr&#60;O&#62; po = make_root&#60;O&#62;();
+  root_ptr&#60;N&#62; pn = po; // incorrect
+  root_ptr&#60;M&#62; pm = po; // incorrect
   </pre>
   
   <p>A way to bypass any problem that might be created by the example above is to add virtual destructors to the classes:</p>
@@ -162,9 +148,9 @@
   struct N { int i; virtual ~N() {} };
   struct O : N, M { int i; };
 
-  block_ptr&#60;O&#62; po = make_block&#60;O&#62;();
-  block_ptr&#60;N&#62; pn = po; // correct
-  block_ptr&#60;M&#62; pm = po; // correct
+  root_ptr&#60;O&#62; po = make_root&#60;O&#62;();
+  root_ptr&#60;N&#62; pn = po; // correct
+  root_ptr&#60;M&#62; pm = po; // correct
   </pre>
 
   <hr>
@@ -175,9 +161,9 @@
 
   <p>Revised 
   <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->22
-  April, 2011<!--webbot bot="Timestamp" endspan i-checksum="38514" --></p>
+  March, 2016<!--webbot bot="Timestamp" endspan i-checksum="38514" --></p>
 
-  <p><i>Copyright &copy; 2011 <a href=
+  <p><i>Copyright &copy; 2011-2016 <a href=
   "mailto:philippeb8@gmail.com">Phil Bouchard</a></i></p>
 
   <p><i>Distributed under the Boost Software License, Version 1.0. (See

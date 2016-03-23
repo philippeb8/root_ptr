@@ -6,7 +6,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
   <link rel="stylesheet" type="text/css" href="http://www.boost.org/doc/libs/1_46_1/boost.css">
 
-  <title>Block Pointer - Rationale - Boost 1.46.1</title>
+  <title>Root Pointer - Rationale - Boost 1.46.1</title>
 <link rel="icon" href="http://www.boost.org/favicon.ico" type="image/ico"><link rel="stylesheet" type="text/css" href="http://www.boost.org/style-v2/section-basic.css"></head>
 
 <body link="#0000FF" vlink="#800080">  <div id="boost-common-heading-doc">
@@ -54,7 +54,7 @@
   <div id="boost-common-heading-doc-spacer"></div>
 
   
-        <h1 align="center">Block Pointer</h1>
+        <h1 align="center">Root Pointer</h1>
 
         <h2 align="center">Rationale</h2>
       <dl class="index">
@@ -71,9 +71,9 @@
 
   <h2><a name="introduction" id="introduction"></a>Introduction</h2>
 
-  <p>Block Pointer introduces the concept of <i>set</i> where it is defined to be a one or many memory blocks referencing each other allocated on the heap pointed 
-  to by one or many <i>block_ptr&#60;T&#62;</i>s allocated on the stack or the data segment (non heap) of the application.  Each <i>set</i> is consequently composed of a 
-  list of all memory blocks constituting it and a counter tracking the number of times the <i>set</i> is referenced by a <i>block_ptr&#60;T&#62;</i> from the stack or the data 
+  <p>Root Pointer introduces the concept of <i>set</i> where it is defined to be a one or many memory blocks referencing each other allocated on the heap pointed 
+  to by one or many <i>root_ptr&#60;T&#62;</i>s allocated on the stack or the data segment (non heap) of the application.  Each <i>set</i> is consequently composed of a 
+  list of all memory blocks constituting it and a counter tracking the number of times the <i>set</i> is referenced by a <i>root_ptr&#60;T&#62;</i> from the stack or the data 
   segment.  For example:</p>
   
   <center>
@@ -82,7 +82,7 @@
 
   <h2><a name="cyclicism" id="cyclicism"></a>Cyclicism</h2>
   
-  <p>Therefore whenever a <i>set</i> counter finds out the number of <i>block_ptr&#60;T&#62;</i> referencing it to be zero, the deallocation of each memory block composing 
+  <p>Therefore whenever a <i>set</i> counter finds out the number of <i>root_ptr&#60;T&#62;</i> referencing it to be zero, the deallocation of each memory block composing 
   the <i>set</i> is enforced.  Thus whether the <i>set</i> was composed of memory blocks referencing each other in a cyclic way or not, all of them will be subject to 
   destruction and deallocation indifferent from the cyclicism problem presented by the reference counters.  As we can see in the following example, the <i>set</i> counter reaches 
   0 and consequently every elements composing the <i>set</i> will be destructed and deallocated:</p>
@@ -93,9 +93,9 @@
 
   <h2><a name="initialization" id="initialization"></a>Initialization</h2>
 
-  <p>A <i>block_ptr&#60;T&#62;</i> is initialized differently depending on the memory segment it is being instantiated on.  If it is found to be residing the stack or the data 
+  <p>A <i>root_ptr&#60;T&#62;</i> is initialized differently depending on the memory segment it is being instantiated on.  If it is found to be residing the stack or the data 
   segment then a new <i>set</i> counter will also be instantiated.  If it is found to be living on the heap then a more complicated mechanism is involved to track the 
-  last memory block that was allocated in the same thread, find its address and stack up the <i>set</i> it will be part of until the first <i>block_ptr&#60;T&#62;</i> found on 
+  last memory block that was allocated in the same thread, find its address and stack up the <i>set</i> it will be part of until the first <i>root_ptr&#60;T&#62;</i> found on 
   the stack is or data segment is initialized, where the new <i>set</i> counter will be shared with all of the newly allocated blocks of memory referencing each other.</p>
 
   <h2><a name="union" id="union"></a>Union</h2>

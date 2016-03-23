@@ -6,7 +6,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
   <link rel="stylesheet" type="text/css" href="http://www.boost.org/doc/libs/1_46_1/boost.css">
 
-  <title>Block Pointer - Overview - Boost 1.46.1</title>
+  <title>Root Pointer - Overview - Boost 1.46.1</title>
 <link rel="icon" href="http://www.boost.org/favicon.ico" type="image/ico"><link rel="stylesheet" type="text/css" href="http://www.boost.org/style-v2/section-basic.css"></head>
 
 <body link="#0000FF" vlink="#800080">  <div id="boost-common-heading-doc">
@@ -54,7 +54,7 @@
   <div id="boost-common-heading-doc-spacer"></div>
 
   
-        <h1 align="center">Block Pointer</h1>
+        <h1 align="center">Root Pointer</h1>
 
         <h2 align="center">Overview</h2>
       <dl class="index">
@@ -64,7 +64,7 @@
 
     <dt><a href="#rc">Reference Counting</a></dt>
 
-    <dt><a href="#sp">Block Pointer</a></dt>
+    <dt><a href="#sp">Root Pointer</a></dt>
   </dl>
 
   <h2><a name="introduction" id="introduction"></a>Introduction</h2>
@@ -192,23 +192,24 @@
   <p>The main drawback of this approach is the need to explicitly find the cycle to later alter the code with 
   respective <i>weak_ptr</i>s.</p>
 
-  <h2><a name="sp" id="sp"></a>Block Pointer</h2>
+  <h2><a name="sp" id="sp"></a>Root Pointer</h2>
 
-  <p>Block Pointer is a memory manager on top of reference counting and is also able to detect outright 
+  <p>Root Pointer is a memory manager on top of reference counting and is also able to detect outright 
   unreferenced cyclic blocks of memory.  Its performance is comparable to <i>shared_ptr</i> 
-  but is not requiring a bigger memory usage per pointer (2 times <i>sizeof(void *)</i>), given its 
-  ability to detect cyclic blocks of memory with no coding overhead.  For example:</p>
+  but is not requiring a bigger memory usage per pointer (2 times <i>sizeof(void *)</i>) 
+  for its associated <i>node_ptr</i> and (2 times <i>sizeof(void *)</i> + <i>sizeof(node_proxy)</i>) 
+  for <i>root_ptr</i> itself, given its ability to detect cyclic blocks of memory.  For example:</p>
   
   <pre>  
   #include &#60;iostream&#62;
-  #include &#60;boost/block_ptr.hpp&#62;
+  #include &#60;boost/smart_ptr/root_ptr.hpp&#62;
   
   using namespace std;
   using namespace boost;
 
   struct A
   {
-      block_ptr&#60;A&#62; q;
+      root_ptr&#60;A&#62; q;
       
       ~A()
       {
@@ -218,7 +219,7 @@
   
   int main()
   {
-      block_ptr&#60;A&#62; p = make_block&#60;A&#62;();
+      root_ptr&#60;A&#62; p = make_root&#60;A&#62;();
       p->q = p;
       
       p.reset(); // deterministic destruction
@@ -237,10 +238,10 @@
   height="31" width="88"></a></p>
 
   <p>Revised 
-  <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->04
-  May, 2011<!--webbot bot="Timestamp" endspan i-checksum="38514" --></p>
+  <!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->22
+  March, 2016<!--webbot bot="Timestamp" endspan i-checksum="38514" --></p>
 
-  <p><i>Copyright &copy; 2011 <a href=
+  <p><i>Copyright &copy; 2011-2016 <a href=
   "mailto:philippeb8@gmail.com">Phil Bouchard</a></i></p>
 
   <p><i>Distributed under the Boost Software License, Version 1.0. (See
