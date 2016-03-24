@@ -1,36 +1,77 @@
-# Block Pointer
+# Block Pointer examples
 #
-# Copyright (c) 2011
-# Phil Bouchard
+# Copyright (c) 2016 Phil Bouchard
 #
 # Distributed under the Boost Software License, Version 1.0. (See
 # accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt
 
-using testing ;
+# bjam command lines:
+#                    >b2 -a  # Just msvc debug
+#                    >b2 -a toolset=gcc                     # just gcc debug
+#                    >b2 -a toolset=gcc release             # just gcc release
+#                    >b2 -a toolset=msvc debug release      # both variants for msvc.
+#                    >b2 -a toolset=gcc,msvc debug release  # Both toolset and both variants.
+
+# optional redirect output > example.log
+
+import testing ;
 
 if ! $(BOOST_ROOT)
 {
     BOOST_ROOT = [ modules.peek : BOOST_ROOT ] ;
 }
 
-# bjam -V2 threading=multi target-os=cygwin threadapi=pthread variant=debug
+project boost_ptr
+  :
+  requirements
 
-lib boost_regex : : <name>boost_regex ;
-lib boost_thread : : <name>boost_thread ;
-lib boost_unit_test_framework : : <name>boost_unit_test_framework ;
+    <library>/boost/system//boost_system
+    <library>/boost/thread//boost_thread
+    #<define>BOOST_ALL_NO_LIB=1
+    <threading>multi
+   # <threading>single  # Does anyone use single threading?  8-bit micros?
+   # Might be better to add these as requirement for individual runs so can test both single and multi.
 
-project :
-    : requirements
-        <include>../../.. 
-        <include>$(BOOST_ROOT)
-        <warnings>all
+    <include>../../.. # modular-boost root
+    <include>$(BOOST_ROOT)
+    <warnings>all
+     #toolset requirements:
+     # GCC requirements:
+    <toolset>gcc:<cxxflags>-std=c++11 # root_ptr requires C++11 library.
+    <toolset>gcc:<cxxflags>-Wno-missing-braces
+    <toolset>gcc:<cxxflags>-fpermissive
+    <toolset>gcc:<cxxflags>-DBOOST_DISABLE_THREADS
+
+    # Clang requirements:
+    <toolset>clang:<cxxflags>-std=c++11 # root_ptr requires C++11 library.
+    <toolset>gcc:<cxxflags>-DBOOST_DISABLE_THREADS
+     # Others:
+    <toolset>darwin:<cxxflags>-Wno-missing-braces
+    <toolset>acc:<cxxflags>+W2068,2461,2236,4070
+    <toolset>intel:<cxxflags>-Qwd264,239
+    # Microsoft Visual Studio 14.0 (2015) requirements:
+    <toolset>msvc:<warnings>all
+    <toolset>msvc:<asynch-exceptions>on
+    <toolset>msvc:<define>_CRT_SECURE_NO_DEPRECATE
+    <toolset>msvc:<define>_SCL_SECURE_NO_DEPRECATE
+    <toolset>msvc:<define>_SCL_SECURE_NO_WARNINGS
+    <toolset>msvc:<define>_CRT_SECURE_NO_WARNINGS
+    <toolset>msvc:<cxxflags>/wd4996 # == #define _SCL_SECURE_NO_WARNINGS
+    <toolset>msvc:<cxxflags>/wd4512 # Assignment operator could not be generated.
+    <toolset>msvc:<cxxflags>/wd4127 # Conditional expression is constant.
+    <toolset>msvc:<cxxflags>/wd4100 # Unreferenced formal parameter.
+    <toolset>msvc:<cxxflags>/wd4099 # type name first seen using 'class' now seen using 'struct'.
+
 ;
 
-test-suite "block_ptr_tests" :
-    [ run block_ptr_test1.cpp boost_thread boost_unit_test_framework ]
-    [ run block_ptr_test3.cpp boost_thread boost_unit_test_framework ]
-    [ run t100_test1.cpp boost_thread boost_regex ]
-    [ run thread_test.cpp boost_thread ]
-    [ run benchmark.cpp boost_thread ]
-    ;
+test-suite "root_ptr_examples" :
+    [ run root_ptr_basic.cpp ]
+  #  [ run root_ptr_test1.cpp ]
+  #  [ run root_ptr_example2.cpp ] # \modular-boost\boost\root_ptr\detail\root_base.hpp(239): error C2248:
+  #  [ run root_ptr_example3.cpp  ]
+   # [ run t100_test1.cpp  ]
+   # [ run thread_test.cpp boost_thread ]
+   # [ run benchmark.cpp boost_thread ]
+;
+
