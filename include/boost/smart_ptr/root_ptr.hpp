@@ -478,8 +478,10 @@ template <typename T>
 */
 
 template <typename T>
-    struct root_ptr : node_proxy, node_ptr<T>
+    class root_ptr : public node_proxy, public node_ptr<T>
     {
+    public:
+        
         /**
             Assignment.
         */
