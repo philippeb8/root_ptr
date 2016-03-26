@@ -26,8 +26,8 @@ project boost_ptr
   :
   requirements
 
-    <library>/boost/system//boost_system
-    <library>/boost/thread//boost_thread
+    #<library>/boost/system//boost_system
+    #<library>/boost/thread//boost_thread
     #<define>BOOST_ALL_NO_LIB=1
     <threading>multi
    # <threading>single  # Does anyone use single threading?  8-bit micros?
