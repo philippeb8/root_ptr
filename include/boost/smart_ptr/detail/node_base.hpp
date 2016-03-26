@@ -365,6 +365,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             Deallocates a @c node from @c PoolAllocator .
 
             @param  p   Address of the @c node to deallocate.
+            @param  a   Copy of @c PoolAllocator to be used.
         */
 
         void operator delete (void * p, allocator_type a)
