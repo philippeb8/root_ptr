@@ -361,16 +361,16 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         }
 
 
-		/**
-			Deallocates a @c node from @c PoolAllocator .
+        /**
+            Deallocates a @c node from @c PoolAllocator .
 
-			@param  p   Address of the @c node to deallocate.
-		*/
+            @param  p   Address of the @c node to deallocate.
+        */
 
-		void operator delete (void * p, allocator_type a)
-		{
-			a.deallocate(static_cast<node *>(p), 1);
-		}
+        void operator delete (void * p, allocator_type a)
+        {
+            a.deallocate(static_cast<node *>(p), 1);
+        }
 
 	private:
         using node_element<T>::elem_;
