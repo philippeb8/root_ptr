@@ -3,7 +3,7 @@
 	thread_test.cpp
 
 	@note
-	Copyright (c) 2011 Phil Bouchard <phil@fornux.com>.
+	Copyright (c) 2011-2016 Phil Bouchard <pbouchard8@gmail.com>.
 
 	Distributed under the Boost Software License, Version 1.0.
 
@@ -15,14 +15,14 @@
 
 #include <iostream>
 #include <boost/thread.hpp>
-#include <boost/block_ptr.hpp>
+#include <boost/smart_ptr/root_ptr.hpp>
 //#include <boost/thread/mutex.hpp>
 
 using namespace std;
 using namespace boost;
 
 
-block_ptr< pair<int, int> > p;
+root_ptr< pair<int, int> > p;
 
 
 void worker(int id)  
@@ -32,7 +32,7 @@ void worker(int id)
     for (int i = 0; i < 100000; ++ i)
     {
        	cout << id << "-" << i << ", " << flush;
-    	p = new block< pair<int, int> >(make_pair(id, i));
+    	p = new node< pair<int, int> >(make_pair(id, i));
     }
     cout << endl;
        
