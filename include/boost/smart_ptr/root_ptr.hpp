@@ -316,9 +316,6 @@ template <typename T>
             : base(p)
             , x_(p.x_)
             {
-#ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(node_proxy::static_mutex());
-#endif
             }
 
         
@@ -332,9 +329,6 @@ template <typename T>
             : base(p)
             , x_(p.x_)
             {
-#ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(node_proxy::static_mutex());
-#endif
             }
 
 
