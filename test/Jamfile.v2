@@ -26,7 +26,7 @@ project :
         <warnings>all
 ;
 
-test-suite "block_ptr_tests" :
-    [ run block_ptr_test1.cpp boost_thread boost_unit_test_framework ]
-    [ run block_ptr_test3.cpp boost_thread boost_unit_test_framework ]
+test-suite "root_ptr_tests" :
+    [ run root_ptr_test1.cpp boost_thread boost_unit_test_framework ]
+    [ run root_ptr_test3.cpp boost_thread boost_unit_test_framework ]
     ;
