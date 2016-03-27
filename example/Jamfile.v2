@@ -18,6 +18,7 @@ if ! $(BOOST_ROOT)
 
 lib boost_regex : : <name>boost_regex ;
 lib boost_thread : : <name>boost_thread ;
+lib boost_system : : <name>boost_system ;
 lib boost_unit_test_framework : : <name>boost_unit_test_framework ;
 
 project :
@@ -28,9 +29,11 @@ project :
 ;
 
 test-suite "root_ptr_tests" :
-    [ run root_ptr_test1.cpp boost_thread boost_unit_test_framework ]
-    [ run root_ptr_test3.cpp boost_thread boost_unit_test_framework ]
-    [ run t100_test1.cpp boost_thread boost_regex ]
-    #[ run thread_test.cpp boost_thread ]
-    [ run benchmark.cpp boost_thread ]
+    [ run root_ptr_test1.cpp boost_thread boost_system boost_unit_test_framework ]
+    [ run root_ptr_test2.cpp boost_thread boost_system boost_unit_test_framework ]
+    [ run root_ptr_test3.cpp boost_thread boost_system boost_unit_test_framework ]
+    [ run t100_test1.cpp boost_thread boost_system boost_regex ]
+    [ run thread_test.cpp boost_thread boost_system ]
+    [ run benchmark.cpp boost_thread boost_system ]
+    #[ run allocator.cpp boost_thread boost_system ]
     ;
