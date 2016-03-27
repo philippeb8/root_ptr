@@ -26,6 +26,7 @@ project :
         <include>../include
         <include>$(BOOST_ROOT)
         #<library-path>/usr/local/lib
+        #<dll-path>/usr/local/lib
         <warnings>all
 ;
 
