@@ -23,7 +23,7 @@ lib boost_unit_test_framework : : <name>boost_unit_test_framework ;
 
 project :
     : requirements
-        <include>../../.. 
+        <include>../include
         <include>$(BOOST_ROOT)
         <warnings>all
 ;
