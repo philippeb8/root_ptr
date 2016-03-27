@@ -31,6 +31,6 @@ test-suite "root_ptr_tests" :
     [ run root_ptr_test1.cpp boost_thread boost_unit_test_framework ]
     [ run root_ptr_test3.cpp boost_thread boost_unit_test_framework ]
     [ run t100_test1.cpp boost_thread boost_regex ]
-    [ run thread_test.cpp boost_thread ]
+    #[ run thread_test.cpp boost_thread ]
     [ run benchmark.cpp boost_thread ]
     ;
