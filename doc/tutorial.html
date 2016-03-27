@@ -97,8 +97,10 @@
   <pre>  
   struct A
   {
-      root_ptr&#60;A&#62; p;
+      node_ptr&#60;A&#62; p;
   
+      A(node_proxy const & x) : p(x) {}
+      
       ~A()
       {
           if (! p.cyclic())
@@ -106,9 +108,9 @@
       }
   };
   
-  root_ptr&#60;A&#62; p;
-  p = make_root&#60;A&#62;();
-  p-&#62;p = p;
+  root_ptr&#60;A&#62; x;
+  x = make_root&#60;A&#62;(x);
+  x-&#62;p = x;
   </pre>
 
   <table>
