@@ -374,6 +374,10 @@ template <typename T>
         template <typename V, typename PoolAllocator>
             node_ptr & operator = (node<V, PoolAllocator> * p)
             {
+#ifndef BOOST_DISABLE_THREADS
+                mutex::scoped_lock scoped_lock(node_proxy::static_mutex());
+#endif
+
                 x_.init(p);
 
                 base::operator = (p);
