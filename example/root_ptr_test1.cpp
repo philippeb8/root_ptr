@@ -74,7 +74,8 @@ int main()
         bar(p);
     }
     cout << endl;
-
+	
+#if 0
     cout << "Sharing:" << endl;
     {
         root_ptr<int> p = make_root<int>(9);
@@ -84,6 +85,7 @@ int main()
         cout << "q: " << * q << endl;
     }
     cout << endl;
+#endif
 
 #if 1
     cout << "Cyclicism:" << endl;
