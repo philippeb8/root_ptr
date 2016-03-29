@@ -72,7 +72,7 @@
   list of all memory blocks constituting it and a <i>node_proxy</i> linking each allocation and other potential <i>node_proxys</i>.  For example:</p>
   
   <center>
-    <img src="Introduction.png"/>
+    <img src="introduction.png"/>
   </center>
 
   <h2><a name="cyclicism" id="cyclicism"></a>Cyclicism</h2>
@@ -82,7 +82,7 @@
   destruction and deallocation indifferent from the cyclicism problem presented by the reference counters.  As we can see in the following example, the <i>node_proxy</i> is destroyed and consequently every elements composing the <i>set</i> will be destructed and deallocated as well:</p>
   
   <center>
-    <img src="Cyclicism1.png"/><img src="Cyclicism2.png"/>
+    <img src="cyclicism1.png"/><img src="cyclicism2.png"/>
   </center>
 
   <h2><a name="union" id="union"></a>Union</h2>
@@ -90,7 +90,7 @@
   <p>A <i>set</i> will be unified with another <i>set</i> whenever one of its member is found to reference a member from a different <i>set</i>.  Once two <i>set</i>s are unified they will stay unified even if the new reference responsible for unifying the <i>set</i>s is once again disjointed.</p>
   
   <center>
-    <img src="Union1.png"/><img src="Union2.png"/>
+    <img src="union1.png"/><img src="union2.png"/>
   </center>
 
   <hr>
