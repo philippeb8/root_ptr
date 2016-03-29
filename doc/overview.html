@@ -209,7 +209,11 @@
 
   struct A
   {
-      root_ptr&#60;A&#62; q;
+      node_ptr&#60;A&#62; p;
+      
+      A(node_proxy const & x) : p(x) 
+      {
+      }
       
       ~A()
       {
@@ -219,17 +223,15 @@
   
   int main()
   {
-      root_ptr&#60;A&#62; p = make_root&#60;A&#62;();
-      p->q = p;
-      
-      p.reset(); // deterministic destruction
+      root_ptr&#60;A&#62; x;
+      node_ptr&#60;A&#62; p = make_node&#60;A&#62;(x, x);
+      p->p = p;
       
       return 0;
-  }
+  } // deterministic destruction
   </pre>
   
-  <p>We can see in the above example that the pointer types remain the same and thus there is no need to manually 
-  find the location of the cycle.</p>
+  <p>We can see in the above example that there is no need to manually find the location of the cycle.</p>
 
   <hr>
 
