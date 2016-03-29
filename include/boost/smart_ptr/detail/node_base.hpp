@@ -87,15 +87,15 @@ protected:
     virtual void dispose()
     {
     }
-    
+
     virtual void * get_deleter(std::type_info const &)
-    { 
-        return 0; 
+    {
+        return 0;
     }
-    
+
     virtual void * get_untyped_deleter()
-    { 
-        return 0; 
+    {
+        return 0;
     }
 };
 
@@ -125,13 +125,13 @@ protected:
 
 #define CONSTRUCT_NODE3(z, n, text)                                                                                             \
     template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                                             \
-        text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : base(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)) {}                                                                                                        
+        text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : base(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)) {}
 
 #define CONSTRUCT_NODE4(z, n, text)                                                                                             \
     template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                                             \
         text(allocator_type const & a, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : base(a, BOOST_PP_REPEAT(n, PARAMETER_DECL, 0))   \
         {                                                                                                                       \
-        }                                                                                                        
+        }
 
 #define ALLOCATE_NODE1(z, n, text)                                                                                              \
     template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                                             \
@@ -146,8 +146,8 @@ protected:
         {                                                                                                                       \
             return typename node<T, Alloc<T, BOOST_PP_REPEAT(n, TEMPLATEARGUMENT_DECL, 0)> >::allocator_type(args...);          \
         }
-    
-    
+
+
 /**
     Pointee object wrapper.
 */
@@ -156,14 +156,14 @@ template <typename T>
     class node_element : public smart_ptr::detail::node_base
     {
         friend class classof;
-        
+
     public:
         typedef T data_type;
 
         /**
             Cast operator used by @c node_ptr_common::header() .
         */
-        
+
         class classof
         {
             /** Address of the @c node the element belong to. */
@@ -172,23 +172,23 @@ template <typename T>
         public:
             /**
                 Casts from a @c data_type to its parent @c node object.
-                
+
                 @param  p   Address of a @c data_type member object to cast from.
             */
-            
-            classof(data_type * p) 
-            : p_(smart_ptr::detail::classof((data_type node_element::*)(& node_element::elem_), p)) 
+
+            classof(data_type * p)
+            : p_(smart_ptr::detail::classof((data_type node_element::*)(& node_element::elem_), p))
             {
             }
-            
-            
+
+
             /**
                 @return     Address of the parent @c node object.
             */
-            
-            operator node_element * () const 
-            { 
-                return p_; 
+
+            operator node_element * () const
+            {
+                return p_;
             }
         };
 
@@ -197,19 +197,19 @@ template <typename T>
         typename std::aligned_storage<sizeof(data_type), alignof(data_type)>::type elem_;
     };
 
-    
+
 template <>
     class node_element<void> : public smart_ptr::detail::node_base
     {
         friend class classof;
-        
+
     public:
         typedef int data_type;
 
         /**
             Cast operator used by @c node_ptr_common::header() .
         */
-        
+
         class classof
         {
             /** Address of the @c node the element belong to. */
@@ -218,23 +218,23 @@ template <>
         public:
             /**
                 Casts from a @c data_type to its parent @c node object.
-                
+
                 @param  p   Address of a @c data_type member object to cast from.
             */
-            
-            classof(void * p) 
-            : p_(smart_ptr::detail::classof((data_type node_element::*)(& node_element::elem_), static_cast<data_type *>(p))) 
+
+            classof(void * p)
+            : p_(smart_ptr::detail::classof((data_type node_element::*)(& node_element::elem_), static_cast<data_type *>(p)))
             {
             }
-            
-            
+
+
             /**
                 @return     Address of the parent @c node object.
             */
-            
-            operator node_element * () const 
-            { 
-                return p_; 
+
+            operator node_element * () const
+            {
+                return p_;
             }
         };
 
@@ -246,7 +246,7 @@ template <>
 
 /**
     Pointee object & allocator wrapper.
-    
+
     Main class used to instanciate pointee objects and a copy of the allocator desired.
 */
 
@@ -257,27 +257,27 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         typedef T data_type;
         typedef typename PoolAllocator::template rebind< node<T, PoolAllocator> >::other allocator_type;
 
-        
+
         /**
             Initialization of a pointee object.
-            
+
             @note Will use a static copy of the allocator which has no parameter.
         */
-        
-        node() 
+
+        node()
         : a_(static_pool())
         {
             container::allocator_traits<allocator_type>::construct(a_, element());
         }
-        
+
 
         /**
             Initialization of a pointee object.
-            
+
             @param  a   Allocator to copy.
         */
-        
-        node(allocator_type const & a) 
+
+        node(allocator_type const & a)
         : a_(a)
         {
             container::allocator_traits<allocator_type>::construct(a_, element());
@@ -288,33 +288,33 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
 
         /**
-            @return		Pointee object address.
+            @return   Pointee object address.
         */
-        
+
         data_type * element()
-        { 
-            return reinterpret_cast<data_type *>(& elem_); 
+        {
+            return reinterpret_cast<data_type *>(& elem_);
         }
 
 
         /**
             Destructor.
         */
-        
+
         virtual ~node()
         {
             container::allocator_traits<allocator_type>::destroy(a_, element());
         }
 
-        
+
         /**
             Allocates a new @c node using the static copy of @c PoolAllocator to be used.
-            
+
             @param  s   Disregarded.
             @return     Pointer of the new @c node.
         */
 
-        void * operator new (size_t s)
+        void * operator new (size_t /* s */)
         {
             return static_pool().allocate(1);
         }
@@ -322,7 +322,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
         /**
             Allocates a new @c node .
-            
+
             @param  s   Disregarded.
             @param  a   Copy of @c PoolAllocator to be used.
             @return     Pointer of the new @c node.
@@ -336,7 +336,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
         /**
             Allocates a new @c node .
-            
+
             @param  a   Copy of @c PoolAllocator to be used.
             @return     Pointer of the new @c node.
         */
@@ -348,13 +348,13 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
         BOOST_PP_REPEAT_FROM_TO(1, 10, ALLOCATE_NODE1, allocate)
 
-        
+
         /**
             Deallocates a @c node from @c PoolAllocator .
-            
+
             @param  p   Address of the @c node to deallocate.
         */
-        
+
         void operator delete (void * p)
         {
             static_cast<node *>(p)->a_.deallocate(static_cast<node *>(p), 1);
@@ -373,33 +373,33 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             a.deallocate(static_cast<node *>(p), 1);
         }
 
-	private:
+  private:
         using node_element<T>::elem_;
-        
-        /** 
+
+        /**
             Static pool.
-            
-            This is where all @c node are allocated when @c PoolAllocator is not 
-            explicitly specified in the constructor. 
+
+            This is where all @c node are allocated when @c PoolAllocator is not
+            explicitly specified in the constructor.
          */
-        
+
         static allocator_type & static_pool()
         {
             static allocator_type pool_;
-            
+
             return pool_;
         }
 
         /** Copy of the @c PoolAllocator to be used. */
-        allocator_type a_;        
+        allocator_type a_;
     };
 
 
 /**
     Pointee object & allocator wrapper.
-    
+
     Main class used to instanciate pointee objects and a copy of the allocator desired.
-    
+
     @note Uses @c fast_pool_allocator to instanciate the pointee object.
 */
 
@@ -407,30 +407,30 @@ template <typename T>
     class fastnode : public node<T, fast_pool_allocator<T> >
     {
         typedef node<T, fast_pool_allocator<T> > base;
-        
+
     public:
         using typename base::allocator_type;
-        
-        
-        /**
-            Initialization of a pointee object.
-            
-            @note Will use a static copy of the allocator with no parameter.
-        */
-        
-        fastnode() 
-        : base()
-        {
-        }
-        
+
 
         /**
             Initialization of a pointee object.
-            
+
+            @note Will use a static copy of the allocator with no parameter.
+        */
+
+        fastnode()
+        : base()
+        {
+        }
+
+
+        /**
+            Initialization of a pointee object.
+
             @param  a   Allocator to copy.
         */
-        
-        fastnode(allocator_type const & a) 
+
+        fastnode(allocator_type const & a)
         : base(a)
         {
         }
@@ -440,10 +440,10 @@ template <typename T>
         BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE4, fastnode)
     };
 
-    
+
 /**
     Allocates a new @c node using the respective allocator.
-    
+
     @param  a   Allocator to be used.
     @param  args Arguments forwarded to the new object's constructor.
 
@@ -455,14 +455,14 @@ template<typename T, class Alloc, typename... Args>
     {
         return node<T, Alloc>::allocate(a, args...);
     }
-    
-    
+
+
 /**
-    Instanciates an allocator.
-    
+    Instantiates an allocator.
+
     @param  args Arguments forwarded to the allocator's constructor.
 
-    @note Instanciates a @c node::allocator_type .
+    @note Instantiates a @c node::allocator_type .
 */
 
 template<template <typename, typename...> class Alloc, typename T, typename... Args>
@@ -470,11 +470,11 @@ template<template <typename, typename...> class Alloc, typename T, typename... A
     {
         return typename node<T, Alloc<T> >::allocator_type(args...);
     }
-    
-    
+
+
 BOOST_PP_REPEAT_FROM_TO(1, 10, MAKE_NODE_ALLOCATOR1, make_node_allocator)
-    
-    
+
+
 } // namespace boost
 
 
