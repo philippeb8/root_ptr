@@ -125,7 +125,7 @@ int main()
     p->q = p;
 
     p.reset(); // Detach from the cycle.
-    // Deterministic destruction so destructor is never called.
+    // Deterministic destruction so destructor is actually called.
 
 //] [/root_ptr_basic_3]
 
