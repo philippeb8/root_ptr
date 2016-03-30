@@ -1,30 +1,26 @@
-/**
-    @file
-    node_ptr_test2.cpp
+/*!
+  \file
+  \brief Example 2 of using root_ptr.
+*/
+/*
+  Copyright Phil Bouchard 2016
+  Distributed under the Boost Software License, Version 1.0.
+  See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt
 
-    @note
-    Copyright (c) 2008 Steven Watanabe <watanabesj@gmail.com>
-
-    Distributed under the Boost Software License, Version 1.0.
-
-    See accompanying file LICENSE_1_0.txt or copy at
-    http://www.boost.org/LICENSE_1_0.txt
-
-    See http://www.boost.org/libs/smart_ptr/doc/index.html for documentation.
+  See http://www.boost.org/libs/smart_ptr/doc/index.html for documentation.
 */
 
 
 #include <boost/smart_ptr/root_ptr.hpp>
-
-#include <list>
-#include <vector>
-#include <iostream>
-
 #include <boost/mpl/range_c.hpp>
 #include <boost/mpl/for_each.hpp>
 #include <boost/array.hpp>
 #include <boost/container/list.hpp>
 
+#include <list>
+#include <vector>
+#include <iostream>
 
 static int count;
 
@@ -81,7 +77,8 @@ struct create_type {
     node_proxy & x_;
 };
 
-int main() {
+int main()
+{
 #if 1
     std::cout << "*** Test #1 ***" << std::endl;
     count = 0;
@@ -182,4 +179,5 @@ int main() {
     std::cout << count << std::endl;
 #endif
     //_exit(-1); // bypassing bug in pool destructor
-}
+} // int main()
+

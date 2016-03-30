@@ -120,16 +120,13 @@ int main()
 
   std::cout << "Cyclic set using root_ptr." << std::endl;
 //[root_ptr_basic_3
-    root_ptr<A> p;
-    p = make_root<A>(p);
-    p->q = p;
+  root_ptr<A> p;
+  p = make_root<A>(p);
+  p->q = p;
 
-    p.reset(); // Detach from the cycle.
+  p.reset(); // Detach from the cycle.
     // Deterministic destruction so destructor is actually called.
-
 //] [/root_ptr_basic_3]
-
-
 
     return 0;
 } //int main()

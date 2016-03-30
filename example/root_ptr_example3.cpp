@@ -1,29 +1,24 @@
-/**
-	@file
-	node_ptr_test3.cpp
-
-	@note
-	Copyright (c) 2008 Steven Watanabe <watanabesj@gmail.com>
-
-	Distributed under the Boost Software License, Version 1.0.
-
-	See accompanying file LICENSE_1_0.txt or copy at
-	http://www.boost.org/LICENSE_1_0.txt
-
-	See http://www.boost.org/libs/smart_ptr/doc/index.html for documentation.
+/*!
+  \file
+  \brief Example 3 of root_ptr
 */
 
+/*
+  Copyright Phil Bouchard 2016
 
+  Distributed under the Boost Software License, Version 1.0.
+  See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt
+*/
 
 #include <boost/smart_ptr/root_ptr.hpp>
-
-#include <vector>
-#include <iostream>
-
 #include <boost/mpl/range_c.hpp>
 #include <boost/mpl/for_each.hpp>
 #include <boost/array.hpp>
 #include <boost/container/vector.hpp>
+
+#include <vector>
+#include <iostream>
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MAIN
@@ -139,5 +134,5 @@ BOOST_AUTO_TEST_CASE(test_node_ptr) {
         v.elements.push_back(node_ptr<vector>(x, new node<vector>()));
     }
     BOOST_CHECK_EQUAL(count, 0);
+} // BOOST_AUTO_TEST_CASE(test_node_ptr)
 
-}

@@ -1,0 +1,225 @@
+# Copyright Paul A. Bristow 2016.
+# Copyright Phil Bouchard 2016.
+
+# Use, modification, and distribution are subject to the
+# Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+# http://www.boost.org/build/doc/html/bbv2/reference/tools.html
+
+import quickbook ;
+import doxygen ;
+import os ; # Needed to get environment variables.
+import modules ;
+
+using quickbook ;
+using auto-index ; # Required if you want to use Boost.AutoIndex.
+using doxygen ;  # Required if you want to use Doxygen.
+
+#path-constant images_location : html ; # libs/root_ptr/doc
+#path-constant here : . ; # libs/root_ptr/doc
+#path-constant parent : .. ;  # libs.root_ptr
+path-constant boost-images : ../../../doc/src/images ;
+# http://docbook.sourceforge.net/release/xsl/1.77.1/doc/html/img.src.path.html
+# relative to /doc ?
+
+if --enable-index in  [ modules.peek : ARGV ]
+{
+   ECHO "Building the root_ptr docs with automatic index generation enabled." ;
+   using auto-index ;
+   project root_ptr_doc : requirements
+             <auto-index>on
+             <auto-index-script>index.idx
+             #<auto-index-prefix>../../../
+             <auto-index-verbose>on
+             <format>html:<auto-index-internal>on
+             <format>html:<xsl:param>generate.index=0
+             <format>pdf:<auto-index-internal>on
+             # See note in http://www.boost.org/doc/libs/master/tools/auto_index/doc/html/boost_autoindex/tut/add_indexes.html
+             <format>pdf:<xsl:param>index.on.type=1
+             <quickbook-define>enable_index ;
+}
+else
+{
+   project root_ptr_doc ;
+   ECHO "Building the root_ptr docs with automatic index generation disabled. Try building with --enable-index." ;
+}
+
+doxygen autodoc
+  : # sources
+    # (These are your hpp header include files.
+   [ glob ../include/boost/smart_ptr/root_ptr.hpp ]
+  # [ glob ../include/boost/root_ptr/block_allocator.hpp ]
+   #[ glob ../include/boost/root_ptr_allocator.hpp ]
+   # These are detail files that might also be included,
+   # see below for making this conditional.
+   #[ glob ../include/boost/root_ptr/detail/block_base.hpp ]
+   #[ glob ../include/boost/root_ptr/detail/root_ptr_base.hpp ]
+   #[ glob ../include/boost/root_ptr/detail/instrusive_list.hpp ]
+   #[ glob ../include/boost/root_ptr/detail/roofof.hpp ]
+   #[ glob ../include/boost/root_ptr/detail/system_pool.hpp ]
+   #[ glob ../include/boost/root_ptr/detail/system_pool_gcc_x86.hpp ]
+   #[ glob ../include/boost/root_ptr/detail/system_pool_spin.hpp ]
+   #[ glob ../include/boost/root_ptr/detail/system_pool_w32.hpp ]
+
+   # Warning - ensure that the same files are scanned for the index (unless intended otherwise).
+   #  See index.idx
+
+    # [ glob $(here)/../include/boost/root_ptr/*.hpp ]
+    # [ glob $(here)/../include/boost/root_ptr/detail/root_ptr/*.hpp ]
+    # Hide implementation/detail for now.
+    # but could also include this and switch Boost.root_ptr C++ reference info
+    # to include implementation/detail or not using Doxygen macro DETAIL.
+    # See http://www.stack.nl/~dimitri/doxygen/manual/commands.html#cmdcond
+    # and http://www.stack.nl/~dimitri/doxygen/manual/config.html#cfg_enabled_sections
+    # by adding this line below with other Doxygen parameters
+    #     <doxygen:param>ENABLED_SECTIONS="DETAIL"
+    #  Or setting this macro value ENABLED_SECTIONS="DETAIL"
+    # in /doxygen/doxyfile.txt for Standalone Doxygen documentation.
+    # This might be useful for maintainers.
+  : # Requirements
+    <doxygen:param>PROJECT_NAME="root_ptr"
+    <doxygen:param>RECURSIVE=NO
+    <doxygen:param>ENABLE_PREPROCESSING=YES
+    <doxygen:param>EXPAND_ONLY_PREDEF=YES
+    #<doxygen:param>PREDEFINED=BOOST_DOXYGEN_GENERATION
+    # All BOOST_root_ptr_ *optional* macros (so, by default, undefined)
+    # are inside ifdef BOOST_DOXYGEN_GENERATION
+    # This ensures that they are optionally processed and indexed by Doxygen.
+    <doxygen:param>EXCLUDE_SYMBOLS=
+    <doxygen:param>EXTRACT_ALL=YES
+    <doxygen:param>EXTRACT_PRIVATE=YES
+    <doxygen:param>EXTRACT_STATIC=YES
+    <doxygen:param>EXTRACT_LOCAL_CLASSES=YES
+    <doxygen:param>HIDE_UNDOC_MEMBERS=NO
+    <doxygen:param>MACRO_EXPANSION=YES
+    <doxygen:param>SORT_MEMBER_DOCS=YES
+    <doxygen:param>SHOW_INCLUDE_FILES=NO
+    <doxygen:param>MAX_INITIALIZER_LINES=0
+    <doxygen:param>VERBATIM_HEADERS=NO
+    <doxygen:param>WARNINGS=NO # If WARN_IF_UNDOCUMENTED is set to YES, then doxygen will generate warnings for undocumented members.
+    # If EXTRACT_ALL is set to YES then this flag will automatically be disabled.
+    <doxygen:param>WARN_IF_UNDOCUMENTED=YES # If WARN_IF_UNDOCUMENTED is set to YES,
+    # then doxygen will generate warnings for all undocumented members.
+    # WARN_IF_UNDOCUMENTED=YES is useful if you want to check that you have documented everything,
+    # by inspecting the file autodoxywarnings.log (which should be empty if all are documented correctly).
+    <doxygen:param>WARN_IF_DOC_ERROR=YES # If WARN_IF_DOC_ERROR is set to YES,
+    # Doxygen will generate warnings for potential errors in the documentation.
+    <doxygen:param>WARN_LOGFILE=autodoxywarnings.log # This may not be empty (usually not a good sign!), depending on options chosen.
+    # Much better to send message to a logfile than the default stderr.
+    # and make sure that there are no Doxygen errors or significant warnings in the log file.
+    # without this line, everything in namespace detail will be ignored.
+    # See modular-boost\tools\boostbook\xsl\doxygen\doxygen2boostbook.xsl
+    #  <!-- The namespace used to identify code that should not be  processed at all. -->
+    <xsl:param>boost.doxygen.detailns=dont-ignore-detail-namespace
+    # This allows use of the more flexible, (but more work) doxygen /cond Macro .../endcond mechanism.
+
+    # #<reftitle>"Reference" # Default is "Reference" but helpful to specify library name.
+    <xsl:param>"boost.doxygen.reftitle=Boost.root_ptr C++ Reference"
+    # See Doxygen configuration for detailed explanation of these options.
+  ;
+
+
+xml root_ptr
+  :
+    root_ptr.qbk
+  :
+    <dependency>autodoc # Doxygen generated reference info.
+  ;
+
+
+boostbook standalone
+    :
+        root_ptr
+    :
+        # Path for links to Boost:
+        <xsl:param>boost.root=../../../.. # modular-boost/
+
+        # Some general style settings:
+        <xsl:param>table.footnote.number.format=1
+        <xsl:param>footnote.number.format=1
+        # For 'standard Boost syntax coloring.
+        #<xsl:param>html.stylesheet=../../../../doc/src/boostbook.css
+        # Use local preference root_ptr.css for syntax coloring,
+        # that calls Boost's own standard boostbook.css for most items.
+        <xsl:param>html.stylesheet=root_ptr.css
+
+        # Path for links to Boost logo.
+        #<xsl:param>boost.image=Boost # options are: none (no logo), Boost (for boost.png), or your own logo, for example, proposed_for_boost.png
+        <xsl:param>boost.image=proposed_for_boost.png # Assumed at /doc/html/boost_*.png
+        <xsl:param>boost.image.src=proposed_for_boost.png #
+        <xsl:param>boost.image.w=180 # Width of logo in pixels. (JM has W = 162, h = 46)
+        <xsl:param>boost.image.h=90 # Height of logo in pixels.
+
+# http://docbook.sourceforge.net/release/xsl/1.77.1/doc/html/img.src.path.html
+# relative to /doc ?
+
+        #<format>html:<xsl:param>img.src.path=../doc/html/images/
+        #<format>xhtml:<xsl:param>img.src.path=../../../../doc/images
+
+        # HTML options first:
+        # Use graphics not text for navigation:
+        <xsl:param>navig.graphics=1
+        # How far down we chunk nested sections, basically all of them:
+        <xsl:param>chunk.section.depth=10
+        # Don't put the first section on the same page as the TOC:
+        <xsl:param>chunk.first.sections=10
+        # How far down sections get TOC's
+        <xsl:param>toc.section.depth=10
+        # Max depth in each TOC:
+        <xsl:param>toc.max.depth=4
+        # How far down we go with TOC's
+        #<xsl:param>generate.section.toc.level=10
+        # Index on type:
+        <xsl:param>index.on.type=1
+
+        # PDF Options:
+        # TOC Generation: this is needed for FOP-0.9 and later:
+        <xsl:param>fop1.extensions=0
+        <format>pdf:<xsl:param>xep.extensions=1
+        # TOC generation: this is needed for FOP 0.2, but must not be set to zero for FOP-0.9!
+        <format>pdf:<xsl:param>fop.extensions=0
+        <format>pdf:<xsl:param>fop1.extensions=0
+        # No indent on body text:
+        <format>pdf:<xsl:param>body.start.indent=0pt
+        # Margin size:
+        <format>pdf:<xsl:param>page.margin.inner=0.5in
+        # Margin size:
+        <format>pdf:<xsl:param>page.margin.outer=0.5in
+        # Paper type = A4
+        <format>pdf:<xsl:param>paper.type=A4
+        # Yes, we want graphics for admonishments:
+        <xsl:param>admon.graphics=1
+        # Set this one for PDF generation *only*:
+        # default pnd graphics are awful in PDF form,
+        # better use SVG's instead:
+        <format>pdf:<xsl:param>admon.graphics.extension=".svg"
+        <format>pdf:<xsl:param>use.role.for.mediaobject=1
+        <format>pdf:<xsl:param>preferred.mediaobject.role=print
+        <format>pdf:<xsl:param>img.src.path=$(images_location)/
+        <format>pdf:<xsl:param>draft.mode="no"
+
+       # Use local preference for syntax coloring.
+      <format>pdf:<xsl:param>html.stylesheet=root_ptr.css
+      <format>pdf:<xsl:param>boost.url.prefix=http://www.boost.org/doc/libs/release/libs/root_ptr/doc/html
+
+       # Index generation conditionally defined above.
+   ;
+
+   # Copy boostbook.css and custom colors root_ptr.css from doc/ to doc/html/
+   install boostbook-cssinstall : ../../../doc/src/boostbook.css : <location>./html ;
+   # Install local version of boostbook.css with different syntax colors etc.
+   install root_ptr-cssinstall : root_ptr.css : <location>./html ;
+
+# Copy and rename to root_ptr.pdf the generated pdf called root_ptr.auto_index.pdf
+# from \modular-boost\bin.v2\libs\root_ptr\doc\455e2f403de9f0fcee2d24dc44229719
+# or other with different hash if not using auto_index
+install pdfinstall : standalone : <location>. <install-type>PDF <name>root_ptr.pdf ;
+# Only copy pdf if called with b2 pdf (not the default html).
+explicit pdfinstall ;
+
+
+
+
+
+

@@ -1,0 +1,82 @@
+# Copyright 2016 Paul A. Bristow
+# Copyright Phil Bouchard 2016
+
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file
+# LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+# Index file for class root_ptr documentation.
+
+# See http://www.boost.org/doc/libs/release/tools/auto_index/doc/html/boost_autoindex/tut/build_docs.html
+
+# May need to rewrite the class scanner to accept declarations, not just definitions,
+# as the docs perhaps don't include full definitions?
+
+#* If a section merely *mentions* a class then that section does not
+# appear in the class's index entry.
+#* Likewise if a section merely contains the class's forward declaration,
+# then that section doesn't appear in the class's index entry.
+
+# Only if a *full definition* is found will an entry appear in the index.
+
+# This is normally a "good thing".  It means you don't get lots of trivial
+# entries, and go straight to the meat of the thing:
+#   the section that documents the class *definition*.
+
+# However, it means that if the docs nowhere contain a full definition
+# then the class doesn't appear in the index: unless you loosen up the
+# regex to catch more uses of the class name thus:
+
+#!define-scanner class_name "^[[:space:]]*(template[[:space:]]*<[^;:{]+>[[:space:]]*)?(class|struct)[[:space:]]*(\<\w+\>([[:blank:]]*\([^)]*\))?[[:space:]]*)*(\<\w*\>)[[:space:]]*(<[^;:{]+>)?[[:space:]]*(\{|:[^;\{()]*\{)" "(?:class|struct)[^;{]+\\<\5\\>\\s*[;{]" \5
+
+!define-scanner class_name "^[[:space:]]*(template[[:space:]]*<[^;:{]+>[[:space:]]*)?(class|struct)[[:space:]]*(\<\w+\>([[:blank:]]*\([^)]*\))?[[:space:]]*)*(\<\w*\>)[[:space:]]*(<[^;:{]+>)?[[:space:]]*(\{|:[^;\{()]*\{)" "\\<\5\\>" \5
+
+# For how to scan file or scan path see
+# http://www.boost.org/doc/libs/1_60_0/tools/auto_index/doc/html/boost_autoindex/tut/script.html
+
+!scan-path "../include/boost/smart_ptr" "root_ptr.hpp"
+!scan-path "../include/boost/smart_ptr" "block_allocator.hpp"
+!scan-path "../include/boost/smart_ptr/detail" ".*\.hpp" true
+
+# Might be useful to Doxygen document details for maintenance?
+# (See also Doxygen conditional scanning
+# \cond BOOST_DOXYGEN_GENERATION ... \endcond)
+!scan-path "../include/boost/smart_ptr/detail/" ".*\.hpp" true
+
+# Index all examples, optionally recursing into sub-folders if append true.
+!scan-path "../example" ".*\.cpp" true
+# Might index some or all tests too?
+!scan-path "../test" ".*\.cpp" true
+
+dec
+hex
+precision
+oct
+scientific
+
+#  Misc terms to index.
+acknowledgement (?i)\<acknowledgement\w*\>
+example \<example\w*\>
+FAQ
+header
+history
+reference \<reference\w*\>
+roadmap
+
+# exclude a few useless search terms
+!exclude with
+!exclude 2
+!exclude the
+!exclude and
+!exclude x
+!exclude is
+!exclude O
+!exclude of
+!exclude a
+
+#  Avoid repeated index entries for acknowledgement
+!rewrite-name Acknowledgements,.* acknowledgement
+
+
+
+
