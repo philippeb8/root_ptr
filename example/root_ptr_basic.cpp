@@ -115,13 +115,13 @@ int main()
   std::cout << "Use of root_ptr." << std::endl;
   {
     root_ptr<A> p;
-    p = make_root<A>(static_cast<node_proxy const &>(p)); // When A goes out of scope then its destructor outputs "~A()".
+    p = make_root<A>(p); // When A goes out of scope then its destructor outputs "~A()".
   }
 
   std::cout << "Cyclic set using root_ptr." << std::endl;
 //[root_ptr_basic_3
     root_ptr<A> p;
-    p = make_root<A>(static_cast<node_proxy const &>(p));
+    p = make_root<A>(p);
     p->q = p;
 
     p.reset(); // Detach from the cycle.
