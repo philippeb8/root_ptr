@@ -224,8 +224,8 @@
   int main()
   {
       root_ptr&#60;A&#62; x;
-      node_ptr&#60;A&#62; p = make_node&#60;A&#62;(x, x);
-      p->p = p;
+      x = make_root&#60;A&#62;(x);
+      x->p = x;
       
       return 0;
   } // deterministic destruction
