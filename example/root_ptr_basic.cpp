@@ -73,7 +73,7 @@ int main()
   std::cout << "A struct with a destructor that outputs when called.";
   {
     root_ptr<A> x;
-    A a(static_cast<node_proxy const &>(x)); // When A goes out of scope then its destructor outputs "~A()".
+    A a(x); // When A goes out of scope then its destructor outputs "~A()".
   }
 
   std::cout << "Using shared_ptr and reference counting." << std::endl;
