@@ -506,7 +506,7 @@ template <typename T>
         
         root_ptr(root_ptr const & p) 
         : node_proxy(p)
-        , node_ptr<T>(* static_cast<node_ptr<T> *>(this))
+        , node_ptr<T>(static_cast<node_ptr<T> const &>(p))
         {
         }
         
