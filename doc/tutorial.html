@@ -95,15 +95,15 @@
   You can propagate the information of the <i>node_proxy</i> by passing it as a reference:</p>
   
   <pre>
-  struct B
+  struct A
   {
-      node_ptr&#60;B&#62; p;
+      node_ptr&#60;A&#62; p;
       
-      B(node_proxy const & x) : p(x) {}
+      A(node_proxy const & x) : p(x) {}
   };
   
-  root_ptr&#60;B&#62; p;
-  node_ptr&#60;B&#62; q = make_node&#60;B&#62;(p, p);
+  root_ptr&#60;A&#62; x;
+  x = make_root&#60;A&#62;(x);
   </pre>
   
   <p>Secondly in the case where a cyclic set is being destroyed, in order to prevent <i>root_ptr</i>s member pointers from accessing an object that has already been 
