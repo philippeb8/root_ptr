@@ -13,6 +13,7 @@
 
 //[root_ptr_basic_0
 #include <boost/smart_ptr/shared_ptr.hpp>
+#include <boost/smart_ptr/weak_ptr.hpp>
 using boost::shared_ptr;
 using boost::weak_ptr;
 
@@ -23,7 +24,9 @@ using boost::make_shared;
 //[root_ptr_basic_1
 #include <boost/smart_ptr/root_ptr.hpp>
 using boost::root_ptr;
+using boost::node_ptr;
 using boost::make_root;
+using boost::node_proxy;
 
 //] [/root_ptr_basic_1]
 
@@ -32,7 +35,9 @@ using boost::make_root;
 //[root_ptr_basic_A
 struct A
 {
-    root_ptr<A> q;
+    node_ptr<A> q;
+    
+    A(node_proxy const & x) : q(x) {}
     ~A()
     { // 
         std::cout << "~A()" << std::endl; // ~A() output when A is destructed.
@@ -67,7 +72,8 @@ int main()
 {
   std::cout << "A struct with a destructor that outputs when called.";
   {
-    A a; // When A goes out of scope then its destructor outputs "~A()".
+    root_ptr<A> x;
+    A a(static_cast<node_proxy const &>(x)); // When A goes out of scope then its destructor outputs "~A()".
   }
 
   std::cout << "Using shared_ptr and reference counting." << std::endl;
@@ -108,12 +114,14 @@ int main()
   }
   std::cout << "Use of root_ptr." << std::endl;
   {
-    root_ptr<A> p = make_root<A>(); // When A goes out of scope then its destructor outputs "~A()".
+    root_ptr<A> p;
+    p = make_root<A>(static_cast<node_proxy const &>(p)); // When A goes out of scope then its destructor outputs "~A()".
   }
 
   std::cout << "Cyclic set using root_ptr." << std::endl;
 //[root_ptr_basic_3
-    root_ptr<A> p = make_root<A>();
+    root_ptr<A> p;
+    p = make_root<A>(static_cast<node_proxy const &>(p));
     p->q = p;
 
     p.reset(); // Detach from the cycle.

@@ -33,7 +33,7 @@ project boost_ptr
    # <threading>single  # Does anyone use single threading?  8-bit micros?
    # Might be better to add these as requirement for individual runs so can test both single and multi.
 
-    <include>../../.. # modular-boost root
+    <include>../include # modular-boost root
     <include>$(BOOST_ROOT)
     <warnings>all
      #toolset requirements:
