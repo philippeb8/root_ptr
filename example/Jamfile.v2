@@ -25,8 +25,8 @@ project :
     : requirements
         <include>../include
         <include>$(BOOST_ROOT)
-        #<library-path>/usr/local/lib
-        #<dll-path>/usr/local/lib
+        <library-path>/usr/local/lib
+        <dll-path>/usr/local/lib
         <warnings>all
 ;
 
@@ -34,7 +34,7 @@ test-suite "root_ptr_tests" :
     [ run root_ptr_example1.cpp boost_thread boost_system boost_unit_test_framework ]
     [ run root_ptr_example2.cpp boost_thread boost_system boost_unit_test_framework ]
     [ run root_ptr_example3.cpp boost_thread boost_system boost_unit_test_framework ]
-    [ run t100_test1.cpp boost_thread boost_system boost_regex ]
+    #[ run t100_test1.cpp boost_thread boost_system boost_regex ]
     [ run thread_test.cpp boost_thread boost_system ]
     [ run benchmark.cpp boost_thread boost_system ]
     #[ run allocator.cpp boost_thread boost_system ]
