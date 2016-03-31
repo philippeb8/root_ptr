@@ -22,7 +22,7 @@ lib boost_unit_test_framework : : <name>boost_unit_test_framework ;
 
 project :
     : requirements
-        <include>../../.. 
+        <include>../include 
         <include>$(BOOST_ROOT)
         <library-path>/usr/local/lib
         <dll-path>/usr/local/lib
