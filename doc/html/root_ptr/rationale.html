@@ -1,0 +1,93 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<title>Rationale</title>
+<link rel="stylesheet" href="../root_ptr.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="../index.html" title="Boost.Root_ptr">
+<link rel="up" href="../index.html" title="Boost.Root_ptr">
+<link rel="prev" href="intro.html" title="Introduction">
+<link rel="next" href="tutorial.html" title="Tutorial">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr><td valign="top"><img alt="" width="180" height="90" src="../proposed_for_boost.png"></td></tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="intro.html"><img src="../images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../images/home.png" alt="Home"></a><a accesskey="n" href="tutorial.html"><img src="../images/next.png" alt="Next"></a>
+</div>
+<div class="section">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="root_ptr.rationale"></a><a class="link" href="rationale.html" title="Rationale">Rationale</a>
+</h2></div></div></div>
+<h4>
+<a name="root_ptr.rationale.h0"></a>
+      <span class="phrase"><a name="root_ptr.rationale.introduction"></a></span><a class="link" href="rationale.html#root_ptr.rationale.introduction">Introduction</a>
+    </h4>
+<p>
+      Root Pointer introduces the concept of <span class="emphasis"><em>set</em></span> where it is
+      defined to be a one or many memory blocks referencing each other allocated
+      on the heap pointed to by one or many <code class="computeroutput"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">T</span><span class="special">&gt;</span></code>s
+      allocated elsewhere by the application. Each <span class="emphasis"><em>set</em></span> is consequently
+      composed of a list of all memory blocks constituting it and a <code class="computeroutput"><span class="identifier">node_proxy</span></code> linking each allocation and other
+      potential <code class="computeroutput"><span class="identifier">node_proxy</span></code>s.
+    </p>
+<p>
+      For example:
+    </p>
+<p>
+      <span class="inlinemediaobject"><img src="..//images/introduction.png" align="middle"></span>
+    </p>
+<h4>
+<a name="root_ptr.rationale.h1"></a>
+      <span class="phrase"><a name="root_ptr.rationale.cyclism"></a></span><a class="link" href="rationale.html#root_ptr.rationale.cyclism">Cyclicism</a>
+    </h4>
+<p>
+      Therefore whenever a <code class="computeroutput"><span class="identifier">node_proxy</span></code>
+      contained within a <code class="computeroutput"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">T</span><span class="special">&gt;</span></code>
+      is about to be destroyed, the deallocation of each memory block composing the
+      <span class="emphasis"><em>set</em></span> is enforced. Thus whether the <span class="emphasis"><em>set</em></span>
+      was composed of memory blocks referencing each other in a cyclic way or not,
+      all of them will be subject to destruction and deallocation indifferent from
+      the cyclicism problem presented by the reference counters. As we can see in
+      the following example, the <code class="computeroutput"><span class="identifier">node_proxy</span></code>
+      is destroyed and consequently every elements composing the <span class="emphasis"><em>set</em></span>
+      will be destructed and deallocated as well:
+    </p>
+<p>
+      <span class="inlinemediaobject"><img src="..//images/cyclicism1.png"></span>
+    </p>
+<p>
+      <span class="inlinemediaobject"><img src="..//images/cyclicism2.png"></span>
+    </p>
+<h4>
+<a name="root_ptr.rationale.h2"></a>
+      <span class="phrase"><a name="root_ptr.rationale.union"></a></span><a class="link" href="rationale.html#root_ptr.rationale.union">Union</a>
+    </h4>
+<p>
+      A <span class="emphasis"><em>set</em></span> will be unified with another <span class="emphasis"><em>set</em></span>
+      whenever one of its member is found to reference a member from a different
+      <span class="emphasis"><em>set</em></span>. Once two <span class="emphasis"><em>sets</em></span> are unified they
+      will stay unified even if the new reference responsible for unifying the <span class="emphasis"><em>sets</em></span>
+      is once again disjointed.
+    </p>
+<p>
+      <span class="inlinemediaobject"><img src="..//images/union1.png"></span>
+    </p>
+<p>
+      <span class="inlinemediaobject"><img src="..//images/union2.png"></span>
+    </p>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright &#169; 2008, 2016 Phil Bouchard<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="intro.html"><img src="../images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../images/home.png" alt="Home"></a><a accesskey="n" href="tutorial.html"><img src="../images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

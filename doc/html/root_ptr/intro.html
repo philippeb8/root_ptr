@@ -1,0 +1,292 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<title>Introduction</title>
+<link rel="stylesheet" href="../root_ptr.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="../index.html" title="Boost.Root_ptr">
+<link rel="up" href="../index.html" title="Boost.Root_ptr">
+<link rel="prev" href="../index.html" title="Boost.Root_ptr">
+<link rel="next" href="rationale.html" title="Rationale">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr><td valign="top"><img alt="" width="180" height="90" src="../proposed_for_boost.png"></td></tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../index.html"><img src="../images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../images/home.png" alt="Home"></a><a accesskey="n" href="rationale.html"><img src="../images/next.png" alt="Next"></a>
+</div>
+<div class="section">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="root_ptr.intro"></a><a class="link" href="intro.html" title="Introduction">Introduction</a>
+</h2></div></div></div>
+<p>
+      Memory management can be subdivided in two categories:
+    </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem">
+          garbage collection .
+        </li>
+<li class="listitem">
+          reference counting.
+        </li>
+</ul></div>
+<h4>
+<a name="root_ptr.intro.h0"></a>
+      <span class="phrase"><a name="root_ptr.intro.garbage_collection"></a></span><a class="link" href="intro.html#root_ptr.intro.garbage_collection">Garbage
+      Collection</a>
+    </h4>
+<p>
+      <a href="https://en.wikipedia.org/wiki/Garbage_collection_(computer_science)" target="_top">garbage
+      collection</a> is a technique where memory blocks are collected and later
+      deallocated when they are found to be unreferenced by any other object.
+    </p>
+<p>
+      Garbage collection is used by many popular languages including:
+    </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem">
+          ML
+        </li>
+<li class="listitem">
+          Haskell
+        </li>
+<li class="listitem">
+          APL
+        </li>
+<li class="listitem">
+          Lisp
+        </li>
+<li class="listitem">
+          Ruby
+        </li>
+<li class="listitem">
+          Java
+        </li>
+<li class="listitem">
+          .NET (C#)?
+        </li>
+<li class="listitem">
+          Smalltalk
+        </li>
+<li class="listitem">
+          ECMAScript
+        </li>
+<li class="listitem">
+          Sather
+        </li>
+</ul></div>
+<p>
+      Garbage Collector Advantages are:
+    </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem">
+          Very fast allocation and deallocation timing.
+        </li>
+<li class="listitem">
+          Dangling pointer bugs.
+        </li>
+<li class="listitem">
+          Double free bugs.
+        </li>
+<li class="listitem">
+          Certain kinds of memory leaks, leading over time to memory exhaustion.
+        </li>
+<li class="listitem">
+          Possible to override system allocators without modifying any code
+        </li>
+</ul></div>
+<p>
+      Garbage Collector Disadvantage:
+    </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem">
+          Cannot reclaim memory or invoke finalizers / destructors block immediately.
+        </li>
+<li class="listitem">
+          Cannot reclaim <span class="bold"><strong>all</strong></span> unreachable objects.
+        </li>
+<li class="listitem">
+          Doesn't know which registers will be referenced.
+        </li>
+</ul></div>
+<p>
+      An example of its usage is demonstrated here with the C/C++ implementation
+      of the popular <a href="https://en.wikipedia.org/wiki/Boehm_garbage_collector" target="_top">Hans
+      Boehm garbage collector</a>:
+    </p>
+<pre class="programlisting"><span class="preprocessor">#include</span> <span class="special">&lt;</span><span class="identifier">gc</span><span class="special">.</span><span class="identifier">h</span><span class="special">&gt;</span>
+
+  <span class="keyword">int</span> <span class="identifier">main</span><span class="special">()</span>
+  <span class="special">{</span>
+      <span class="keyword">int</span> <span class="special">*</span> <span class="identifier">p</span> <span class="special">=</span> <span class="special">(</span><span class="keyword">int</span> <span class="special">*)</span> <span class="identifier">GC_MALLOC</span><span class="special">(</span><span class="keyword">sizeof</span><span class="special">(</span><span class="keyword">int</span><span class="special">)</span> <span class="special">*</span> <span class="number">100</span><span class="special">);</span> <span class="comment">// Allocate an array of 100 integers.</span>
+
+      <span class="keyword">return</span> <span class="number">0</span><span class="special">;</span>
+  <span class="special">}</span> <span class="comment">// non-deterministic deallocation of the array.</span>
+</pre>
+<p>
+      Unfortunately this technique simply postpones the deallocation of the unreferenced
+      objects to later freeze the entire application, on a single CPU system, and
+      to collect them using various tracing algorithms. This may be unacceptable
+      for real-time applications or device driver implementation, for example.
+    </p>
+<p>
+      For solar or battery-powered devices, the power consumed by garbage collection
+      might also be significant.
+    </p>
+<h4>
+<a name="root_ptr.intro.h1"></a>
+      <span class="phrase"><a name="root_ptr.intro.reference_counting"></a></span><a class="link" href="intro.html#root_ptr.intro.reference_counting">Reference
+      Counting</a>
+    </h4>
+<p>
+      Reference counting is a different approach where objects pointed to are aware
+      of the number of times they are referenced.
+    </p>
+<p>
+      This means a counter within the object is incremented or decremented according
+      to the number of smart pointers that are referencing or dereferencing it.
+    </p>
+<p>
+      To demonstrate the destruction of no-longer-used objects, we can use a <code class="computeroutput"><span class="keyword">struct</span></code> that has a destructor that announces
+      when it is called, for example:
+    </p>
+<pre class="programlisting"><span class="special">~</span><span class="identifier">A</span><span class="special">()</span>
+<span class="special">{</span> <span class="comment">// </span>
+    <span class="identifier">std</span><span class="special">::</span><span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="string">"~A()"</span> <span class="special">&lt;&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">endl</span><span class="special">;</span> <span class="comment">// ~A() output when A is destructed.</span>
+<span class="special">}</span>
+</pre>
+<p>
+      For example, using <code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">shared_ptr</span></code> (or the std:: version):
+    </p>
+<pre class="programlisting"><span class="preprocessor">#include</span> <span class="special">&lt;</span><span class="identifier">boost</span><span class="special">/</span><span class="identifier">smart_ptr</span><span class="special">/</span><span class="identifier">shared_ptr</span><span class="special">.</span><span class="identifier">hpp</span><span class="special">&gt;</span>
+<span class="preprocessor">#include</span> <span class="special">&lt;</span><span class="identifier">boost</span><span class="special">/</span><span class="identifier">smart_ptr</span><span class="special">/</span><span class="identifier">weak_ptr</span><span class="special">.</span><span class="identifier">hpp</span><span class="special">&gt;</span>
+<span class="keyword">using</span> <span class="identifier">boost</span><span class="special">::</span><span class="identifier">shared_ptr</span><span class="special">;</span>
+<span class="keyword">using</span> <span class="identifier">boost</span><span class="special">::</span><span class="identifier">weak_ptr</span><span class="special">;</span>
+
+<span class="preprocessor">#include</span> <span class="special">&lt;</span><span class="identifier">boost</span><span class="special">/</span><span class="identifier">make_shared</span><span class="special">.</span><span class="identifier">hpp</span><span class="special">&gt;</span>
+<span class="keyword">using</span> <span class="identifier">boost</span><span class="special">::</span><span class="identifier">make_shared</span><span class="special">;</span>
+</pre>
+<pre class="programlisting"><span class="keyword">struct</span> <span class="identifier">S</span>
+<span class="special">{</span>
+  <span class="identifier">shared_ptr</span><span class="special">&lt;</span><span class="identifier">S</span><span class="special">&gt;</span> <span class="identifier">q</span><span class="special">;</span>
+  <span class="special">~</span><span class="identifier">S</span><span class="special">()</span>
+  <span class="special">{</span> <span class="comment">// </span>
+    <span class="identifier">std</span><span class="special">::</span><span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="string">"~S()"</span> <span class="special">&lt;&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">endl</span><span class="special">;</span> <span class="comment">// ~S() output when S is destructed.</span>
+  <span class="special">}</span>
+<span class="special">};</span>
+</pre>
+<pre class="programlisting"><span class="identifier">shared_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">p</span> <span class="special">=</span> <span class="identifier">make_shared</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;(</span><span class="number">11</span><span class="special">);</span>
+<span class="identifier">shared_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">q</span> <span class="special">=</span> <span class="identifier">p</span><span class="special">;</span>
+
+<span class="identifier">p</span><span class="special">.</span><span class="identifier">reset</span><span class="special">();</span>
+
+<span class="identifier">std</span><span class="special">::</span><span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="special">*</span><span class="identifier">q</span> <span class="special">&lt;&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">endl</span><span class="special">;</span> <span class="comment">// Outputs 11.</span>
+</pre>
+<p>
+      The main drawback is a lost in performance as compared to garbage collection
+      because of the extra time required to manage the counter every time the pointer
+      is reassigned or dereferenced.
+    </p>
+<p>
+      Reference counting can also leave a group of blocks of memory referencing each
+      other (called "cyclic") unnoticed and therefore never freed by the
+      application.
+    </p>
+<p>
+      A cyclic set is shown here:
+    </p>
+<pre class="programlisting"><span class="keyword">struct</span> <span class="identifier">S</span>
+<span class="special">{</span>
+  <span class="identifier">shared_ptr</span><span class="special">&lt;</span><span class="identifier">S</span><span class="special">&gt;</span> <span class="identifier">q</span><span class="special">;</span>
+  <span class="special">~</span><span class="identifier">S</span><span class="special">()</span>
+  <span class="special">{</span> <span class="comment">// </span>
+    <span class="identifier">std</span><span class="special">::</span><span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="string">"~S()"</span> <span class="special">&lt;&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">endl</span><span class="special">;</span> <span class="comment">// ~S() output when S is destructed.</span>
+  <span class="special">}</span>
+<span class="special">};</span>
+</pre>
+<pre class="programlisting"><span class="identifier">shared_ptr</span><span class="special">&lt;</span><span class="identifier">S</span><span class="special">&gt;</span> <span class="identifier">p</span> <span class="special">=</span> <span class="identifier">make_shared</span><span class="special">&lt;</span><span class="identifier">S</span><span class="special">&gt;();</span>
+<span class="identifier">p</span><span class="special">-&gt;</span><span class="identifier">q</span> <span class="special">=</span> <span class="identifier">p</span><span class="special">;</span> <span class="comment">// Create a cycle.</span>
+
+<span class="identifier">p</span><span class="special">.</span><span class="identifier">reset</span><span class="special">();</span> <span class="comment">// Detach from the cycle.</span>
+</pre>
+<p>
+      The above example will never execute the call of the destructor of <code class="computeroutput"><span class="keyword">struct</span> <span class="identifier">A</span></code>
+      because the cycle will never get deallocated. This is because the number of
+      references will never reach 0.
+    </p>
+<p>
+      A way to solve this problem is to isolate the location of the cycle, which
+      is this case is already known, and use a <code class="computeroutput"><span class="identifier">weak_ptr</span></code>
+      to break the cycle:
+    </p>
+<pre class="programlisting"><span class="keyword">struct</span> <span class="identifier">W</span>
+<span class="special">{</span>
+  <span class="identifier">weak_ptr</span><span class="special">&lt;</span><span class="identifier">W</span><span class="special">&gt;</span> <span class="identifier">q</span><span class="special">;</span>
+  <span class="special">~</span><span class="identifier">W</span><span class="special">()</span>
+  <span class="special">{</span> <span class="comment">// </span>
+    <span class="identifier">std</span><span class="special">::</span><span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="string">"~W()"</span> <span class="special">&lt;&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">endl</span><span class="special">;</span> <span class="comment">// ~W() output when W is destructed.</span>
+  <span class="special">}</span>
+<span class="special">};</span>
+</pre>
+<pre class="programlisting"><span class="identifier">shared_ptr</span><span class="special">&lt;</span><span class="identifier">W</span><span class="special">&gt;</span> <span class="identifier">p</span> <span class="special">=</span> <span class="identifier">make_shared</span><span class="special">&lt;</span><span class="identifier">W</span><span class="special">&gt;();</span>
+<span class="identifier">p</span><span class="special">-&gt;</span><span class="identifier">q</span> <span class="special">=</span> <span class="identifier">p</span><span class="special">;</span> <span class="comment">// Create a cycle.</span>
+
+<span class="identifier">p</span><span class="special">.</span><span class="identifier">reset</span><span class="special">();</span> <span class="comment">// Detach from the cycle.</span>
+</pre>
+<p>
+      The main drawback of this approach is the need to explicitly find the cycle
+      to later alter the code with respective <code class="computeroutput"><span class="identifier">weak_ptr</span></code>s.
+    </p>
+<h4>
+<a name="root_ptr.intro.h2"></a>
+      <span class="phrase"><a name="root_ptr.intro.root_pointer"></a></span><a class="link" href="intro.html#root_ptr.intro.root_pointer">Root
+      Pointer</a>
+    </h4>
+<p>
+      Root Pointer is a memory manager on top of reference counting and is also able
+      to detect outright unreferenced cyclic blocks of memory.
+    </p>
+<p>
+      Its performance is comparable to <code class="computeroutput"><span class="identifier">shared_ptr</span></code>
+      but does not require a bigger memory usage per pointer (2 times <code class="computeroutput"><span class="keyword">sizeof</span><span class="special">(</span><span class="keyword">void</span>
+      <span class="special">*)</span></code>), given its ability to detect cyclic
+      blocks of memory with no coding overhead.
+    </p>
+<p>
+      For example:
+    </p>
+<pre class="programlisting"><span class="preprocessor">#include</span> <span class="special">&lt;</span><span class="identifier">boost</span><span class="special">/</span><span class="identifier">smart_ptr</span><span class="special">/</span><span class="identifier">root_ptr</span><span class="special">.</span><span class="identifier">hpp</span><span class="special">&gt;</span>
+<span class="keyword">using</span> <span class="identifier">boost</span><span class="special">::</span><span class="identifier">root_ptr</span><span class="special">;</span>
+<span class="keyword">using</span> <span class="identifier">boost</span><span class="special">::</span><span class="identifier">node_ptr</span><span class="special">;</span>
+<span class="keyword">using</span> <span class="identifier">boost</span><span class="special">::</span><span class="identifier">make_root</span><span class="special">;</span>
+<span class="keyword">using</span> <span class="identifier">boost</span><span class="special">::</span><span class="identifier">node_proxy</span><span class="special">;</span>
+</pre>
+<p>
+      [root_ptr_basic_A]
+    </p>
+<pre class="programlisting"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;</span> <span class="identifier">p</span><span class="special">;</span>
+<span class="identifier">p</span> <span class="special">=</span> <span class="identifier">make_root</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;(</span><span class="identifier">p</span><span class="special">);</span>
+<span class="identifier">p</span><span class="special">-&gt;</span><span class="identifier">q</span> <span class="special">=</span> <span class="identifier">p</span><span class="special">;</span>
+
+<span class="identifier">p</span><span class="special">.</span><span class="identifier">reset</span><span class="special">();</span> <span class="comment">// Detach from the cycle.</span>
+  <span class="comment">// Deterministic destruction so destructor is actually called.</span>
+</pre>
+<p>
+      We can see in the above example that there is no need to manually find the
+      location of the cycle.
+    </p>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright &#169; 2008, 2016 Phil Bouchard<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../index.html"><img src="../images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../images/home.png" alt="Home"></a><a accesskey="n" href="rationale.html"><img src="../images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

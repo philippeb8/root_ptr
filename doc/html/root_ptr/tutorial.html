@@ -1,0 +1,248 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<title>Tutorial</title>
+<link rel="stylesheet" href="../root_ptr.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="../index.html" title="Boost.Root_ptr">
+<link rel="up" href="../index.html" title="Boost.Root_ptr">
+<link rel="prev" href="rationale.html" title="Rationale">
+<link rel="next" href="synopsis.html" title="Synopsis">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr><td valign="top"><img alt="" width="180" height="90" src="../proposed_for_boost.png"></td></tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="rationale.html"><img src="../images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../images/home.png" alt="Home"></a><a accesskey="n" href="synopsis.html"><img src="../images/next.png" alt="Next"></a>
+</div>
+<div class="section">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="root_ptr.tutorial"></a><a class="link" href="tutorial.html" title="Tutorial">Tutorial</a>
+</h2></div></div></div>
+<h4>
+<a name="root_ptr.tutorial.h0"></a>
+      <span class="phrase"><a name="root_ptr.tutorial.basic"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.basic">Basic</a>
+    </h4>
+<p>
+      Root Pointer was designed to be easy to use and to be versatile in terms of
+      object variants it can refer to. Its only requirement is limited to the usage
+      of a special type needed to instantiate objects referred to.
+    </p>
+<p>
+      For example:
+    </p>
+<pre class="programlisting"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">p</span> <span class="special">=</span> <span class="identifier">make_root</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;(</span><span class="number">11</span><span class="special">);</span>
+</pre>
+<p>
+      will instantiate a special object 'node&lt;int&gt;' having an integer as one
+      of its member. The pointer to the object is then passed to the <code class="computeroutput"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span></code> that
+      will manage its existence and later destroy and deallocate it when it is found
+      to be no longer referenced.
+    </p>
+<p>
+      The <code class="computeroutput"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span></code> guarantees
+      all associated allocations, cyclic or not, will be freed upon its destruction.
+      Once the root is defined, we can derive a <code class="computeroutput"><span class="identifier">node_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span></code>
+      from it:
+    </p>
+<pre class="programlisting"><span class="identifier">node_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">q</span> <span class="special">=</span> <span class="identifier">make_node</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;(</span><span class="identifier">p</span><span class="special">,</span> <span class="number">12</span><span class="special">);</span>
+</pre>
+<p>
+      A <code class="computeroutput"><span class="identifier">node_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span></code> is an
+      internal pointer in a set of objects that is compact which uses the information
+      of the associated <code class="computeroutput"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span></code>
+      to define its length of existence. As its name suggests, this can be used,
+      for example, as node pointers inside a container for a given root.
+    </p>
+<p>
+      See <a href="../../../example/root_ptr_example1.cpp" target="_top">root_ptr_example1.cpp</a>
+      for different cases of its usage.
+    </p>
+<h6>
+<a name="root_ptr.tutorial.h1"></a>
+      <span class="phrase"><a name="root_ptr.tutorial.rvalue"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.rvalue">R-Value</a>
+    </h6>
+<p>
+      A function can be written to use as an R-value:
+    </p>
+<pre class="programlisting"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">foo</span><span class="special">()</span>
+<span class="special">{</span>
+    <span class="keyword">return</span> <span class="identifier">make_root</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;(</span><span class="number">9</span><span class="special">);</span>
+<span class="special">}</span>
+</pre>
+<p>
+      and called
+    </p>
+<pre class="programlisting"><span class="identifier">std</span><span class="special">::</span><span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="special">*</span> <span class="identifier">foo</span><span class="special">()</span> <span class="special">&lt;&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">endl</span><span class="special">;</span>
+</pre>
+<p>
+      to output
+    </p>
+<pre class="programlisting"><span class="identifier">R</span><span class="special">-</span><span class="identifier">value</span><span class="special">:</span>
+<span class="number">9</span>
+</pre>
+<h6>
+<a name="root_ptr.tutorial.h2"></a>
+      <span class="phrase"><a name="root_ptr.tutorial.slicing"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.slicing">Slicing</a>
+    </h6>
+<p>
+      Slicing is shown in
+    </p>
+<pre class="programlisting"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">C</span><span class="special">&gt;</span> <span class="identifier">p</span> <span class="special">=</span> <span class="identifier">make_root</span><span class="special">&lt;</span><span class="identifier">C</span><span class="special">&gt;();</span>
+<span class="identifier">bar</span><span class="special">(</span><span class="identifier">p</span><span class="special">);</span>
+</pre>
+<p>
+      with output
+    </p>
+<pre class="programlisting"><span class="identifier">Slicing</span><span class="special">:</span>
+<span class="number">9</span>
+</pre>
+<h6>
+<a name="root_ptr.tutorial.h3"></a>
+      <span class="phrase"><a name="root_ptr.tutorial.sharing"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.sharing">Sharing</a>
+    </h6>
+<p>
+      Sharing is shown in
+    </p>
+<pre class="programlisting"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">p</span> <span class="special">=</span> <span class="identifier">make_root</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;(</span><span class="number">9</span><span class="special">);</span>
+<span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">q</span> <span class="special">=</span> <span class="identifier">p</span><span class="special">;</span>
+
+<span class="identifier">std</span><span class="special">::</span><span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="string">"p: "</span> <span class="special">&lt;&lt;</span> <span class="special">*</span><span class="identifier">p</span> <span class="special">&lt;&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">endl</span><span class="special">;</span>
+<span class="identifier">std</span><span class="special">::</span><span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="string">"q: "</span> <span class="special">&lt;&lt;</span> <span class="special">*</span><span class="identifier">q</span> <span class="special">&lt;&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">endl</span><span class="special">;</span>
+</pre>
+<p>
+      with output
+    </p>
+<pre class="programlisting"><span class="identifier">Sharing</span><span class="special">:</span>
+<span class="identifier">p</span><span class="special">:</span> <span class="number">9</span>
+<span class="identifier">q</span><span class="special">:</span> <span class="number">9</span>
+</pre>
+<h4>
+<a name="root_ptr.tutorial.h4"></a>
+      <span class="phrase"><a name="root_ptr.tutorial.advanced"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.advanced">Advanced</a>
+    </h4>
+<h6>
+<a name="root_ptr.tutorial.h5"></a>
+      <span class="phrase"><a name="root_ptr.tutorial.propagation"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.propagation">Propagating
+      node_proxy information</a>
+    </h6>
+<p>
+      A <code class="computeroutput"><span class="identifier">root_ptr</span></code> derives from <code class="computeroutput"><span class="identifier">node_proxy</span></code> and <code class="computeroutput"><span class="identifier">node_ptr</span></code>.
+    </p>
+<p>
+      You can propagate the information of the <code class="computeroutput"><span class="identifier">node_proxy</span></code>
+      by passing it as a <span class="bold"><strong>reference</strong></span>:
+    </p>
+<pre class="programlisting"><span class="keyword">struct</span> <span class="identifier">A</span>
+<span class="special">{</span>
+  <span class="identifier">node_ptr</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;</span> <span class="identifier">p</span><span class="special">;</span>
+
+  <span class="identifier">A</span><span class="special">(</span><span class="identifier">node_proxy</span> <span class="keyword">const</span> <span class="special">&amp;</span> <span class="identifier">x</span><span class="special">)</span> <span class="special">:</span> <span class="identifier">p</span><span class="special">(</span><span class="identifier">x</span><span class="special">)</span> <span class="special">{}</span>
+<span class="special">};</span>
+
+<span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;</span> <span class="identifier">x</span><span class="special">;</span>
+<span class="identifier">x</span> <span class="special">=</span> <span class="identifier">make_root</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;(</span><span class="identifier">x</span><span class="special">);</span>
+</pre>
+<h6>
+<a name="root_ptr.tutorial.h6"></a>
+      <span class="phrase"><a name="root_ptr.tutorial.cyclic_function"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.cyclic_function">Cyclic
+      function</a>
+    </h6>
+<p>
+      In the case where a cyclic set is being destroyed, in order to prevent <code class="computeroutput"><span class="identifier">root_ptr</span></code>s member pointers from accessing
+      an object that has already been destroyed the function <code class="computeroutput"><span class="identifier">cyclic</span><span class="special">()</span></code> is provided to explicitly check the state
+      of the pointee object:
+    </p>
+<pre class="programlisting"><span class="keyword">struct</span> <span class="identifier">A</span>
+<span class="special">{</span>
+  <span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;</span> <span class="identifier">p</span><span class="special">;</span>
+
+  <span class="keyword">void</span> <span class="identifier">foo</span><span class="special">()</span> <span class="special">{}</span>
+
+  <span class="special">~</span><span class="identifier">A</span><span class="special">()</span>
+  <span class="special">{</span>
+    <span class="keyword">if</span> <span class="special">(!</span><span class="identifier">p</span><span class="special">.</span><span class="identifier">cyclic</span><span class="special">())</span>
+    <span class="special">{</span>
+      <span class="identifier">p</span><span class="special">-&gt;</span><span class="identifier">foo</span><span class="special">();</span>
+    <span class="special">}</span>
+  <span class="special">}</span>
+<span class="special">};</span>
+
+<span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;</span> <span class="identifier">p</span><span class="special">;</span>
+<span class="identifier">p</span> <span class="special">=</span> <span class="identifier">make_root</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;();</span>
+<span class="identifier">p</span><span class="special">-&gt;</span><span class="identifier">p</span> <span class="special">=</span> <span class="identifier">p</span><span class="special">;</span>
+</pre>
+<div class="warning"><table border="0" summary="Warning">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Warning]" src="../images/warning.png"></td>
+<th align="left">Warning</th>
+</tr>
+<tr><td align="left" valign="top"><p>
+        <code class="computeroutput"><span class="identifier">cyclic</span></code> function should <span class="bold"><strong>only be used in a destructor</strong></span>.
+      </p></td></tr>
+</table></div>
+<h6>
+<a name="root_ptr.tutorial.h7"></a>
+      <span class="phrase"><a name="root_ptr.tutorial.faster_pointee"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.faster_pointee">Faster
+      pointees</a>
+    </h6>
+<p>
+      Creating pointee objects in a faster way is possible by calling <code class="computeroutput"><span class="identifier">make_fastroot</span></code>:
+    </p>
+<pre class="programlisting"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">p</span> <span class="special">=</span> <span class="identifier">make_fastroot</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;(</span><span class="number">10</span><span class="special">);</span>
+</pre>
+<h6>
+<a name="root_ptr.tutorial.h8"></a>
+      <span class="phrase"><a name="root_ptr.tutorial.allocator"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.allocator">Custom
+      Allocator</a>
+    </h6>
+<p>
+      ou can actually use the allocator of your choice using the following function
+      calls:
+    </p>
+<pre class="programlisting"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">p</span> <span class="special">=</span> <span class="identifier">allocate_node</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;(</span><span class="identifier">make_node_allocator</span><span class="special">&lt;</span><span class="identifier">fast_pool_allocator</span><span class="special">,</span> <span class="keyword">int</span><span class="special">&gt;(),</span> <span class="number">12</span><span class="special">);</span>
+</pre>
+<h4>
+<a name="root_ptr.tutorial.h9"></a>
+      <span class="phrase"><a name="root_ptr.tutorial.caveat"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.caveat">Caveat</a>
+    </h4>
+<p>
+      Hierarchies with multiple inheritance without virtual tables will cause undefined
+      behavior if a pointer to a derived class is assigned to a pointer of one of
+      its base class. For example:
+    </p>
+<pre class="programlisting"><span class="keyword">struct</span> <span class="identifier">M</span> <span class="special">{</span> <span class="keyword">int</span> <span class="identifier">i</span><span class="special">;</span> <span class="special">};</span>
+<span class="keyword">struct</span> <span class="identifier">N</span> <span class="special">{</span> <span class="keyword">int</span> <span class="identifier">i</span><span class="special">;</span> <span class="special">};</span>
+<span class="keyword">struct</span> <span class="identifier">O</span> <span class="special">:</span> <span class="identifier">N</span><span class="special">,</span> <span class="identifier">M</span> <span class="special">{</span> <span class="keyword">int</span> <span class="identifier">i</span><span class="special">;</span> <span class="special">};</span>
+
+<span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">O</span><span class="special">&gt;</span> <span class="identifier">po</span> <span class="special">=</span> <span class="identifier">make_root</span><span class="special">&lt;</span><span class="identifier">O</span><span class="special">&gt;();</span>
+<span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">N</span><span class="special">&gt;</span> <span class="identifier">pn</span> <span class="special">=</span> <span class="identifier">po</span><span class="special">;</span> <span class="comment">// Incorrect!</span>
+<span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">M</span><span class="special">&gt;</span> <span class="identifier">pm</span> <span class="special">=</span> <span class="identifier">po</span><span class="special">;</span> <span class="comment">// Incorrect!</span>
+</pre>
+<p>
+      A way to bypass any problem that might be created by the example above is to
+      add virtual destructors to the classes:
+    </p>
+<pre class="programlisting"><span class="keyword">struct</span> <span class="identifier">M</span> <span class="special">{</span> <span class="keyword">int</span> <span class="identifier">i</span><span class="special">;</span> <span class="keyword">virtual</span> <span class="special">~</span><span class="identifier">M</span><span class="special">()</span> <span class="special">{}</span> <span class="special">};</span>
+<span class="keyword">struct</span> <span class="identifier">N</span> <span class="special">{</span> <span class="keyword">int</span> <span class="identifier">i</span><span class="special">;</span> <span class="keyword">virtual</span> <span class="special">~</span><span class="identifier">N</span><span class="special">()</span> <span class="special">{}</span> <span class="special">};</span>
+<span class="keyword">struct</span> <span class="identifier">O</span> <span class="special">:</span> <span class="identifier">N</span><span class="special">,</span> <span class="identifier">M</span> <span class="special">{</span> <span class="keyword">int</span> <span class="identifier">i</span><span class="special">;</span> <span class="special">};</span>
+
+<span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">O</span><span class="special">&gt;</span> <span class="identifier">po</span> <span class="special">=</span> <span class="identifier">make_root</span><span class="special">&lt;</span><span class="identifier">O</span><span class="special">&gt;();</span>
+<span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">N</span><span class="special">&gt;</span> <span class="identifier">pn</span> <span class="special">=</span> <span class="identifier">po</span><span class="special">;</span> <span class="comment">// Correct.</span>
+<span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">M</span><span class="special">&gt;</span> <span class="identifier">pm</span> <span class="special">=</span> <span class="identifier">po</span><span class="special">;</span> <span class="comment">// Correct.</span>
+</pre>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright &#169; 2008, 2016 Phil Bouchard<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="rationale.html"><img src="../images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../images/home.png" alt="Home"></a><a accesskey="n" href="synopsis.html"><img src="../images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>
