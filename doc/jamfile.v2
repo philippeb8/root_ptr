@@ -206,10 +206,18 @@ boostbook standalone
        # Index generation conditionally defined above.
    ;
 
+   install boost_logoinstall : proposed_for_boost.png : <location>./html ; # Proposed library logo until accepted.
+   install boost-images : [ glob ../../../doc/src/images/*.png ] : <location>./html/images ; # home, next, previous, up down...
    # Copy boostbook.css and custom colors root_ptr.css from doc/ to doc/html/
-   install boostbook-cssinstall : ../../../doc/src/boostbook.css : <location>./html ;
-   # Install local version of boostbook.css with different syntax colors etc.
+   #install boostbook-cssinstall : ../../../doc/src/boostbook.css : <location>./html ;
+   # /* unless root_ptr.css Starts with the Boost Standard Cascades Style sheet */
+   # @import url('../../../../doc/src/boostbook.css');
+   # Install local version extending boostbook.css with different syntax colors etc.
    install root_ptr-cssinstall : root_ptr.css : <location>./html ;
+
+   # copy all root_ptr diagram PNG files from doc/images to doc/html.
+   install png-install : [ glob /images/*.png ] : <location>html/images ;
+
 
 # Copy and rename to root_ptr.pdf the generated pdf called root_ptr.auto_index.pdf
 # from \modular-boost\bin.v2\libs\root_ptr\doc\455e2f403de9f0fcee2d24dc44229719

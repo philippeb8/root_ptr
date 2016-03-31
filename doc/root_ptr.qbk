@@ -78,7 +78,7 @@
 [/Links to classes etc]
 
 [/ depend on namespace layout]
-[def __root_ptr [classref boost::smart_ptr::root_ptr  root_ptr]]
+[def __root_ptr [classref boost::root_ptr  root_ptr]]  [/TODO]
 [/def __root_ptr_value_type [classref boost::root_ptr::root_ptr::value_type  value_type]]
 [/def __root_ptr_float_type [classref boost::root_ptr::root_ptr::float_type  float_type]]
 
@@ -172,9 +172,9 @@ This means a counter within the object is incremented or decremented
 according to the number of smart pointers that are referencing or dereferencing it.
 
 To demonstrate the destruction of no-longer-used objects, we can use a `struct`
-that has a destructor that announces when it is call, for example:
+that has a destructor that announces when it is called, for example:
 
-[root_ptr_basic_A]
+[root_ptr_basic_A_noisy_death]
 
 For example, using `boost::shared_ptr` (or the std:: version):
 
@@ -229,8 +229,7 @@ For example:
 
 [root_ptr_basic_3]
 
-We can see in the above example that the pointer types remain the same
-and thus there is no need to manually find the location of the cycle.
+We can see in the above example that there is no need to manually find the location of the cycle.
 
 [endsect] [/section:intro Introduction]
 
@@ -241,13 +240,13 @@ and thus there is no need to manually find the location of the cycle.
 Root Pointer introduces the concept of ['set] where it is defined to be a one or many memory blocks
 referencing each other allocated on the heap pointed to by one or many `root_ptr<T>`s
 allocated elsewhere by the application. Each ['set] is consequently composed of a list of all memory blocks
-constituting it and a node_proxy linking each allocation and other potential node_proxys.
+constituting it and a `node_proxy` linking each allocation and other potential `node_proxy`s.
 
 For example:
 
-[$/images/introduction.png]
+[$/images/introduction.png   [align center] ]  [/ align centre does seem to work]
 
-[h3:cyclism Cyclism]
+[h3:cyclism Cyclicism]
 
 Therefore whenever a `node_proxy` contained within a `root_ptr<T>` is about to be destroyed,
 the deallocation of each memory block composing the ['set] is enforced.
@@ -257,9 +256,9 @@ indifferent from the cyclicism problem presented by the reference counters.
 As we can see in the following example, the `node_proxy` is destroyed and
 consequently every elements composing the ['set] will be destructed and deallocated as well:
 
-[$/images/cyclism1.png]
+[$/images/cyclicism1.png]
 
-[$/images/cyclism2.png]
+[$/images/cyclicism2.png]
 
 [h3:union Union]
 
@@ -298,7 +297,7 @@ A `node_ptr<int>` is an internal pointer in a set of objects that is compact
 which uses the information of the associated `root_ptr<int>` to define its length of existence.
 As its name suggests, this can be used, for example, as node pointers inside a container for a given root.
 
-See [../example/root_ptr_example1.cpp root_ptr_example1.cpp]
+See [@../../example/root_ptr_example1.cpp root_ptr_example1.cpp]
 for different cases of its usage.
 
 [/TODO I think much more explanation would be helpful here?]
@@ -327,16 +326,20 @@ with output [root_ptr_example1_output_slicing]
 
 [h5:sharing Sharing]
 
-Slicing is shown in
+Sharing is shown in
 
 [root_ptr_example1_sharing]
 
 with output [root_ptr_example1_output_sharing]
 
-[/TODO]
 [h3:advanced Advanced]
 
+[h5:propagation Propagating node_proxy information]
+A `root_ptr` derives from `node_proxy` and `node_ptr`.
 
+You can propagate the information of the `node_proxy` by passing it as a [*reference]:
+
+[root_ptr_example1_propagate]
 
 [h5:cyclic_function Cyclic function]
 In the case where a cyclic set is being destroyed,
@@ -358,22 +361,6 @@ Creating pointee objects in a faster way is possible by calling `make_fastroot`:
 ou can actually use the allocator of your choice using the following function calls:
 
   root_ptr<int> p = allocate_node<int>(make_node_allocator<fast_pool_allocator, int>(), 12);
-
-[h5:propagation Propagating node_proxy information]
-A `root_ptr` derives from `node_proxy` and `node_ptr`.
-You can propagate the information of the `node_proxy` by passing it as a [*reference]:
-
-[/TODO This should be a code snippet]
-
-   struct A
-   {
-       node_ptr<A> p;
-
-       A(node_proxy const & x) : p(x) {}
-   };
-
-   root_ptr<A> x;
-  x = make_root<A>(x);
 
 [h3:caveat Caveat]
 
@@ -453,13 +440,14 @@ In order to use the root_ptr library, we first need an include:
 [root_ptr_example1_include_1]
 
 Output shows handling cyclism
+
 [root_ptr_example1_output_1]
 
 and the order of destruction:
 
 [root_ptr_example1_output_2]
 
-The full code is at  [@../example/root_ptr_example1.cpp  root_ptr_example1.cpp].
+The full code is at  [@../../example/root_ptr_example1.cpp  root_ptr_example1.cpp].
 
 [endsect] [/section:simple example Example of a root_ptr type]
 
@@ -467,9 +455,9 @@ The full code is at  [@../example/root_ptr_example1.cpp  root_ptr_example1.cpp].
 
 See
 
-The full code is at  [@../test/root_ptr_test1.cpp  root_ptr_test1.cpp]
+The full code is at  [@../../test/root_ptr_test1.cpp  root_ptr_test1.cpp]
 
-and  [@../test/root_ptr_test3.cpp  root_ptr_test3.cpp]
+and  [@../../test/root_ptr_test3.cpp  root_ptr_test3.cpp]
 
 [endsect] [/section:testing Testing]
 
@@ -511,7 +499,7 @@ For example, using the index to search for `value_type` will lead you to the (lo
 This is much quicker than simply scrolling.]
 
 The information given is derived from Doxygen-syntax comments in the include files, mainly
-[@../../include/boost/root_ptr/root_ptr.hpp root_ptr.hpp].
+[@../../include/boost/smart_ptr/root_ptr.hpp root_ptr.hpp].
 
 * Examples will often be your quickest way to find what you need to know.
 Examples often deliberately use many features, often in a contrived fashion.

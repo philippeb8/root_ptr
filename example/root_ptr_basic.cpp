@@ -32,18 +32,18 @@ using boost::node_proxy;
 
 #include <iostream>
 
-//[root_ptr_basic_A
 struct A
 {
-    node_ptr<A> q;
+  node_ptr<A> q;
     
-    A(node_proxy const & x) : q(x) {}
-    ~A()
-    { // 
-        std::cout << "~A()" << std::endl; // ~A() output when A is destructed.
-    }
+  A(node_proxy const & x) : q(x) {}
+//[root_ptr_basic_A_noisy_death
+  ~A()
+  { // 
+      std::cout << "~A()" << std::endl; // ~A() output when A is destructed.
+  }
+//] [/root_ptr_basic_A_noisy_death]
 };
-//] [/root_ptr_basic_A]
 
 //[root_ptr_basic_S
 struct S
@@ -62,11 +62,10 @@ struct W
   weak_ptr<W> q;
   ~W()
   { // 
-    std::cout << "~W()" << std::endl; // ~W() output when w is destructed.
+    std::cout << "~W()" << std::endl; // ~W() output when W is destructed.
   }
 };
 //] [/root_ptr_basic_W]
-
 
 int main()
 {

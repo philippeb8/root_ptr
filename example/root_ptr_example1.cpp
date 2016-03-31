@@ -144,14 +144,13 @@ int main()
   }
   std::cout << std::endl;
 
-
-  // TODO need definition of function foo()
-  {
-    // advanced showing use of  function cyclic
-    //[root_ptr_example1_cyclic
+  { // advanced showing use of function cyclic
+ //[root_ptr_example1_cyclic
     struct A
     {
       root_ptr<A> p;
+
+      void foo() {}
 
       ~A()
       {
@@ -166,7 +165,20 @@ int main()
     p = make_root<A>();
     p->p = p;
     //] [/root_ptr_example1_cyclic]
+  }
 
+  { // Advanced showing Propagating node_proxy information
+//[root_ptr_example1_propagate
+    struct A
+    {
+      node_ptr<A> p;
+
+      A(node_proxy const & x) : p(x) {}
+    };
+
+    root_ptr<A> x;
+    x = make_root<A>(x);
+//] [/root_ptr_example1_propagate]
   }
 } // int main()
 

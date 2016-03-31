@@ -1,19 +1,16 @@
-/**
-	@file
-	root_ptr_test3.cpp
-
-	@note
-	Copyright (c) 2008 Steven Watanabe <watanabesj@gmail.com>
-
-	Distributed under the Boost Software License, Version 1.0.
-
-	See accompanying file LICENSE_1_0.txt or copy at
-	http://www.boost.org/LICENSE_1_0.txt
-
-	See http://www.boost.org/libs/smart_ptr/doc/index.html for documentation.
+/*!
+\file
+\brief
+\details See http://www.boost.org/libs/root_ptr/doc/index.html for documentation.
 */
 
+/*
+Copyright Phil Bouchard, 2016cd ./html
 
+Distributed under the Boost Software License, Version 1.0.
+See accompanying file LICENSE_1_0.txt
+or copy at http://www.boost.org/LICENSE_1_0.txt
+*/
 
 #include <boost/smart_ptr/root_ptr.hpp>
 

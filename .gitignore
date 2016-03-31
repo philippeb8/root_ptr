@@ -1,6 +1,7 @@
 # .gitignore for root_ptr, ignoring all generated docs and log files.
 * Ignore all log files in any folder in the sub-module.
 /**/*.log
+bin/
 doc/html/boost
 doc/html/boost_root_ptr
 doc/html/header
@@ -8,7 +9,7 @@ doc/html/std
 doc/html/standalone_HTML.manifest
 doc/html/*.html
 doc/doxygen/html
-* latex should not be generated if setting in doxyfile is correct (but is the default).
+* Latex should not be generated if setting in doxyfile is correct (but generate is the default).
 doc/doxygen/latex/
 #  Also ignore the results of Boost Inspect program that check for bad html links in documentation.
 doc/inspect.htm
