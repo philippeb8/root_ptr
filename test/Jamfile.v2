@@ -17,16 +17,19 @@ if ! $(BOOST_ROOT)
 # bjam -V2 threading=multi target-os=cygwin threadapi=pthread variant=debug
 
 lib boost_thread : : <name>boost_thread ;
+lib boost_system : : <name>boost_system ;
 lib boost_unit_test_framework : : <name>boost_unit_test_framework ;
 
 project :
     : requirements
-        <include>../../.. 
+        <include>../include 
         <include>$(BOOST_ROOT)
+        <library-path>/usr/local/lib
+        <dll-path>/usr/local/lib
         <warnings>all
 ;
 
 test-suite "root_ptr_tests" :
-    [ run root_ptr_test1.cpp boost_thread boost_unit_test_framework ]
-    [ run root_ptr_test3.cpp boost_thread boost_unit_test_framework ]
+    [ run root_ptr_test1.cpp boost_thread boost_system boost_unit_test_framework ]
+    [ run root_ptr_test3.cpp boost_thread boost_system boost_unit_test_framework ]
     ;
