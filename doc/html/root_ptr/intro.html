@@ -116,12 +116,12 @@
     </p>
 <pre class="programlisting"><span class="preprocessor">#include</span> <span class="special">&lt;</span><span class="identifier">gc</span><span class="special">.</span><span class="identifier">h</span><span class="special">&gt;</span>
 
-  <span class="keyword">int</span> <span class="identifier">main</span><span class="special">()</span>
-  <span class="special">{</span>
-      <span class="keyword">int</span> <span class="special">*</span> <span class="identifier">p</span> <span class="special">=</span> <span class="special">(</span><span class="keyword">int</span> <span class="special">*)</span> <span class="identifier">GC_MALLOC</span><span class="special">(</span><span class="keyword">sizeof</span><span class="special">(</span><span class="keyword">int</span><span class="special">)</span> <span class="special">*</span> <span class="number">100</span><span class="special">);</span> <span class="comment">// Allocate an array of 100 integers.</span>
+<span class="keyword">int</span> <span class="identifier">main</span><span class="special">()</span>
+<span class="special">{</span>
+    <span class="keyword">int</span> <span class="special">*</span> <span class="identifier">p</span> <span class="special">=</span> <span class="special">(</span><span class="keyword">int</span> <span class="special">*)</span> <span class="identifier">GC_MALLOC</span><span class="special">(</span><span class="keyword">sizeof</span><span class="special">(</span><span class="keyword">int</span><span class="special">)</span> <span class="special">*</span> <span class="number">100</span><span class="special">);</span> <span class="comment">// Allocate an array of 100 integers.</span>
 
-      <span class="keyword">return</span> <span class="number">0</span><span class="special">;</span>
-  <span class="special">}</span> <span class="comment">// non-deterministic deallocation of the array.</span>
+    <span class="keyword">return</span> <span class="number">0</span><span class="special">;</span>
+<span class="special">}</span> <span class="comment">// non-deterministic deallocation of the array.</span>
 </pre>
 <p>
       Unfortunately this technique simply postpones the deallocation of the unreferenced
@@ -247,29 +247,42 @@
       to detect outright unreferenced cyclic blocks of memory.
     </p>
 <p>
-      Its performance is comparable to <code class="computeroutput"><span class="identifier">shared_ptr</span></code>
-      but does not require a bigger memory usage per pointer (2 times <code class="computeroutput"><span class="keyword">sizeof</span><span class="special">(</span><span class="keyword">void</span>
-      <span class="special">*)</span></code>), given its ability to detect cyclic
-      blocks of memory with no coding overhead.
+      Its performance is comparable to shared_ptr but is not requiring a bigger memory
+      usage per pointer (2 times sizeof(void *)) for its associated node_ptr and
+      (2 times sizeof(void *) + sizeof(node_proxy)) for root_ptr itself, given its
+      ability to detect cyclic blocks of memory.
     </p>
 <p>
       For example:
     </p>
-<pre class="programlisting"><span class="preprocessor">#include</span> <span class="special">&lt;</span><span class="identifier">boost</span><span class="special">/</span><span class="identifier">smart_ptr</span><span class="special">/</span><span class="identifier">root_ptr</span><span class="special">.</span><span class="identifier">hpp</span><span class="special">&gt;</span>
-<span class="keyword">using</span> <span class="identifier">boost</span><span class="special">::</span><span class="identifier">root_ptr</span><span class="special">;</span>
-<span class="keyword">using</span> <span class="identifier">boost</span><span class="special">::</span><span class="identifier">node_ptr</span><span class="special">;</span>
-<span class="keyword">using</span> <span class="identifier">boost</span><span class="special">::</span><span class="identifier">make_root</span><span class="special">;</span>
-<span class="keyword">using</span> <span class="identifier">boost</span><span class="special">::</span><span class="identifier">node_proxy</span><span class="special">;</span>
-</pre>
-<p>
-      [root_ptr_basic_A]
-    </p>
-<pre class="programlisting"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;</span> <span class="identifier">p</span><span class="special">;</span>
-<span class="identifier">p</span> <span class="special">=</span> <span class="identifier">make_root</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;(</span><span class="identifier">p</span><span class="special">);</span>
-<span class="identifier">p</span><span class="special">-&gt;</span><span class="identifier">q</span> <span class="special">=</span> <span class="identifier">p</span><span class="special">;</span>
+<pre class="programlisting"><span class="preprocessor">#include</span> <span class="special">&lt;</span><span class="identifier">iostream</span><span class="special">&gt;</span>
+<span class="preprocessor">#include</span> <span class="special">&lt;</span><span class="identifier">boost</span><span class="special">/</span><span class="identifier">smart_ptr</span><span class="special">/</span><span class="identifier">root_ptr</span><span class="special">.</span><span class="identifier">hpp</span><span class="special">&gt;</span>
 
-<span class="identifier">p</span><span class="special">.</span><span class="identifier">reset</span><span class="special">();</span> <span class="comment">// Detach from the cycle.</span>
-  <span class="comment">// Deterministic destruction so destructor is actually called.</span>
+<span class="keyword">using</span> <span class="keyword">namespace</span> <span class="identifier">std</span><span class="special">;</span>
+<span class="keyword">using</span> <span class="keyword">namespace</span> <span class="identifier">boost</span><span class="special">;</span>
+
+<span class="keyword">struct</span> <span class="identifier">A</span>
+<span class="special">{</span>
+    <span class="identifier">node_ptr</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;</span> <span class="identifier">p</span><span class="special">;</span>
+
+    <span class="identifier">A</span><span class="special">(</span><span class="identifier">node_proxy</span> <span class="keyword">const</span> <span class="special">&amp;</span> <span class="identifier">x</span><span class="special">)</span> <span class="special">:</span> <span class="identifier">p</span><span class="special">(</span><span class="identifier">x</span><span class="special">)</span>
+    <span class="special">{</span>
+    <span class="special">}</span>
+
+    <span class="special">~</span><span class="identifier">A</span><span class="special">()</span>
+    <span class="special">{</span>
+        <span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="string">"~A()"</span> <span class="special">&lt;&lt;</span> <span class="identifier">endl</span><span class="special">;</span> <span class="comment">// will get called</span>
+    <span class="special">}</span>
+<span class="special">};</span>
+
+<span class="keyword">int</span> <span class="identifier">main</span><span class="special">()</span>
+<span class="special">{</span>
+    <span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;</span> <span class="identifier">x</span><span class="special">;</span>
+    <span class="identifier">x</span> <span class="special">=</span> <span class="identifier">make_root</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;(</span><span class="identifier">x</span><span class="special">);</span>
+    <span class="identifier">x</span><span class="special">-&gt;</span><span class="identifier">p</span> <span class="special">=</span> <span class="identifier">x</span><span class="special">;</span>
+
+    <span class="keyword">return</span> <span class="number">0</span><span class="special">;</span>
+<span class="special">}</span> <span class="comment">// deterministic destruction</span>
 </pre>
 <p>
       We can see in the above example that there is no need to manually find the
