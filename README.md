@@ -1,5 +1,5 @@
 # root_ptr
-*Deterministic Region Based Memory Manager*
+**Deterministic Region Based Memory Manager**
 
 
 
@@ -9,7 +9,7 @@ http://philippeb8.github.io/root_ptr/
 
 
 
-*The latest benchmark (single threaded):*
+**The latest benchmark (single threaded):**
 
 unique_ptr (new): 43.2705
 
@@ -25,7 +25,7 @@ root_ptr (new): 30.3701
 
 
 
-*The latest benchmark (multi threaded):*
+**The latest benchmark (multi threaded):**
 
 unique_ptr (new): 42.1397
 
