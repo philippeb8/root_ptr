@@ -144,7 +144,7 @@ An example of its usage is demonstrated here with the C/C++ implementation
 of the popular [@https://en.wikipedia.org/wiki/Boehm_garbage_collector Hans Boehm garbage collector]:
 
 ``
-#include <gc.h>
+  #include <gc.h>
 
   int main()
   {
@@ -216,18 +216,40 @@ the cycle to later alter the code with respective `weak_ptr`s.
 Root Pointer is a memory manager on top of reference counting
 and is also able to detect outright unreferenced cyclic blocks of memory.
 
-Its performance is comparable to `shared_ptr`
-but does not require a bigger memory usage per pointer
-(2 times `sizeof(void *)`),
-given its ability to detect cyclic blocks of memory with no coding overhead.
+Its performance is comparable to shared_ptr but is not requiring a bigger memory usage per pointer (2 times sizeof(void *)) for its associated node_ptr and (2 times sizeof(void *) + sizeof(node_proxy)) for root_ptr itself, given its ability to detect cyclic blocks of memory. 
 
 For example:
 
-[root_ptr_basic_1]
+``
+  #include <iostream>
+  #include <boost/smart_ptr/root_ptr.hpp>
+  
+  using namespace std;
+  using namespace boost;
 
-[root_ptr_basic_A]
-
-[root_ptr_basic_3]
+  struct A
+  {
+      node_ptr<A> p;
+      
+      A(node_proxy const & x) : p(x) 
+      {
+      }
+      
+      ~A()
+      {
+          cout << "~A()" << endl; // will get called
+      }
+  };
+  
+  int main()
+  {
+      root_ptr<A> x;
+      x = make_root<A>(x);
+      x->p = x;
+      
+      return 0;
+  } // deterministic destruction
+``
 
 We can see in the above example that there is no need to manually find the location of the cycle.
 
