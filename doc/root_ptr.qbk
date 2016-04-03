@@ -100,11 +100,21 @@
 
 [section:intro Introduction]
 
-Memory management can be subdivided in two categories:
+Why another memory manager?  Because to this day memory management can be subdivided in two categories:
 
-* garbage collection .
+* garbage collection;
 
 * reference counting.
+
+And we will see below that neither of them is objective enough to cover all use cases.  
+
+In one hand the garbage collectors do not offer deterministic destruction of the objects which creates this unpredictable 
+behavior that is unpleasant to see on a front end user-interface experience for example.
+
+On the other hand the reference counting is deterministic but do not offer any way to detect cyclic references.  
+So no clean solution exists to resolve this problem up until now.
+
+We will see below a description of the aforementionned items and the solution proposed by this library to solve this.
 
 [/TODO these examples should be code snippets so we can be sure that they compile and run.]
 
@@ -213,10 +223,12 @@ the cycle to later alter the code with respective `weak_ptr`s.
 
 [h3:root_pointer Root Pointer]
 
-Root Pointer is a memory manager on top of reference counting
-and is also able to detect outright unreferenced cyclic blocks of memory.
+The solution we present here to solve these problems is called Root Pointer which is basically a memory manager on top of reference counting
+that is also able to detect outright unreferenced cyclic blocks of memory.  It is deterministic so the destruction of the objects is predictable.
 
-Its performance is comparable to shared_ptr but is not requiring a bigger memory usage per pointer (2 times sizeof(void *)) for its associated node_ptr and (2 times sizeof(void *) + sizeof(node_proxy)) for root_ptr itself, given its ability to detect cyclic blocks of memory. 
+The purpose of Root Pointer is to offer a predictable solution like the reference counting but by respecting the same performance which is 
+comparable to shared_ptr but is not requiring a bigger memory usage per pointer (2 times sizeof(void *)) for its associated node_ptr and 
+(2 times sizeof(void *) + sizeof(node_proxy)) for root_ptr itself, given its ability to detect cyclic blocks of memory. 
 
 For example:
 
@@ -252,6 +264,15 @@ For example:
 ``
 
 We can see in the above example that there is no need to manually find the location of the cycle.
+
+When should it be used?  It is mostly helpful in the following cases:
+
+* To create a container class with cyclic nodes having implicit destruction of the nodes
+* To create a more complex cyclic graph class
+* To return complex r-values of graphs that will automatically be destroyed (Lisp-like)
+* If you are planning to write an efficient underlying memory manager for other languages such as C#, Java or Javascript
+
+In other words, there is no need to any other smart pointer if Root Pointer is used properly for new code.
 
 [endsect] [/section:intro Introduction]
 
