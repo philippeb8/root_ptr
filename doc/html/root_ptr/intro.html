@@ -36,7 +36,7 @@
       use cases.
     </p>
 <p>
-      In on hand the garbage collectors do not offer deterministic destruction of
+      In one hand the garbage collectors do not offer deterministic destruction of
       the objects which creates this unpredictable behavior that is unpleasant to
       see on a front end user-interface experience for example.
     </p>
@@ -47,7 +47,7 @@
     </p>
 <p>
       We will see below a description of the aforementionned items and the solution
-      presented by this library to solve this.
+      proposed by this library to solve this.
     </p>
 <h4>
 <a name="root_ptr.intro.h0"></a>
@@ -315,7 +315,7 @@
     </p>
 <div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
 <li class="listitem">
-          To create a container class with cyclic nodes with implicit destruction
+          To create a container class with cyclic nodes having implicit destruction
           of the nodes
         </li>
 <li class="listitem">
@@ -330,6 +330,13 @@
           other languages such as C#, Java or Javascript
         </li>
 </ul></div>
+<p>
+      Will there be a performance loss? According to the following graphic, the answer
+      is no if we compare it to a shared_ptr:
+    </p>
+<p>
+      <span class="inlinemediaobject"><center><img src="..//images/performance.png"></center></span>
+    </p>
 <p>
       In other words, there is no need to any other smart pointer if Root Pointer
       is used properly for new code.
