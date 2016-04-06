@@ -4,9 +4,9 @@
 <title>Introduction</title>
 <link rel="stylesheet" href="../root_ptr.css" type="text/css">
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
-<link rel="home" href="../index.html" title="Boost.Root_ptr">
-<link rel="up" href="../index.html" title="Boost.Root_ptr">
-<link rel="prev" href="../index.html" title="Boost.Root_ptr">
+<link rel="home" href="../index.html" title="Boost.RootPtr">
+<link rel="up" href="../index.html" title="Boost.RootPtr">
+<link rel="prev" href="../index.html" title="Boost.RootPtr">
 <link rel="next" href="rationale.html" title="Rationale">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -166,15 +166,6 @@
       to the number of smart pointers that are referencing or dereferencing it.
     </p>
 <p>
-      To demonstrate the destruction of no-longer-used objects, we can use a <code class="computeroutput"><span class="keyword">struct</span></code> that has a destructor that announces
-      when it is called, for example:
-    </p>
-<pre class="programlisting"><span class="special">~</span><span class="identifier">A</span><span class="special">()</span>
-<span class="special">{</span> <span class="comment">// </span>
-    <span class="identifier">std</span><span class="special">::</span><span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="string">"~A()"</span> <span class="special">&lt;&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">endl</span><span class="special">;</span> <span class="comment">// ~A() output when A is destructed.</span>
-<span class="special">}</span>
-</pre>
-<p>
       For example, using <code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">shared_ptr</span></code> (or the std:: version):
     </p>
 <pre class="programlisting"><span class="preprocessor">#include</span> <span class="special">&lt;</span><span class="identifier">boost</span><span class="special">/</span><span class="identifier">smart_ptr</span><span class="special">/</span><span class="identifier">shared_ptr</span><span class="special">.</span><span class="identifier">hpp</span><span class="special">&gt;</span>
@@ -269,10 +260,19 @@
     </p>
 <p>
       The purpose of Root Pointer is to offer a predictable solution like the reference
-      counting but by respecting the same performance which is comparable to shared_ptr
-      but is not requiring a bigger memory usage per pointer (2 times sizeof(void
-      *)) for its associated node_ptr and (2 times sizeof(void *) + sizeof(node_proxy))
-      for root_ptr itself, given its ability to detect cyclic blocks of memory.
+      counting and to provide a means to manage groups of related memory allocations
+      using a <code class="computeroutput"><span class="identifier">root_ptr</span></code>. Each related
+      memory allocation is a node_ptr created from, or attached to, one <code class="computeroutput"><span class="identifier">root_ptr</span></code>. Because <code class="computeroutput"><span class="identifier">node_ptr</span></code>s
+      are grouped and owned by a <code class="computeroutput"><span class="identifier">root_ptr</span></code>,
+      they are destroyed, as a group, when the corresponding <code class="computeroutput"><span class="identifier">root_ptr</span></code>
+      is destroyed, regardless of cycles.
+    </p>
+<p>
+      Furthermore it is not requiring a bigger memory usage per pointer <code class="computeroutput"><span class="special">(</span><span class="number">2</span> <span class="identifier">times</span>
+      <span class="keyword">sizeof</span><span class="special">(</span><span class="keyword">void</span> <span class="special">*))</span></code> for
+      its associated node_ptr and <code class="computeroutput"><span class="special">(</span><span class="number">2</span> <span class="identifier">times</span> <span class="keyword">sizeof</span><span class="special">(</span><span class="keyword">void</span> <span class="special">*)</span>
+      <span class="special">+</span> <span class="keyword">sizeof</span><span class="special">(</span><span class="identifier">node_proxy</span><span class="special">))</span></code> for <code class="computeroutput"><span class="identifier">root_ptr</span></code>
+      itself, given its ability to detect cyclic blocks of memory.
     </p>
 <p>
       For example:

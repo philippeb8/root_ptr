@@ -4,8 +4,8 @@
 <title>Tutorial</title>
 <link rel="stylesheet" href="../root_ptr.css" type="text/css">
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
-<link rel="home" href="../index.html" title="Boost.Root_ptr">
-<link rel="up" href="../index.html" title="Boost.Root_ptr">
+<link rel="home" href="../index.html" title="Boost.RootPtr">
+<link rel="up" href="../index.html" title="Boost.RootPtr">
 <link rel="prev" href="rationale.html" title="Rationale">
 <link rel="next" href="synopsis.html" title="Synopsis">
 </head>
@@ -34,10 +34,10 @@
 <pre class="programlisting"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">p</span> <span class="special">=</span> <span class="identifier">make_root</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;(</span><span class="number">11</span><span class="special">);</span>
 </pre>
 <p>
-      will instantiate a special object 'node&lt;int&gt;' having an integer as one
-      of its member. The pointer to the object is then passed to the <code class="computeroutput"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span></code> that
-      will manage its existence and later destroy and deallocate it when it is found
-      to be no longer referenced.
+      will instantiate a special object having an integer as one of its member. The
+      pointer to the object is then passed to the <code class="computeroutput"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span></code>
+      that will manage its existence and later destroy and deallocate it when it
+      is found to be no longer referenced.
     </p>
 <p>
       The <code class="computeroutput"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span></code> guarantees
@@ -54,6 +54,29 @@
       to define its length of existence. As its name suggests, this can be used,
       for example, as node pointers inside a container for a given root.
     </p>
+<div class="note"><table border="0" summary="Note">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="../images/note.png"></td>
+<th align="left">Note</th>
+</tr>
+<tr><td align="left" valign="top"><p>
+        <code class="computeroutput"><span class="identifier">make_root</span></code> is used to generate
+        a <code class="computeroutput"><span class="identifier">root_ptr</span></code> and consequently
+        <code class="computeroutput"><span class="identifier">make_node</span></code> is used to generate
+        a <code class="computeroutput"><span class="identifier">node_ptr</span></code>.
+      </p></td></tr>
+</table></div>
+<div class="note"><table border="0" summary="Note">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="../images/note.png"></td>
+<th align="left">Note</th>
+</tr>
+<tr><td align="left" valign="top"><p>
+        The first parameter of a <code class="computeroutput"><span class="identifier">make_node</span></code>
+        is always the associated <code class="computeroutput"><span class="identifier">node_proxy</span></code>,
+        given by <code class="computeroutput"><span class="identifier">root_ptr</span></code>.
+      </p></td></tr>
+</table></div>
 <p>
       See <a href="../../../example/root_ptr_example1.cpp" target="_top">root_ptr_example1.cpp</a>
       for different cases of its usage.
@@ -231,6 +254,73 @@
 <span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">N</span><span class="special">&gt;</span> <span class="identifier">pn</span> <span class="special">=</span> <span class="identifier">po</span><span class="special">;</span> <span class="comment">// Correct.</span>
 <span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">M</span><span class="special">&gt;</span> <span class="identifier">pm</span> <span class="special">=</span> <span class="identifier">po</span><span class="special">;</span> <span class="comment">// Correct.</span>
 </pre>
+<h4>
+<a name="root_ptr.tutorial.h10"></a>
+      <span class="phrase"><a name="root_ptr.tutorial.pitfall"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.pitfall">Pitfall</a>
+    </h4>
+<p>
+      It is important to point out that even if <code class="computeroutput"><span class="identifier">node_ptr</span></code>s
+      will get destroyed regardless cycles, it is possible to create a cyclic <code class="computeroutput"><span class="identifier">root_ptr</span></code>s which will not behave as expected:
+    </p>
+<pre class="programlisting"><span class="preprocessor">#include</span> <span class="special">&lt;</span><span class="identifier">iostream</span><span class="special">&gt;</span>
+<span class="preprocessor">#include</span> <span class="special">&lt;</span><span class="identifier">boost</span><span class="special">/</span><span class="identifier">smart_ptr</span><span class="special">/</span><span class="identifier">root_ptr</span><span class="special">.</span><span class="identifier">hpp</span><span class="special">&gt;</span>
+
+<span class="keyword">using</span> <span class="keyword">namespace</span> <span class="identifier">std</span><span class="special">;</span>
+<span class="keyword">using</span> <span class="keyword">namespace</span> <span class="identifier">boost</span><span class="special">;</span>
+
+<span class="keyword">struct</span> <span class="identifier">A</span>
+<span class="special">{</span>
+    <span class="identifier">node_ptr</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;</span> <span class="identifier">p</span><span class="special">;</span>
+
+    <span class="identifier">A</span><span class="special">(</span><span class="identifier">node_proxy</span> <span class="keyword">const</span> <span class="special">&amp;</span> <span class="identifier">x</span><span class="special">)</span> <span class="special">:</span> <span class="identifier">p</span><span class="special">(</span><span class="identifier">x</span><span class="special">)</span>
+    <span class="special">{</span>
+    <span class="special">}</span>
+
+    <span class="special">~</span><span class="identifier">A</span><span class="special">()</span>
+    <span class="special">{</span>
+        <span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="string">"~A()"</span> <span class="special">&lt;&lt;</span> <span class="identifier">endl</span><span class="special">;</span> <span class="comment">// will get called</span>
+    <span class="special">}</span>
+<span class="special">};</span>
+
+<span class="keyword">struct</span> <span class="identifier">B</span>
+<span class="special">{</span>
+    <span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;</span> <span class="identifier">p</span><span class="special">;</span>
+
+    <span class="special">~</span><span class="identifier">B</span><span class="special">()</span>
+    <span class="special">{</span>
+        <span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="string">"~B()"</span> <span class="special">&lt;&lt;</span> <span class="identifier">endl</span><span class="special">;</span> <span class="comment">// will not get called</span>
+    <span class="special">}</span>
+<span class="special">};</span>
+
+<span class="keyword">int</span> <span class="identifier">main</span><span class="special">()</span>
+<span class="special">{</span>
+    <span class="special">{</span> <span class="comment">// 1:</span>
+        <span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;</span> <span class="identifier">x</span><span class="special">;</span>
+        <span class="identifier">x</span> <span class="special">=</span> <span class="identifier">make_root</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;(</span><span class="identifier">x</span><span class="special">);</span>
+        <span class="identifier">x</span><span class="special">-&gt;</span><span class="identifier">p</span> <span class="special">=</span> <span class="identifier">x</span><span class="special">;</span>
+    <span class="special">}</span> <span class="comment">// deterministic destruction</span>
+
+    <span class="special">{</span> <span class="comment">// 2:</span>
+        <span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">B</span><span class="special">&gt;</span> <span class="identifier">x</span><span class="special">;</span>
+        <span class="identifier">x</span> <span class="special">=</span> <span class="identifier">make_root</span><span class="special">&lt;</span><span class="identifier">B</span><span class="special">&gt;();</span>
+        <span class="identifier">x</span><span class="special">-&gt;</span><span class="identifier">p</span> <span class="special">=</span> <span class="identifier">x</span><span class="special">;</span>
+    <span class="special">}</span> <span class="comment">// no destructor will be called</span>
+
+    <span class="keyword">return</span> <span class="number">0</span><span class="special">;</span>
+<span class="special">}</span>
+</pre>
+<p>
+      In the first occurrence of <code class="computeroutput"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;</span>
+      <span class="identifier">x</span></code>, the <code class="computeroutput"><span class="identifier">node_proxy</span></code>
+      information is properly propagated and therefore the associated <code class="computeroutput"><span class="identifier">node_ptr</span></code>s will be correctly detroyed.
+    </p>
+<p>
+      In the second occurence of <code class="computeroutput"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">B</span><span class="special">&gt;</span>
+      <span class="identifier">x</span></code>, <code class="computeroutput"><span class="keyword">struct</span>
+      <span class="identifier">B</span></code> is designed to accept a <code class="computeroutput"><span class="identifier">root_ptr</span></code> which means it expects <code class="computeroutput"><span class="identifier">node_ptr</span></code>s to be its children. If a <code class="computeroutput"><span class="identifier">root_ptr</span></code> is assigned to another one, be aware
+      that cycles will not be detected in this case and thus no destruction will
+      occur in the aforementionned example.
+    </p>
 </div>
 <table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
 <td align="left"></td>
