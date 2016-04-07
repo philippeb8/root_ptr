@@ -68,7 +68,7 @@ project boost_ptr
 test-suite "root_ptr_examples" :
     [ run root_ptr_basic.cpp ]
   #  [ run root_ptr_test1.cpp ]
-  #  [ run root_ptr_example2.cpp ] # \modular-boost\boost\root_ptr\detail\root_base.hpp(239): error C2248:
+    [ run root_ptr_example2.cpp ] # \modular-boost\boost\root_ptr\detail\root_base.hpp(239): error C2248:
   #  [ run root_ptr_example3.cpp  ]
    # [ run t100_test1.cpp  ]
    # [ run thread_test.cpp boost_thread ]

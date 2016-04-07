@@ -39,6 +39,7 @@ struct A
     }
 };
 
+//[root_ptr_example1_slicing
 struct B
 {
     int i;
@@ -50,6 +51,12 @@ struct C : B
 {
 };
 
+void bar(node_ptr<B> p)
+{
+    std::cout << p->i << std::endl;
+}
+//] [/root_ptr_example1_slicing]
+
 //[root_ptr_example1_rvalue
 root_ptr<int> foo()
 {
@@ -57,11 +64,6 @@ root_ptr<int> foo()
 }
 //] [/root_ptr_example1_rvalue]
 
-
-void bar(node_ptr<B> p)
-{
-    std::cout << p->i << std::endl;
-}
 
 int main()
 {
@@ -75,10 +77,10 @@ int main()
 
   std::cout << "Slicing:" << std::endl;
   {
-//[root_ptr_example1_slicing
+//[root_ptr_example1_slicing_call
     root_ptr<C> p = make_root<C>();
     bar(p);
-//] [/root_ptr_example1_slicing]
+//] [/root_ptr_example1_slicing_call]
   }
   std::cout << std::endl;
 
