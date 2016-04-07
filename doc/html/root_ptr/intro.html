@@ -268,11 +268,13 @@
       is destroyed, regardless of cycles.
     </p>
 <p>
-      Furthermore it is not requiring a bigger memory usage per pointer <code class="computeroutput"><span class="special">(</span><span class="number">2</span> <span class="identifier">times</span>
+      Furthermore it is not requiring a bigger memory usage per pointer <code class="computeroutput"><span class="special">(</span><span class="number">2</span> <span class="special">*</span>
       <span class="keyword">sizeof</span><span class="special">(</span><span class="keyword">void</span> <span class="special">*))</span></code> for
-      its associated node_ptr and <code class="computeroutput"><span class="special">(</span><span class="number">2</span> <span class="identifier">times</span> <span class="keyword">sizeof</span><span class="special">(</span><span class="keyword">void</span> <span class="special">*)</span>
-      <span class="special">+</span> <span class="keyword">sizeof</span><span class="special">(</span><span class="identifier">node_proxy</span><span class="special">))</span></code> for <code class="computeroutput"><span class="identifier">root_ptr</span></code>
-      itself, given its ability to detect cyclic blocks of memory.
+      its associated <code class="computeroutput"><span class="identifier">node_ptr</span></code> and
+      <code class="computeroutput"><span class="special">(</span><span class="number">2</span> <span class="special">*</span> <span class="keyword">sizeof</span><span class="special">(</span><span class="keyword">void</span> <span class="special">*)</span> <span class="special">+</span>
+      <span class="keyword">sizeof</span><span class="special">(</span><span class="identifier">node_proxy</span><span class="special">))</span></code>
+      for <code class="computeroutput"><span class="identifier">root_ptr</span></code> itself, given
+      its ability to detect cyclic blocks of memory.
     </p>
 <p>
       For example:

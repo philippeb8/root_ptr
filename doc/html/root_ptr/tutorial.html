@@ -49,10 +49,10 @@
 </pre>
 <p>
       A <code class="computeroutput"><span class="identifier">node_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span></code> is an
-      internal pointer in a set of objects that is compact which uses the information
-      of the associated <code class="computeroutput"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span></code>
-      to define its length of existence. As its name suggests, this can be used,
-      for example, as node pointers inside a container for a given root.
+      internal pointer in a set of objects which uses the information of the associated
+      <code class="computeroutput"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span></code> to define
+      its length of existence. As its name suggests, this can be used, for example,
+      as node pointers inside a container for a given root.
     </p>
 <div class="note"><table border="0" summary="Note">
 <tr>
@@ -60,10 +60,8 @@
 <th align="left">Note</th>
 </tr>
 <tr><td align="left" valign="top"><p>
-        <code class="computeroutput"><span class="identifier">make_root</span></code> is used to generate
-        a <code class="computeroutput"><span class="identifier">root_ptr</span></code> and consequently
-        <code class="computeroutput"><span class="identifier">make_node</span></code> is used to generate
-        a <code class="computeroutput"><span class="identifier">node_ptr</span></code>.
+        A <code class="computeroutput"><span class="identifier">root_ptr</span></code> derives from
+        <code class="computeroutput"><span class="identifier">node_proxy</span></code> and <code class="computeroutput"><span class="identifier">node_ptr</span></code>.
       </p></td></tr>
 </table></div>
 <div class="note"><table border="0" summary="Note">
@@ -77,6 +75,78 @@
         given by <code class="computeroutput"><span class="identifier">root_ptr</span></code>.
       </p></td></tr>
 </table></div>
+<div class="note"><table border="0" summary="Note">
+<tr>
+<td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="../images/note.png"></td>
+<th align="left">Note</th>
+</tr>
+<tr><td align="left" valign="top"><p>
+        <code class="computeroutput"><span class="identifier">make_root</span></code> is used to generate
+        a <code class="computeroutput"><span class="identifier">root_ptr</span></code> and consequently
+        <code class="computeroutput"><span class="identifier">make_node</span></code> is used to generate
+        a <code class="computeroutput"><span class="identifier">node_ptr</span></code>.
+      </p></td></tr>
+</table></div>
+<p>
+      For example:
+    </p>
+<pre class="programlisting"><span class="keyword">struct</span> <span class="identifier">list_node</span>
+<span class="special">{</span>
+    <span class="identifier">list_node</span><span class="special">(</span><span class="identifier">node_proxy</span> <span class="keyword">const</span> <span class="special">&amp;</span> <span class="identifier">x</span><span class="special">)</span> <span class="special">:</span> <span class="identifier">prior</span><span class="special">(</span><span class="identifier">x</span><span class="special">),</span> <span class="identifier">next</span><span class="special">(</span><span class="identifier">x</span><span class="special">)</span>
+    <span class="special">{</span>
+    <span class="special">}</span>
+
+    <span class="special">~</span><span class="identifier">list_node</span><span class="special">()</span>
+    <span class="special">{</span>
+    <span class="special">}</span>
+
+    <span class="identifier">node_ptr</span><span class="special">&lt;</span><span class="identifier">list_node</span><span class="special">&gt;</span> <span class="identifier">prior</span><span class="special">;</span>
+    <span class="identifier">node_ptr</span><span class="special">&lt;</span><span class="identifier">list_node</span><span class="special">&gt;</span> <span class="identifier">next</span><span class="special">;</span>
+<span class="special">};</span>
+
+<span class="keyword">struct</span> <span class="identifier">list</span>
+<span class="special">{</span>
+    <span class="keyword">void</span> <span class="identifier">clear</span><span class="special">()</span>
+    <span class="special">{</span>
+        <span class="identifier">root</span><span class="special">.</span><span class="identifier">reset</span><span class="special">();</span>
+    <span class="special">}</span>
+
+    <span class="keyword">void</span> <span class="identifier">insert</span><span class="special">()</span>
+    <span class="special">{</span>
+        <span class="keyword">if</span> <span class="special">(</span><span class="identifier">root</span><span class="special">.</span><span class="identifier">get</span><span class="special">()</span> <span class="special">==</span> <span class="number">0</span><span class="special">)</span>
+        <span class="special">{</span>
+            <span class="identifier">root</span> <span class="special">=</span> <span class="identifier">make_root</span><span class="special">&lt;</span><span class="identifier">list_node</span><span class="special">&gt;(</span><span class="identifier">root</span><span class="special">);</span> <span class="comment">// 'root' is used 1 time here</span>
+        <span class="special">}</span>
+        <span class="keyword">else</span>
+        <span class="special">{</span>
+            <span class="identifier">root</span><span class="special">-&gt;</span><span class="identifier">next</span> <span class="special">=</span> <span class="identifier">make_node</span><span class="special">&lt;</span><span class="identifier">list_node</span><span class="special">&gt;(</span><span class="identifier">root</span><span class="special">,</span> <span class="identifier">root</span><span class="special">);</span> <span class="comment">// 'root' is used 2 times here</span>
+            <span class="identifier">root</span><span class="special">-&gt;</span><span class="identifier">next</span><span class="special">-&gt;</span><span class="identifier">prior</span> <span class="special">=</span> <span class="identifier">root</span><span class="special">;</span>
+            <span class="identifier">root</span> <span class="special">=</span> <span class="identifier">root</span><span class="special">-&gt;</span><span class="identifier">next</span><span class="special">;</span>
+        <span class="special">}</span>
+    <span class="special">}</span>
+
+    <span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">list_node</span><span class="special">&gt;</span> <span class="identifier">root</span><span class="special">;</span>
+<span class="special">};</span>
+</pre>
+<p>
+      Notice that <code class="computeroutput"><span class="identifier">list</span><span class="special">::</span><span class="identifier">root</span></code> is actually a <code class="computeroutput"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">list_node</span><span class="special">&gt;</span></code> and therefore a <code class="computeroutput"><span class="identifier">make_root</span><span class="special">&lt;</span><span class="identifier">list_node</span><span class="special">&gt;</span></code> must be used to assign a value to it. Likewise
+      <code class="computeroutput"><span class="identifier">list_node</span><span class="special">::</span><span class="identifier">next</span></code> is in turn a <code class="computeroutput"><span class="identifier">node_ptr</span><span class="special">&lt;</span><span class="identifier">list_node</span><span class="special">&gt;</span></code> and thus a <code class="computeroutput"><span class="identifier">make_node</span><span class="special">&lt;</span><span class="identifier">list_node</span><span class="special">&gt;</span></code> must but used this time with the same
+      <code class="computeroutput"><span class="identifier">root</span></code> parameter twice because:
+    </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem">
+          the first one is converted into a <code class="computeroutput"><span class="identifier">node_proxy</span></code>
+          and propagated to the constructor of <code class="computeroutput"><span class="identifier">node_ptr</span></code>
+        </li>
+<li class="listitem">
+          the second one is actually the parameter passed to the constructor of
+          <code class="computeroutput"><span class="identifier">list_node</span></code>
+        </li>
+</ul></div>
+<p>
+      That's it! You now have a cyclic container that will implicitly get destructed
+      with no need to iterate through all <code class="computeroutput"><span class="identifier">list_node</span></code>s.
+    </p>
 <p>
       See <a href="../../../example/root_ptr_example1.cpp" target="_top">root_ptr_example1.cpp</a>
       for different cases of its usage.
@@ -110,6 +180,25 @@
     </h6>
 <p>
       Slicing is shown in
+    </p>
+<pre class="programlisting"><span class="keyword">struct</span> <span class="identifier">B</span>
+<span class="special">{</span>
+    <span class="keyword">int</span> <span class="identifier">i</span><span class="special">;</span>
+
+    <span class="identifier">B</span><span class="special">()</span> <span class="special">:</span> <span class="identifier">i</span><span class="special">(</span><span class="number">9</span><span class="special">)</span> <span class="special">{}</span>
+<span class="special">};</span>
+
+<span class="keyword">struct</span> <span class="identifier">C</span> <span class="special">:</span> <span class="identifier">B</span>
+<span class="special">{</span>
+<span class="special">};</span>
+
+<span class="keyword">void</span> <span class="identifier">bar</span><span class="special">(</span><span class="identifier">node_ptr</span><span class="special">&lt;</span><span class="identifier">B</span><span class="special">&gt;</span> <span class="identifier">p</span><span class="special">)</span>
+<span class="special">{</span>
+    <span class="identifier">std</span><span class="special">::</span><span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="identifier">p</span><span class="special">-&gt;</span><span class="identifier">i</span> <span class="special">&lt;&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">endl</span><span class="special">;</span>
+<span class="special">}</span>
+</pre>
+<p>
+      and called
     </p>
 <pre class="programlisting"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">C</span><span class="special">&gt;</span> <span class="identifier">p</span> <span class="special">=</span> <span class="identifier">make_root</span><span class="special">&lt;</span><span class="identifier">C</span><span class="special">&gt;();</span>
 <span class="identifier">bar</span><span class="special">(</span><span class="identifier">p</span><span class="special">);</span>
@@ -146,28 +235,6 @@
     </h4>
 <h6>
 <a name="root_ptr.tutorial.h5"></a>
-      <span class="phrase"><a name="root_ptr.tutorial.propagation"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.propagation">Propagating
-      node_proxy information</a>
-    </h6>
-<p>
-      A <code class="computeroutput"><span class="identifier">root_ptr</span></code> derives from <code class="computeroutput"><span class="identifier">node_proxy</span></code> and <code class="computeroutput"><span class="identifier">node_ptr</span></code>.
-    </p>
-<p>
-      You can propagate the information of the <code class="computeroutput"><span class="identifier">node_proxy</span></code>
-      by passing it as a <span class="bold"><strong>reference</strong></span>:
-    </p>
-<pre class="programlisting"><span class="keyword">struct</span> <span class="identifier">A</span>
-<span class="special">{</span>
-  <span class="identifier">node_ptr</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;</span> <span class="identifier">p</span><span class="special">;</span>
-
-  <span class="identifier">A</span><span class="special">(</span><span class="identifier">node_proxy</span> <span class="keyword">const</span> <span class="special">&amp;</span> <span class="identifier">x</span><span class="special">)</span> <span class="special">:</span> <span class="identifier">p</span><span class="special">(</span><span class="identifier">x</span><span class="special">)</span> <span class="special">{}</span>
-<span class="special">};</span>
-
-<span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;</span> <span class="identifier">x</span><span class="special">;</span>
-<span class="identifier">x</span> <span class="special">=</span> <span class="identifier">make_root</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;(</span><span class="identifier">x</span><span class="special">);</span>
-</pre>
-<h6>
-<a name="root_ptr.tutorial.h6"></a>
       <span class="phrase"><a name="root_ptr.tutorial.cyclic_function"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.cyclic_function">Cyclic
       function</a>
     </h6>
@@ -205,7 +272,7 @@
       </p></td></tr>
 </table></div>
 <h6>
-<a name="root_ptr.tutorial.h7"></a>
+<a name="root_ptr.tutorial.h6"></a>
       <span class="phrase"><a name="root_ptr.tutorial.faster_pointee"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.faster_pointee">Faster
       pointees</a>
     </h6>
@@ -215,18 +282,18 @@
 <pre class="programlisting"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">p</span> <span class="special">=</span> <span class="identifier">make_fastroot</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;(</span><span class="number">10</span><span class="special">);</span>
 </pre>
 <h6>
-<a name="root_ptr.tutorial.h8"></a>
+<a name="root_ptr.tutorial.h7"></a>
       <span class="phrase"><a name="root_ptr.tutorial.allocator"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.allocator">Custom
       Allocator</a>
     </h6>
 <p>
-      ou can actually use the allocator of your choice using the following function
+      You can actually use the allocator of your choice using the following function
       calls:
     </p>
 <pre class="programlisting"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">p</span> <span class="special">=</span> <span class="identifier">allocate_node</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;(</span><span class="identifier">make_node_allocator</span><span class="special">&lt;</span><span class="identifier">fast_pool_allocator</span><span class="special">,</span> <span class="keyword">int</span><span class="special">&gt;(),</span> <span class="number">12</span><span class="special">);</span>
 </pre>
 <h4>
-<a name="root_ptr.tutorial.h9"></a>
+<a name="root_ptr.tutorial.h8"></a>
       <span class="phrase"><a name="root_ptr.tutorial.caveat"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.caveat">Caveat</a>
     </h4>
 <p>
@@ -255,7 +322,7 @@
 <span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">M</span><span class="special">&gt;</span> <span class="identifier">pm</span> <span class="special">=</span> <span class="identifier">po</span><span class="special">;</span> <span class="comment">// Correct.</span>
 </pre>
 <h4>
-<a name="root_ptr.tutorial.h10"></a>
+<a name="root_ptr.tutorial.h9"></a>
       <span class="phrase"><a name="root_ptr.tutorial.pitfall"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.pitfall">Pitfall</a>
     </h4>
 <p>
@@ -284,7 +351,7 @@
 
 <span class="keyword">struct</span> <span class="identifier">B</span>
 <span class="special">{</span>
-    <span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">A</span><span class="special">&gt;</span> <span class="identifier">p</span><span class="special">;</span>
+    <span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">B</span><span class="special">&gt;</span> <span class="identifier">p</span><span class="special">;</span>
 
     <span class="special">~</span><span class="identifier">B</span><span class="special">()</span>
     <span class="special">{</span>
@@ -319,7 +386,7 @@
       <span class="identifier">x</span></code>, <code class="computeroutput"><span class="keyword">struct</span>
       <span class="identifier">B</span></code> is designed to accept a <code class="computeroutput"><span class="identifier">root_ptr</span></code> which means it expects <code class="computeroutput"><span class="identifier">node_ptr</span></code>s to be its children. If a <code class="computeroutput"><span class="identifier">root_ptr</span></code> is assigned to another one, be aware
       that cycles will not be detected in this case and thus no destruction will
-      occur in the aforementionned example.
+      occur in the aforementioned example.
     </p>
 </div>
 <table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>

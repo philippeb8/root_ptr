@@ -7,7 +7,7 @@
   or copy at http://www.boost.org/LICENSE_1_0.txt).
 ]
 
-[article Boost.Root_ptr
+[article Boost.RootPtr
     [quickbook 1.7]
     [copyright 2008, 2016 Phil Bouchard]
     [license
@@ -18,7 +18,7 @@
     [id root_ptr] [/first item for all sub-sections]
     [authors [Bouchard, Phil] ]
     [/last-revision $Date: 2011-07-08 18:51:46 +0100 (Fri, 08 Jul 2011) $]
-] [/article Boost.Block_pointer]
+] [/article Boost.RootPtr]
 
 [warning This is NOT yet a Boost library and is subject to change and development.]
 
@@ -181,11 +181,6 @@ are aware of the number of times they are referenced.
 This means a counter within the object is incremented or decremented
 according to the number of smart pointers that are referencing or dereferencing it.
 
-To demonstrate the destruction of no-longer-used objects, we can use a `struct`
-that has a destructor that announces when it is called, for example:
-
-[root_ptr_basic_A_noisy_death]
-
 For example, using `boost::shared_ptr` (or the std:: version):
 
 [root_ptr_basic_0]
@@ -226,9 +221,13 @@ the cycle to later alter the code with respective `weak_ptr`s.
 The solution we present here to solve these problems is called Root Pointer which is basically a memory manager on top of reference counting
 that is also able to detect outright unreferenced cyclic blocks of memory.  It is deterministic so the destruction of the objects is predictable.
 
-The purpose of Root Pointer is to offer a predictable solution like the reference counting but by respecting the same performance which is 
-comparable to shared_ptr but is not requiring a bigger memory usage per pointer (2 times sizeof(void *)) for its associated node_ptr and 
-(2 times sizeof(void *) + sizeof(node_proxy)) for root_ptr itself, given its ability to detect cyclic blocks of memory. 
+The purpose of Root Pointer is to offer a predictable solution like the reference counting and to provide a means to manage groups of 
+related memory allocations using a `root_ptr`.  Each related memory allocation is a node_ptr created from, or attached to, one `root_ptr`. 
+Because `node_ptr`s are grouped and owned by a `root_ptr`, they are destroyed, as a group, when the corresponding `root_ptr` is destroyed, 
+regardless of cycles. 
+
+Furthermore it is not requiring a bigger memory usage per pointer `(2 * sizeof(void *))` for its associated `node_ptr` and 
+`(2 * sizeof(void *) + sizeof(node_proxy))` for `root_ptr` itself, given its ability to detect cyclic blocks of memory. 
 
 For example:
 
@@ -271,6 +270,10 @@ When should it be used?  It is mostly helpful in the following cases:
 * To create a more complex cyclic graph class
 * To return complex r-values of graphs that will automatically be destroyed (Lisp-like)
 * If you are planning to write an efficient underlying memory manager for other languages such as C#, Java or Javascript
+
+Will there be a performance loss?  According to the following graphic, the answer is no if we compare it to a shared_ptr:
+
+[$/images/performance.png]
 
 In other words, there is no need to any other smart pointer if Root Pointer is used properly for new code.
 
@@ -327,7 +330,7 @@ For example:
 
   root_ptr<int> p = make_root<int>(11);
 
-will instantiate a special object 'node<int>' having an integer as one of its member.
+will instantiate a special object having an integer as one of its member.
 The pointer to the object is then passed to the `root_ptr<int>` that will manage its existence
 and later destroy and deallocate it when it is found to be no longer referenced.
 
@@ -336,9 +339,64 @@ Once the root is defined, we can derive a `node_ptr<int>` from it:
 
   node_ptr<int> q = make_node<int>(p, 12);
 
-A `node_ptr<int>` is an internal pointer in a set of objects that is compact
-which uses the information of the associated `root_ptr<int>` to define its length of existence.
+A `node_ptr<int>` is an internal pointer in a set of objects which uses the information of the associated `root_ptr<int>` to define its length of existence.
 As its name suggests, this can be used, for example, as node pointers inside a container for a given root.
+
+[note A `root_ptr` derives from `node_proxy` and `node_ptr`.]
+
+[note The first parameter of a `make_node` is always the associated `node_proxy`, given by `root_ptr`.]
+
+[note `make_root` is used to generate a `root_ptr` and consequently `make_node` is used to generate a `node_ptr`.]
+
+For example:
+
+``
+struct list_node 
+{
+    list_node(node_proxy const & x) : prior(x), next(x) 
+    {
+    }
+    
+    ~list_node() 
+    {
+    }
+    
+    node_ptr<list_node> prior;
+    node_ptr<list_node> next;
+};
+
+struct list 
+{
+    void clear() 
+    {
+        root.reset();
+    }
+    
+    void insert() 
+    {
+        if (root.get() == 0) 
+        {
+            root = make_root<list_node>(root); // 'root' is used 1 time here
+        } 
+        else 
+        {
+            root->next = make_node<list_node>(root, root); // 'root' is used 2 times here
+            root->next->prior = root;
+            root = root->next;
+        }
+    }
+
+    root_ptr<list_node> root;
+};
+``
+
+Notice that `list::root` is actually a `root_ptr<list_node>` and therefore a `make_root<list_node>` must be used to assign a value to it.  
+Likewise `list_node::next` is in turn a `node_ptr<list_node>` and thus a `make_node<list_node>` must but used this time with the same `root` parameter twice because:
+
+* the first one is converted into a `node_proxy` and propagated to the constructor of `node_ptr`
+* the second one is actually the parameter passed to the constructor of `list_node`
+
+That's it!  You now have a cyclic container that will implicitly get destructed with no need to iterate through all `list_node`s.
 
 See [@../../example/root_ptr_example1.cpp root_ptr_example1.cpp]
 for different cases of its usage.
@@ -365,6 +423,10 @@ Slicing is shown in
 
 [root_ptr_example1_slicing]
 
+and called
+
+[root_ptr_example1_slicing_call]
+
 with output [root_ptr_example1_output_slicing]
 
 [h5:sharing Sharing]
@@ -376,13 +438,6 @@ Sharing is shown in
 with output [root_ptr_example1_output_sharing]
 
 [h3:advanced Advanced]
-
-[h5:propagation Propagating node_proxy information]
-A `root_ptr` derives from `node_proxy` and `node_ptr`.
-
-You can propagate the information of the `node_proxy` by passing it as a [*reference]:
-
-[root_ptr_example1_propagate]
 
 [h5:cyclic_function Cyclic function]
 In the case where a cyclic set is being destroyed,
@@ -401,7 +456,7 @@ Creating pointee objects in a faster way is possible by calling `make_fastroot`:
   root_ptr<int> p = make_fastroot<int>(10);
 
 [h5:allocator Custom Allocator]
-ou can actually use the allocator of your choice using the following function calls:
+You can actually use the allocator of your choice using the following function calls:
 
   root_ptr<int> p = allocate_node<int>(make_node_allocator<fast_pool_allocator, int>(), 12);
 
@@ -427,6 +482,65 @@ A way to bypass any problem that might be created by the example above is to add
   root_ptr<O> po = make_root<O>();
   root_ptr<N> pn = po; // Correct.
   root_ptr<M> pm = po; // Correct.
+
+[h3:pitfall Pitfall]
+
+It is important to point out that even if `node_ptr`s will get destroyed regardless cycles, it is possible to create a cyclic `root_ptr`s
+which will not behave as expected:
+
+``
+  #include <iostream>
+  #include <boost/smart_ptr/root_ptr.hpp>
+  
+  using namespace std;
+  using namespace boost;
+
+  struct A
+  {
+      node_ptr<A> p;
+      
+      A(node_proxy const & x) : p(x) 
+      {
+      }
+      
+      ~A()
+      {
+          cout << "~A()" << endl; // will get called
+      }
+  };
+  
+  struct B
+  {
+      root_ptr<B> p;
+      
+      ~B()
+      {
+          cout << "~B()" << endl; // will not get called
+      }
+  };
+  
+  int main()
+  {
+      { // 1:
+          root_ptr<A> x;
+          x = make_root<A>(x);
+          x->p = x;
+      } // deterministic destruction
+      
+      { // 2:
+          root_ptr<B> x;
+          x = make_root<B>();
+          x->p = x;
+      } // no destructor will be called
+      
+      return 0;
+  }
+``
+
+In the first occurrence of `root_ptr<A> x`, the `node_proxy` information is properly propagated and therefore the associated `node_ptr`s will be correctly detroyed.
+
+In the second occurence of `root_ptr<B> x`, `struct B` is designed to accept a `root_ptr` which means it expects `node_ptr`s to be its children.  If a `root_ptr` is assigned 
+to another one, be aware that cycles will not be detected in this case and thus no destruction will occur in the aforementioned example.
 
 [endsect] [/section:tutorial Tutorial]
 
