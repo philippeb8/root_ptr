@@ -580,6 +580,30 @@ template <typename T>
             {
                 return static_cast<root_ptr<T> &>(node_ptr<T>::operator = (p));
             }
+            
+        
+        /**
+            Cast operation helper.
+            
+            @return     @c node_proxy part of @c root_ptr .
+        */
+        
+        node_proxy & proxy() 
+        {
+            return *this;
+        }
+
+        
+        /**
+            Cast operation helper.
+            
+            @return     @c node_proxy part of @c root_ptr .
+        */
+        
+        node_proxy const & proxy() const
+        {
+            return *this;
+        }
     };
 
 
