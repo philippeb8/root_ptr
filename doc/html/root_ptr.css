@@ -1,5 +1,5 @@
 /* Start with the Boost standard Cascades Style sheet */
-@import url('../../../../doc/src/boostbook.css');
+@import url('boostbook.css');
 
 /* and then add different coloring and new features for block_ptr library. */
 
