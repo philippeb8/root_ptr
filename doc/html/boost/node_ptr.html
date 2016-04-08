@@ -31,25 +31,25 @@
   <span class="keyword">typedef</span> <span class="identifier">T</span> <a name="boost.node_ptr.value_type"></a><span class="identifier">value_type</span><span class="special">;</span>
 
   <span class="comment">// <a class="link" href="node_ptr.html#boost.node_ptrconstruct-copy-destruct">construct/copy/destruct</a></span>
-  <span class="keyword">explicit</span> <a class="link" href="node_ptr.html#idp21275664-bb"><span class="identifier">node_ptr</span></a><span class="special">(</span><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a> <span class="keyword">const</span> <span class="special">&amp;</span><span class="special">)</span><span class="special">;</span>
+  <span class="keyword">explicit</span> <a class="link" href="node_ptr.html#idp33315152-bb"><span class="identifier">node_ptr</span></a><span class="special">(</span><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a> <span class="keyword">const</span> <span class="special">&amp;</span><span class="special">)</span><span class="special">;</span>
   <span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> V<span class="special">,</span> <span class="keyword">typename</span> PoolAllocator<span class="special">&gt;</span> 
-    <span class="keyword">explicit</span> <a class="link" href="node_ptr.html#idp21278688-bb"><span class="identifier">node_ptr</span></a><span class="special">(</span><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a> <span class="keyword">const</span> <span class="special">&amp;</span><span class="special">,</span> <span class="identifier">node</span><span class="special">&lt;</span> <span class="identifier">V</span><span class="special">,</span> <span class="identifier">PoolAllocator</span> <span class="special">&gt;</span> <span class="special">*</span><span class="special">)</span><span class="special">;</span>
-  <span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> V<span class="special">&gt;</span> <a class="link" href="node_ptr.html#idp21283968-bb"><span class="identifier">node_ptr</span></a><span class="special">(</span><a class="link" href="node_ptr.html" title="Class template node_ptr">node_ptr</a><span class="special">&lt;</span> <span class="identifier">V</span> <span class="special">&gt;</span> <span class="keyword">const</span> <span class="special">&amp;</span><span class="special">)</span><span class="special">;</span>
-  <a class="link" href="node_ptr.html#idp21286752-bb"><span class="identifier">node_ptr</span></a><span class="special">(</span><a class="link" href="node_ptr.html" title="Class template node_ptr">node_ptr</a><span class="special">&lt;</span> <span class="identifier">T</span> <span class="special">&gt;</span> <span class="keyword">const</span> <span class="special">&amp;</span><span class="special">)</span><span class="special">;</span>
-  <span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> V<span class="special">&gt;</span> node_ptr&amp; <a class="link" href="node_ptr.html#idp21288784-bb"><span class="keyword">operator</span><span class="special">=</span></a><span class="special">(</span><a class="link" href="node_ptr.html" title="Class template node_ptr">node_ptr</a><span class="special">&lt;</span> <span class="identifier">V</span> <span class="special">&gt;</span> <span class="keyword">const</span> <span class="special">&amp;</span><span class="special">)</span><span class="special">;</span>
-  node_ptr&amp; <a class="link" href="node_ptr.html#idp21291808-bb"><span class="keyword">operator</span><span class="special">=</span></a><span class="special">(</span><a class="link" href="node_ptr.html" title="Class template node_ptr">node_ptr</a><span class="special">&lt;</span> <span class="identifier">T</span> <span class="special">&gt;</span> <span class="keyword">const</span> <span class="special">&amp;</span><span class="special">)</span><span class="special">;</span>
+    <span class="keyword">explicit</span> <a class="link" href="node_ptr.html#idp33318176-bb"><span class="identifier">node_ptr</span></a><span class="special">(</span><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a> <span class="keyword">const</span> <span class="special">&amp;</span><span class="special">,</span> <span class="identifier">node</span><span class="special">&lt;</span> <span class="identifier">V</span><span class="special">,</span> <span class="identifier">PoolAllocator</span> <span class="special">&gt;</span> <span class="special">*</span><span class="special">)</span><span class="special">;</span>
+  <span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> V<span class="special">&gt;</span> <a class="link" href="node_ptr.html#idp33323456-bb"><span class="identifier">node_ptr</span></a><span class="special">(</span><a class="link" href="node_ptr.html" title="Class template node_ptr">node_ptr</a><span class="special">&lt;</span> <span class="identifier">V</span> <span class="special">&gt;</span> <span class="keyword">const</span> <span class="special">&amp;</span><span class="special">)</span><span class="special">;</span>
+  <a class="link" href="node_ptr.html#idp33326240-bb"><span class="identifier">node_ptr</span></a><span class="special">(</span><a class="link" href="node_ptr.html" title="Class template node_ptr">node_ptr</a><span class="special">&lt;</span> <span class="identifier">T</span> <span class="special">&gt;</span> <span class="keyword">const</span> <span class="special">&amp;</span><span class="special">)</span><span class="special">;</span>
+  <span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> V<span class="special">&gt;</span> node_ptr&amp; <a class="link" href="node_ptr.html#idp33328272-bb"><span class="keyword">operator</span><span class="special">=</span></a><span class="special">(</span><a class="link" href="node_ptr.html" title="Class template node_ptr">node_ptr</a><span class="special">&lt;</span> <span class="identifier">V</span> <span class="special">&gt;</span> <span class="keyword">const</span> <span class="special">&amp;</span><span class="special">)</span><span class="special">;</span>
+  node_ptr&amp; <a class="link" href="node_ptr.html#idp33331296-bb"><span class="keyword">operator</span><span class="special">=</span></a><span class="special">(</span><a class="link" href="node_ptr.html" title="Class template node_ptr">node_ptr</a><span class="special">&lt;</span> <span class="identifier">T</span> <span class="special">&gt;</span> <span class="keyword">const</span> <span class="special">&amp;</span><span class="special">)</span><span class="special">;</span>
   <span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> V<span class="special">,</span> <span class="keyword">typename</span> PoolAllocator<span class="special">&gt;</span> 
-    node_ptr&amp; <a class="link" href="node_ptr.html#idp21294080-bb"><span class="keyword">operator</span><span class="special">=</span></a><span class="special">(</span><span class="identifier">node</span><span class="special">&lt;</span> <span class="identifier">V</span><span class="special">,</span> <span class="identifier">PoolAllocator</span> <span class="special">&gt;</span> <span class="special">*</span><span class="special">)</span><span class="special">;</span>
-  <a class="link" href="node_ptr.html#idp21297344-bb"><span class="special">~</span><span class="identifier">node_ptr</span></a><span class="special">(</span><span class="special">)</span><span class="special">;</span>
+    node_ptr&amp; <a class="link" href="node_ptr.html#idp33333568-bb"><span class="keyword">operator</span><span class="special">=</span></a><span class="special">(</span><span class="identifier">node</span><span class="special">&lt;</span> <span class="identifier">V</span><span class="special">,</span> <span class="identifier">PoolAllocator</span> <span class="special">&gt;</span> <span class="special">*</span><span class="special">)</span><span class="special">;</span>
+  <a class="link" href="node_ptr.html#idp33336832-bb"><span class="special">~</span><span class="identifier">node_ptr</span></a><span class="special">(</span><span class="special">)</span><span class="special">;</span>
 
-  <span class="comment">// <a class="link" href="node_ptr.html#idp15341952-bb">public member functions</a></span>
-  <span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> V<span class="special">&gt;</span> <span class="keyword">void</span> <a class="link" href="node_ptr.html#idp15342352-bb"><span class="identifier">reset</span></a><span class="special">(</span><a class="link" href="node_ptr.html" title="Class template node_ptr">node_ptr</a><span class="special">&lt;</span> <span class="identifier">V</span> <span class="special">&gt;</span> <span class="keyword">const</span> <span class="special">&amp;</span><span class="special">)</span><span class="special">;</span>
+  <span class="comment">// <a class="link" href="node_ptr.html#idp27074448-bb">public member functions</a></span>
+  <span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> V<span class="special">&gt;</span> <span class="keyword">void</span> <a class="link" href="node_ptr.html#idp27074848-bb"><span class="identifier">reset</span></a><span class="special">(</span><a class="link" href="node_ptr.html" title="Class template node_ptr">node_ptr</a><span class="special">&lt;</span> <span class="identifier">V</span> <span class="special">&gt;</span> <span class="keyword">const</span> <span class="special">&amp;</span><span class="special">)</span><span class="special">;</span>
   <span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> V<span class="special">,</span> <span class="keyword">typename</span> PoolAllocator<span class="special">&gt;</span> 
-    <span class="keyword">void</span> <a class="link" href="node_ptr.html#idp15346256-bb"><span class="identifier">reset</span></a><span class="special">(</span><span class="identifier">node</span><span class="special">&lt;</span> <span class="identifier">V</span><span class="special">,</span> <span class="identifier">PoolAllocator</span> <span class="special">&gt;</span> <span class="special">*</span><span class="special">)</span><span class="special">;</span>
-  <span class="keyword">bool</span> <a class="link" href="node_ptr.html#idp15350448-bb"><span class="identifier">cyclic</span></a><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span>
+    <span class="keyword">void</span> <a class="link" href="node_ptr.html#idp27078752-bb"><span class="identifier">reset</span></a><span class="special">(</span><span class="identifier">node</span><span class="special">&lt;</span> <span class="identifier">V</span><span class="special">,</span> <span class="identifier">PoolAllocator</span> <span class="special">&gt;</span> <span class="special">*</span><span class="special">)</span><span class="special">;</span>
+  <span class="keyword">bool</span> <a class="link" href="node_ptr.html#idp27082944-bb"><span class="identifier">cyclic</span></a><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span>
 <span class="special">}</span><span class="special">;</span></pre></div>
 <div class="refsect1">
-<a name="idp90063664"></a><h2>Description</h2>
+<a name="idp96813088"></a><h2>Description</h2>
 <p>Deterministic region based memory manager.</p>
 <p>Complete memory management utility on top of standard reference counting.</p>
 <div class="note"><table border="0" summary="Note">
@@ -62,13 +62,13 @@
 <p>
 </p>
 <div class="refsect2">
-<a name="idp90067376"></a><h3>
+<a name="idp96816800"></a><h3>
 <a name="boost.node_ptrconstruct-copy-destruct"></a><code class="computeroutput">node_ptr</code> 
         public
        construct/copy/destruct</h3>
 <div class="orderedlist"><ol class="orderedlist" type="1">
 <li class="listitem">
-<pre class="literallayout"><span class="keyword">explicit</span> <a name="idp21275664-bb"></a><span class="identifier">node_ptr</span><span class="special">(</span><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a> <span class="keyword">const</span> <span class="special">&amp;</span> x<span class="special">)</span><span class="special">;</span></pre>
+<pre class="literallayout"><span class="keyword">explicit</span> <a name="idp33315152-bb"></a><span class="identifier">node_ptr</span><span class="special">(</span><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a> <span class="keyword">const</span> <span class="special">&amp;</span> x<span class="special">)</span><span class="special">;</span></pre>
 <p>Initialization of a pointer.</p>
 <p>
 </p>
@@ -94,7 +94,7 @@
 </li>
 <li class="listitem">
 <pre class="literallayout"><span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> V<span class="special">,</span> <span class="keyword">typename</span> PoolAllocator<span class="special">&gt;</span> 
-  <span class="keyword">explicit</span> <a name="idp21278688-bb"></a><span class="identifier">node_ptr</span><span class="special">(</span><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a> <span class="keyword">const</span> <span class="special">&amp;</span> x<span class="special">,</span> <span class="identifier">node</span><span class="special">&lt;</span> <span class="identifier">V</span><span class="special">,</span> <span class="identifier">PoolAllocator</span> <span class="special">&gt;</span> <span class="special">*</span> p<span class="special">)</span><span class="special">;</span></pre>
+  <span class="keyword">explicit</span> <a name="idp33318176-bb"></a><span class="identifier">node_ptr</span><span class="special">(</span><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a> <span class="keyword">const</span> <span class="special">&amp;</span> x<span class="special">,</span> <span class="identifier">node</span><span class="special">&lt;</span> <span class="identifier">V</span><span class="special">,</span> <span class="identifier">PoolAllocator</span> <span class="special">&gt;</span> <span class="special">*</span> p<span class="special">)</span><span class="special">;</span></pre>
 <p>Initialization of a pointer.</p>
 <p>
 </p>
@@ -125,7 +125,7 @@
 </table></div>
 </li>
 <li class="listitem">
-<pre class="literallayout"><span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> V<span class="special">&gt;</span> <a name="idp21283968-bb"></a><span class="identifier">node_ptr</span><span class="special">(</span><a class="link" href="node_ptr.html" title="Class template node_ptr">node_ptr</a><span class="special">&lt;</span> <span class="identifier">V</span> <span class="special">&gt;</span> <span class="keyword">const</span> <span class="special">&amp;</span> p<span class="special">)</span><span class="special">;</span></pre>
+<pre class="literallayout"><span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> V<span class="special">&gt;</span> <a name="idp33323456-bb"></a><span class="identifier">node_ptr</span><span class="special">(</span><a class="link" href="node_ptr.html" title="Class template node_ptr">node_ptr</a><span class="special">&lt;</span> <span class="identifier">V</span> <span class="special">&gt;</span> <span class="keyword">const</span> <span class="special">&amp;</span> p<span class="special">)</span><span class="special">;</span></pre>
 <p>Initialization of a pointer.</p>
 <p>
 </p>
@@ -150,7 +150,7 @@
 </table></div>
 </li>
 <li class="listitem">
-<pre class="literallayout"><a name="idp21286752-bb"></a><span class="identifier">node_ptr</span><span class="special">(</span><a class="link" href="node_ptr.html" title="Class template node_ptr">node_ptr</a><span class="special">&lt;</span> <span class="identifier">T</span> <span class="special">&gt;</span> <span class="keyword">const</span> <span class="special">&amp;</span> p<span class="special">)</span><span class="special">;</span></pre>
+<pre class="literallayout"><a name="idp33326240-bb"></a><span class="identifier">node_ptr</span><span class="special">(</span><a class="link" href="node_ptr.html" title="Class template node_ptr">node_ptr</a><span class="special">&lt;</span> <span class="identifier">T</span> <span class="special">&gt;</span> <span class="keyword">const</span> <span class="special">&amp;</span> p<span class="special">)</span><span class="special">;</span></pre>
 <p>Initialization of a pointer.</p>
 <p>
 </p>
@@ -175,7 +175,7 @@
 </table></div>
 </li>
 <li class="listitem">
-<pre class="literallayout"><span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> V<span class="special">&gt;</span> node_ptr&amp; <a name="idp21288784-bb"></a><span class="keyword">operator</span><span class="special">=</span><span class="special">(</span><a class="link" href="node_ptr.html" title="Class template node_ptr">node_ptr</a><span class="special">&lt;</span> <span class="identifier">V</span> <span class="special">&gt;</span> <span class="keyword">const</span> <span class="special">&amp;</span> p<span class="special">)</span><span class="special">;</span></pre>
+<pre class="literallayout"><span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> V<span class="special">&gt;</span> node_ptr&amp; <a name="idp33328272-bb"></a><span class="keyword">operator</span><span class="special">=</span><span class="special">(</span><a class="link" href="node_ptr.html" title="Class template node_ptr">node_ptr</a><span class="special">&lt;</span> <span class="identifier">V</span> <span class="special">&gt;</span> <span class="keyword">const</span> <span class="special">&amp;</span> p<span class="special">)</span><span class="special">;</span></pre>
 <p>Assignment.</p>
 <p>
 </p>
@@ -200,7 +200,7 @@
 </table></div>
 </li>
 <li class="listitem">
-<pre class="literallayout">node_ptr&amp; <a name="idp21291808-bb"></a><span class="keyword">operator</span><span class="special">=</span><span class="special">(</span><a class="link" href="node_ptr.html" title="Class template node_ptr">node_ptr</a><span class="special">&lt;</span> <span class="identifier">T</span> <span class="special">&gt;</span> <span class="keyword">const</span> <span class="special">&amp;</span> p<span class="special">)</span><span class="special">;</span></pre>
+<pre class="literallayout">node_ptr&amp; <a name="idp33331296-bb"></a><span class="keyword">operator</span><span class="special">=</span><span class="special">(</span><a class="link" href="node_ptr.html" title="Class template node_ptr">node_ptr</a><span class="special">&lt;</span> <span class="identifier">T</span> <span class="special">&gt;</span> <span class="keyword">const</span> <span class="special">&amp;</span> p<span class="special">)</span><span class="special">;</span></pre>
 <p>Assignment.</p>
 <p>
 </p>
@@ -226,7 +226,7 @@
 </li>
 <li class="listitem">
 <pre class="literallayout"><span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> V<span class="special">,</span> <span class="keyword">typename</span> PoolAllocator<span class="special">&gt;</span> 
-  node_ptr&amp; <a name="idp21294080-bb"></a><span class="keyword">operator</span><span class="special">=</span><span class="special">(</span><span class="identifier">node</span><span class="special">&lt;</span> <span class="identifier">V</span><span class="special">,</span> <span class="identifier">PoolAllocator</span> <span class="special">&gt;</span> <span class="special">*</span> p<span class="special">)</span><span class="special">;</span></pre>
+  node_ptr&amp; <a name="idp33333568-bb"></a><span class="keyword">operator</span><span class="special">=</span><span class="special">(</span><span class="identifier">node</span><span class="special">&lt;</span> <span class="identifier">V</span><span class="special">,</span> <span class="identifier">PoolAllocator</span> <span class="special">&gt;</span> <span class="special">*</span> p<span class="special">)</span><span class="special">;</span></pre>
 <p>Assignment.</p>
 <p>
 </p>
@@ -251,17 +251,17 @@
 </table></div>
 </li>
 <li class="listitem">
-<pre class="literallayout"><a name="idp21297344-bb"></a><span class="special">~</span><span class="identifier">node_ptr</span><span class="special">(</span><span class="special">)</span><span class="special">;</span></pre>
+<pre class="literallayout"><a name="idp33336832-bb"></a><span class="special">~</span><span class="identifier">node_ptr</span><span class="special">(</span><span class="special">)</span><span class="special">;</span></pre>
 <p>Destructor. </p>
 </li>
 </ol></div>
 </div>
 <div class="refsect2">
-<a name="idp90174144"></a><h3>
-<a name="idp15341952-bb"></a><code class="computeroutput">node_ptr</code> public member functions</h3>
+<a name="idp96923568"></a><h3>
+<a name="idp27074448-bb"></a><code class="computeroutput">node_ptr</code> public member functions</h3>
 <div class="orderedlist"><ol class="orderedlist" type="1">
 <li class="listitem">
-<pre class="literallayout"><span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> V<span class="special">&gt;</span> <span class="keyword">void</span> <a name="idp15342352-bb"></a><span class="identifier">reset</span><span class="special">(</span><a class="link" href="node_ptr.html" title="Class template node_ptr">node_ptr</a><span class="special">&lt;</span> <span class="identifier">V</span> <span class="special">&gt;</span> <span class="keyword">const</span> <span class="special">&amp;</span> p<span class="special">)</span><span class="special">;</span></pre>
+<pre class="literallayout"><span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> V<span class="special">&gt;</span> <span class="keyword">void</span> <a name="idp27074848-bb"></a><span class="identifier">reset</span><span class="special">(</span><a class="link" href="node_ptr.html" title="Class template node_ptr">node_ptr</a><span class="special">&lt;</span> <span class="identifier">V</span> <span class="special">&gt;</span> <span class="keyword">const</span> <span class="special">&amp;</span> p<span class="special">)</span><span class="special">;</span></pre>
 <p>Assignment.</p>
 <p>
 </p>
@@ -287,7 +287,7 @@
 </li>
 <li class="listitem">
 <pre class="literallayout"><span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> V<span class="special">,</span> <span class="keyword">typename</span> PoolAllocator<span class="special">&gt;</span> 
-  <span class="keyword">void</span> <a name="idp15346256-bb"></a><span class="identifier">reset</span><span class="special">(</span><span class="identifier">node</span><span class="special">&lt;</span> <span class="identifier">V</span><span class="special">,</span> <span class="identifier">PoolAllocator</span> <span class="special">&gt;</span> <span class="special">*</span> p<span class="special">)</span><span class="special">;</span></pre>
+  <span class="keyword">void</span> <a name="idp27078752-bb"></a><span class="identifier">reset</span><span class="special">(</span><span class="identifier">node</span><span class="special">&lt;</span> <span class="identifier">V</span><span class="special">,</span> <span class="identifier">PoolAllocator</span> <span class="special">&gt;</span> <span class="special">*</span> p<span class="special">)</span><span class="special">;</span></pre>
 <p>Assignment.</p>
 <p>
 </p>
@@ -312,7 +312,7 @@
 </table></div>
 </li>
 <li class="listitem">
-<pre class="literallayout"><span class="keyword">bool</span> <a name="idp15350448-bb"></a><span class="identifier">cyclic</span><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span></pre>
+<pre class="literallayout"><span class="keyword">bool</span> <a name="idp27082944-bb"></a><span class="identifier">cyclic</span><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span></pre>
 <p>Explicit cyclicism detection mechanism, for use <span class="bold"><strong>only</strong></span> inside destructors.</p>
 <p>
 TODO I'm not sure what this means??? return  if there is an object to destroy? Need a link to the example here See root_ptr_example1.cpp for an unfinished on. </p>

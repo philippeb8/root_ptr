@@ -439,6 +439,11 @@ with output [root_ptr_example1_output_sharing]
 
 [h3:advanced Advanced]
 
+[h5:intermix Intermix]
+Although it is not recommended to do so, it is possible to intermix `root_ptr` and `node_ptr` with their associated `make_root` and `make_node`:
+
+[root_ptr_example1_intermix]
+
 [h5:cyclic_function Cyclic function]
 In the case where a cyclic set is being destroyed,
 in order to prevent `root_ptr`s member pointers from accessing an object

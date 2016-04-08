@@ -235,6 +235,32 @@
     </h4>
 <h6>
 <a name="root_ptr.tutorial.h5"></a>
+      <span class="phrase"><a name="root_ptr.tutorial.intermix"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.intermix">Intermix</a>
+    </h6>
+<p>
+      Although it is not recommended to do so, it is possible to intermix <code class="computeroutput"><span class="identifier">root_ptr</span></code> and <code class="computeroutput"><span class="identifier">node_ptr</span></code>
+      with their associated <code class="computeroutput"><span class="identifier">make_root</span></code>
+      and <code class="computeroutput"><span class="identifier">make_node</span></code>:
+    </p>
+<pre class="programlisting"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">rp1</span><span class="special">,</span> <span class="identifier">rp2</span><span class="special">,</span> <span class="identifier">rp3</span><span class="special">;</span>
+<span class="identifier">node_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">np1</span><span class="special">(</span><span class="identifier">rp1</span><span class="special">.</span><span class="identifier">proxy</span><span class="special">());</span>
+
+<span class="comment">// normal assignment:</span>
+<span class="identifier">rp1</span> <span class="special">=</span> <span class="identifier">make_root</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;(</span><span class="number">1</span><span class="special">);</span>
+
+<span class="comment">// the following will unify the new 'node_proxy' of 'rp2' with 'rp1' and </span>
+<span class="comment">// assign the pointer to 'rp1':</span>
+<span class="identifier">rp1</span> <span class="special">=</span> <span class="identifier">make_node</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;(</span><span class="identifier">rp2</span><span class="special">,</span> <span class="number">2</span><span class="special">);</span>
+
+<span class="comment">// the following will create a new 'root_ptr' but immediately slice it into a 'node_ptr' and </span>
+<span class="comment">// still use the 'node_proxy' of 'rp1':</span>
+<span class="identifier">np1</span> <span class="special">=</span> <span class="identifier">make_root</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;(</span><span class="number">3</span><span class="special">);</span>
+
+<span class="comment">// normal assignment:</span>
+<span class="identifier">np1</span> <span class="special">=</span> <span class="identifier">make_node</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;(</span><span class="identifier">rp3</span><span class="special">,</span> <span class="number">4</span><span class="special">);</span>
+</pre>
+<h6>
+<a name="root_ptr.tutorial.h6"></a>
       <span class="phrase"><a name="root_ptr.tutorial.cyclic_function"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.cyclic_function">Cyclic
       function</a>
     </h6>
@@ -272,7 +298,7 @@
       </p></td></tr>
 </table></div>
 <h6>
-<a name="root_ptr.tutorial.h6"></a>
+<a name="root_ptr.tutorial.h7"></a>
       <span class="phrase"><a name="root_ptr.tutorial.faster_pointee"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.faster_pointee">Faster
       pointees</a>
     </h6>
@@ -282,7 +308,7 @@
 <pre class="programlisting"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">p</span> <span class="special">=</span> <span class="identifier">make_fastroot</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;(</span><span class="number">10</span><span class="special">);</span>
 </pre>
 <h6>
-<a name="root_ptr.tutorial.h7"></a>
+<a name="root_ptr.tutorial.h8"></a>
       <span class="phrase"><a name="root_ptr.tutorial.allocator"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.allocator">Custom
       Allocator</a>
     </h6>
@@ -293,7 +319,7 @@
 <pre class="programlisting"><span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;</span> <span class="identifier">p</span> <span class="special">=</span> <span class="identifier">allocate_node</span><span class="special">&lt;</span><span class="keyword">int</span><span class="special">&gt;(</span><span class="identifier">make_node_allocator</span><span class="special">&lt;</span><span class="identifier">fast_pool_allocator</span><span class="special">,</span> <span class="keyword">int</span><span class="special">&gt;(),</span> <span class="number">12</span><span class="special">);</span>
 </pre>
 <h4>
-<a name="root_ptr.tutorial.h8"></a>
+<a name="root_ptr.tutorial.h9"></a>
       <span class="phrase"><a name="root_ptr.tutorial.caveat"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.caveat">Caveat</a>
     </h4>
 <p>
@@ -322,7 +348,7 @@
 <span class="identifier">root_ptr</span><span class="special">&lt;</span><span class="identifier">M</span><span class="special">&gt;</span> <span class="identifier">pm</span> <span class="special">=</span> <span class="identifier">po</span><span class="special">;</span> <span class="comment">// Correct.</span>
 </pre>
 <h4>
-<a name="root_ptr.tutorial.h9"></a>
+<a name="root_ptr.tutorial.h10"></a>
       <span class="phrase"><a name="root_ptr.tutorial.pitfall"></a></span><a class="link" href="tutorial.html#root_ptr.tutorial.pitfall">Pitfall</a>
     </h4>
 <p>

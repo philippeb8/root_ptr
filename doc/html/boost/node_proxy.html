@@ -28,62 +28,62 @@
 <span class="keyword">class</span> <a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a> <span class="special">{</span>
 <span class="keyword">public</span><span class="special">:</span>
   <span class="comment">// <a class="link" href="node_proxy.html#boost.node_proxyconstruct-copy-destruct">construct/copy/destruct</a></span>
-  <a class="link" href="node_proxy.html#idp15330784-bb"><span class="identifier">node_proxy</span></a><span class="special">(</span><span class="special">)</span><span class="special">;</span>
-  <a class="link" href="node_proxy.html#idp15332192-bb"><span class="identifier">node_proxy</span></a><span class="special">(</span><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a> <span class="keyword">const</span> <span class="special">&amp;</span><span class="special">)</span><span class="special">;</span>
-  <a class="link" href="node_proxy.html#idp15334560-bb"><span class="special">~</span><span class="identifier">node_proxy</span></a><span class="special">(</span><span class="special">)</span><span class="special">;</span>
+  <a class="link" href="node_proxy.html#idp27063280-bb"><span class="identifier">node_proxy</span></a><span class="special">(</span><span class="special">)</span><span class="special">;</span>
+  <a class="link" href="node_proxy.html#idp27064688-bb"><span class="identifier">node_proxy</span></a><span class="special">(</span><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a> <span class="keyword">const</span> <span class="special">&amp;</span><span class="special">)</span><span class="special">;</span>
+  <a class="link" href="node_proxy.html#idp27067056-bb"><span class="special">~</span><span class="identifier">node_proxy</span></a><span class="special">(</span><span class="special">)</span><span class="special">;</span>
 
-  <span class="comment">// <a class="link" href="node_proxy.html#idp15314320-bb">private static functions</a></span>
-  <span class="keyword">static</span> <span class="identifier">mutex</span> <span class="special">&amp;</span> <a class="link" href="node_proxy.html#idp15314736-bb"><span class="identifier">static_mutex</span></a><span class="special">(</span><span class="special">)</span><span class="special">;</span>
+  <span class="comment">// <a class="link" href="node_proxy.html#idp27046800-bb">private static functions</a></span>
+  <span class="keyword">static</span> <span class="identifier">mutex</span> <span class="special">&amp;</span> <a class="link" href="node_proxy.html#idp27047216-bb"><span class="identifier">static_mutex</span></a><span class="special">(</span><span class="special">)</span><span class="special">;</span>
 
-  <span class="comment">// <a class="link" href="node_proxy.html#idp15316080-bb">private member functions</a></span>
-  <span class="keyword">bool</span> <a class="link" href="node_proxy.html#idp15316496-bb"><span class="identifier">destroying</span></a><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span>
-  <span class="keyword">void</span> <a class="link" href="node_proxy.html#idp15317456-bb"><span class="identifier">destroying</span></a><span class="special">(</span><span class="keyword">bool</span><span class="special">)</span><span class="special">;</span>
-  <span class="identifier">size_t</span> <a class="link" href="node_proxy.html#idp15319104-bb"><span class="identifier">size</span></a><span class="special">(</span><span class="special">)</span><span class="special">;</span>
-  <span class="keyword">void</span> <a class="link" href="node_proxy.html#idp15320288-bb"><span class="identifier">unify</span></a><span class="special">(</span><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a> <span class="keyword">const</span> <span class="special">&amp;</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span>
-  <span class="keyword">void</span> <a class="link" href="node_proxy.html#idp15324928-bb"><span class="identifier">init</span></a><span class="special">(</span><span class="identifier">smart_ptr</span><span class="special">::</span><span class="identifier">detail</span><span class="special">::</span><span class="identifier">node_base</span> <span class="special">*</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span>
-  <span class="keyword">void</span> <a class="link" href="node_proxy.html#idp15328544-bb"><span class="identifier">reset</span></a><span class="special">(</span><span class="special">)</span><span class="special">;</span>
+  <span class="comment">// <a class="link" href="node_proxy.html#idp27048560-bb">private member functions</a></span>
+  <span class="keyword">bool</span> <a class="link" href="node_proxy.html#idp27048976-bb"><span class="identifier">destroying</span></a><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span>
+  <span class="keyword">void</span> <a class="link" href="node_proxy.html#idp27049936-bb"><span class="identifier">destroying</span></a><span class="special">(</span><span class="keyword">bool</span><span class="special">)</span><span class="special">;</span>
+  <span class="identifier">size_t</span> <a class="link" href="node_proxy.html#idp27051584-bb"><span class="identifier">size</span></a><span class="special">(</span><span class="special">)</span><span class="special">;</span>
+  <span class="keyword">void</span> <a class="link" href="node_proxy.html#idp27052544-bb"><span class="identifier">unify</span></a><span class="special">(</span><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a> <span class="keyword">const</span> <span class="special">&amp;</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span>
+  <span class="keyword">void</span> <a class="link" href="node_proxy.html#idp27057424-bb"><span class="identifier">init</span></a><span class="special">(</span><span class="identifier">smart_ptr</span><span class="special">::</span><span class="identifier">detail</span><span class="special">::</span><span class="identifier">node_base</span> <span class="special">*</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span>
+  <span class="keyword">void</span> <a class="link" href="node_proxy.html#idp27061040-bb"><span class="identifier">reset</span></a><span class="special">(</span><span class="special">)</span><span class="special">;</span>
 <span class="special">}</span><span class="special">;</span></pre></div>
 <div class="refsect1">
-<a name="idp89860752"></a><h2>Description</h2>
+<a name="idp96610352"></a><h2>Description</h2>
 <p>Set header.</p>
 <p>Proxy object used to link a list of <code class="computeroutput">node&lt;&gt;</code> blocks and a list of <code class="computeroutput"><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a></code> . </p>
 <div class="refsect2">
-<a name="idp89863584"></a><h3>
+<a name="idp96613280"></a><h3>
 <a name="boost.node_proxyconstruct-copy-destruct"></a><code class="computeroutput">node_proxy</code> 
         public
        construct/copy/destruct</h3>
 <div class="orderedlist"><ol class="orderedlist" type="1">
 <li class="listitem">
-<pre class="literallayout"><a name="idp15330784-bb"></a><span class="identifier">node_proxy</span><span class="special">(</span><span class="special">)</span><span class="special">;</span></pre>
+<pre class="literallayout"><a name="idp27063280-bb"></a><span class="identifier">node_proxy</span><span class="special">(</span><span class="special">)</span><span class="special">;</span></pre>
 <p>Initialization of a single <code class="computeroutput"><code class="computeroutput"><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a></code></code> . </p>
 </li>
 <li class="listitem">
-<pre class="literallayout"><a name="idp15332192-bb"></a><span class="identifier">node_proxy</span><span class="special">(</span><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a> <span class="keyword">const</span> <span class="special">&amp;</span> x<span class="special">)</span><span class="special">;</span></pre>
+<pre class="literallayout"><a name="idp27064688-bb"></a><span class="identifier">node_proxy</span><span class="special">(</span><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a> <span class="keyword">const</span> <span class="special">&amp;</span> x<span class="special">)</span><span class="special">;</span></pre>
 <p>Copy of a single <code class="computeroutput"><code class="computeroutput"><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a></code></code> and unification. </p>
 </li>
 <li class="listitem">
-<pre class="literallayout"><a name="idp15334560-bb"></a><span class="special">~</span><span class="identifier">node_proxy</span><span class="special">(</span><span class="special">)</span><span class="special">;</span></pre>
+<pre class="literallayout"><a name="idp27067056-bb"></a><span class="special">~</span><span class="identifier">node_proxy</span><span class="special">(</span><span class="special">)</span><span class="special">;</span></pre>
 <p>Destruction of a single <code class="computeroutput"><code class="computeroutput"><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a></code></code> and detaching itself from other <code class="computeroutput"><code class="computeroutput"><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a></code></code> . </p>
 </li>
 </ol></div>
 </div>
 <div class="refsect2">
-<a name="idp89886976"></a><h3>
-<a name="idp15314320-bb"></a><code class="computeroutput">node_proxy</code> private static functions</h3>
+<a name="idp96636560"></a><h3>
+<a name="idp27046800-bb"></a><code class="computeroutput">node_proxy</code> private static functions</h3>
 <div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
-<pre class="literallayout"><span class="keyword">static</span> <span class="identifier">mutex</span> <span class="special">&amp;</span> <a name="idp15314736-bb"></a><span class="identifier">static_mutex</span><span class="special">(</span><span class="special">)</span><span class="special">;</span></pre>
+<pre class="literallayout"><span class="keyword">static</span> <span class="identifier">mutex</span> <span class="special">&amp;</span> <a name="idp27047216-bb"></a><span class="identifier">static_mutex</span><span class="special">(</span><span class="special">)</span><span class="special">;</span></pre>
 <p>Main global mutex used for thread safety </p>
 </li></ol></div>
 </div>
 <div class="refsect2">
-<a name="idp89895088"></a><h3>
-<a name="idp15316080-bb"></a><code class="computeroutput">node_proxy</code> private member functions</h3>
+<a name="idp96644672"></a><h3>
+<a name="idp27048560-bb"></a><code class="computeroutput">node_proxy</code> private member functions</h3>
 <div class="orderedlist"><ol class="orderedlist" type="1">
-<li class="listitem"><pre class="literallayout"><span class="keyword">bool</span> <a name="idp15316496-bb"></a><span class="identifier">destroying</span><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span></pre></li>
-<li class="listitem"><pre class="literallayout"><span class="keyword">void</span> <a name="idp15317456-bb"></a><span class="identifier">destroying</span><span class="special">(</span><span class="keyword">bool</span> b<span class="special">)</span><span class="special">;</span></pre></li>
-<li class="listitem"><pre class="literallayout"><span class="identifier">size_t</span> <a name="idp15319104-bb"></a><span class="identifier">size</span><span class="special">(</span><span class="special">)</span><span class="special">;</span></pre></li>
+<li class="listitem"><pre class="literallayout"><span class="keyword">bool</span> <a name="idp27048976-bb"></a><span class="identifier">destroying</span><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span></pre></li>
+<li class="listitem"><pre class="literallayout"><span class="keyword">void</span> <a name="idp27049936-bb"></a><span class="identifier">destroying</span><span class="special">(</span><span class="keyword">bool</span> b<span class="special">)</span><span class="special">;</span></pre></li>
+<li class="listitem"><pre class="literallayout"><span class="identifier">size_t</span> <a name="idp27051584-bb"></a><span class="identifier">size</span><span class="special">(</span><span class="special">)</span><span class="special">;</span></pre></li>
 <li class="listitem">
-<pre class="literallayout"><span class="keyword">void</span> <a name="idp15320288-bb"></a><span class="identifier">unify</span><span class="special">(</span><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a> <span class="keyword">const</span> <span class="special">&amp;</span> p<span class="special">)</span> <span class="keyword">const</span><span class="special">;</span></pre>
+<pre class="literallayout"><span class="keyword">void</span> <a name="idp27052544-bb"></a><span class="identifier">unify</span><span class="special">(</span><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a> <span class="keyword">const</span> <span class="special">&amp;</span> p<span class="special">)</span> <span class="keyword">const</span><span class="special">;</span></pre>
 <p>Unification with a new <code class="computeroutput"><code class="computeroutput"><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a></code></code> .</p>
 <p>
 </p>
@@ -108,7 +108,7 @@
 </table></div>
 </li>
 <li class="listitem">
-<pre class="literallayout"><span class="keyword">void</span> <a name="idp15324928-bb"></a><span class="identifier">init</span><span class="special">(</span><span class="identifier">smart_ptr</span><span class="special">::</span><span class="identifier">detail</span><span class="special">::</span><span class="identifier">node_base</span> <span class="special">*</span> p<span class="special">)</span> <span class="keyword">const</span><span class="special">;</span></pre>
+<pre class="literallayout"><span class="keyword">void</span> <a name="idp27057424-bb"></a><span class="identifier">init</span><span class="special">(</span><span class="identifier">smart_ptr</span><span class="special">::</span><span class="identifier">detail</span><span class="special">::</span><span class="identifier">node_base</span> <span class="special">*</span> p<span class="special">)</span> <span class="keyword">const</span><span class="special">;</span></pre>
 <p>Enlist &amp; initialize pointee objects belonging to the same <code class="computeroutput"><code class="computeroutput"><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a></code></code> .</p>
 <p>
 </p>
@@ -133,7 +133,7 @@
 </table></div>
 </li>
 <li class="listitem">
-<pre class="literallayout"><span class="keyword">void</span> <a name="idp15328544-bb"></a><span class="identifier">reset</span><span class="special">(</span><span class="special">)</span><span class="special">;</span></pre>
+<pre class="literallayout"><span class="keyword">void</span> <a name="idp27061040-bb"></a><span class="identifier">reset</span><span class="special">(</span><span class="special">)</span><span class="special">;</span></pre>
 <p>Get rid or delegate a series of <code class="computeroutput"><code class="computeroutput"><a class="link" href="node_proxy.html" title="Class node_proxy">node_proxy</a></code></code> . </p>
 </li>
 </ol></div>
