@@ -124,7 +124,7 @@ int main()
 
       // The following doesn't work with MSVC:
     // error C2676: binary '[': 'boost::root_ptr<char [9]>' does not define this operator or a conversion to a type acceptable to the predefined operator.
-#if !defined(_MSC_VER)
+#if 0 //!defined(_MSC_VER)
     std::cout << "Array access:" << std::endl;
     {
         root_ptr<char[9]> u(new node<char[9]>());
@@ -181,6 +181,27 @@ int main()
     root_ptr<A> x;
     x = make_root<A>(x);
 //] [/root_ptr_example1_propagate]
+  }
+  
+  {
+//[root_ptr_example1_intermix
+    root_ptr<int> rp1, rp2, rp3;
+    node_ptr<int> np1(rp1.proxy());
+    
+    // normal assignment:
+    rp1 = make_root<int>(1); 
+    
+    // the following will unify the new 'node_proxy' of 'rp2' with 'rp1' and 
+    // assign the pointer to 'rp1':
+    rp1 = make_node<int>(rp2, 2); 
+
+    // the following will create a new 'root_ptr' but immediately slice it into a 'node_ptr' and 
+    // still use the 'node_proxy' of 'rp1':
+    np1 = make_root<int>(3); 
+    
+    // normal assignment:
+    np1 = make_node<int>(rp3, 4); 
+//] [/root_ptr_example1_intermix]
   }
 } // int main()
 
