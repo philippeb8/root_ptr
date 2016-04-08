@@ -661,7 +661,7 @@ For example, using the index to search for `value_type` will lead you to the (lo
 This is much quicker than simply scrolling.]
 
 The information given is derived from Doxygen-syntax comments in the include files, mainly
-[@../../include/boost/smart_ptr/root_ptr.hpp root_ptr.hpp].
+[@header/boost/smart_ptr/root_ptr_hpp.html root_ptr.hpp].
 
 * Examples will often be your quickest way to find what you need to know.
 Examples often deliberately use many features, often in a contrived fashion.
