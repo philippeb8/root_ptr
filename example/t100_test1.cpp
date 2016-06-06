@@ -40,7 +40,7 @@ using namespace boost;
 
 int main(int argv, char * argc[])
 {
-    pstream page(string("lynx --dump http://www.unifiedfieldtheoryfinite.com/files/experiment.pdf | pdftotext - -"), pstreams::pstdout);
+    pstream page(string("lynx --dump http://www.finitetheory.com/files/experiment.pdf | pdftotext - -"), pstreams::pstdout);
     
     list<string> text;
 
