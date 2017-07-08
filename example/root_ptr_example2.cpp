@@ -77,8 +77,85 @@ struct create_type {
     node_proxy & x_;
 };
 
+struct A
+{
+    int i;
+
+    A(int i = 0) : i(i)
+    {
+        std::cout << BOOST_CURRENT_FUNCTION << ": " << i << std::endl;
+    }
+
+    ~A()
+    {
+        std::cout << BOOST_CURRENT_FUNCTION << ": " << i << std::endl;
+    }
+};
+
+node_ptr<A> get_int()
+{
+     root_ptr<A> r = make_root<A>(9);
+     node_ptr<A> p = make_node<A>(r, 10);
+
+     return p;
+}
+
+struct C;
+
+struct B
+{
+    node_ptr<C> p;
+
+    B(node_proxy const & x) : p(x)
+    {
+        std::cout << BOOST_CURRENT_FUNCTION << ": " << std::endl;
+    }
+
+    ~B()
+    {
+        std::cout << BOOST_CURRENT_FUNCTION << ": " << std::endl;
+    }
+};
+
+struct C
+{
+    root_ptr<B> p;
+
+    C()
+    {
+        std::cout << BOOST_CURRENT_FUNCTION << ": " << std::endl;
+    }
+
+    ~C()
+    {
+        std::cout << BOOST_CURRENT_FUNCTION << ": " << std::endl;
+    }
+};
+
 int main()
 {
+    std::cout << "*** Test #-2 ***" << std::endl;
+    {
+        root_ptr<B> p;
+        p = make_root<B>(p);
+        p->p = make_node<C>(p);
+        p->p->p = p;
+    }
+    
+    std::cout << "*** Test #-1 ***" << std::endl;
+    {
+        root_ptr<C> p;
+        p = make_root<C>();
+        p->p = make_root<B>(p);
+        p->p->p = p;
+    }
+    
+    std::cout << "*** Test #0 ***" << std::endl;
+    {
+        node_ptr<A> p = get_int();
+        std::cout << p->i << std::endl;
+    }
+    
 #if 1
     std::cout << "*** Test #1 ***" << std::endl;
     count = 0;

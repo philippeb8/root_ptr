@@ -60,11 +60,11 @@ class node_proxy
     template <typename> friend class node_ptr;
     template <typename> friend class root_ptr;
 
+    /** Stack depth. */
+    int const depth_;
+    
     /** Destruction sequence flag. */
     bool destroying_;
-
-    /** Tag used to enlist to @c node_proxy::includes_ . */
-    mutable smart_ptr::detail::intrusive_list::node proxy_tag_;
 
     /** List of all pointee objects belonging to a @c node_proxy . */
     mutable smart_ptr::detail::intrusive_list node_list_;
@@ -79,11 +79,20 @@ class node_proxy
     }
 #endif
 
+    /** Main global mutex used for thread safety */
+    static int & static_depth()
+    {
+        static int depth_ = 0;
+
+        return depth_;
+    }
+
+public:
     /**
         Initialization of a single @c node_proxy .
     */
 
-    node_proxy() : destroying_(false)
+    node_proxy() : depth_(static_depth() ++), destroying_(false)
     {
     }
 
@@ -93,10 +102,10 @@ class node_proxy
     */
 
     node_proxy(node_proxy const & x)
-    : destroying_(x.destroying_)
+    : depth_(static_depth() ++)
+    , destroying_(x.destroying_)
     , node_list_(x.node_list_)
     {
-        unify(x);
     }
 
 
@@ -107,9 +116,18 @@ class node_proxy
     ~node_proxy()
     {
         reset();
+        
+        static_depth() --;
     }
 
 
+private:
+    int depth() const
+    {
+        return depth_;
+    }
+
+    
     bool destroying() const
     {
         return destroying_;
@@ -118,45 +136,7 @@ class node_proxy
 
     void destroying(bool b)
     {
-        using namespace smart_ptr::detail;
-
-        for (intrusive_list::iterator<node_proxy, &node_proxy::proxy_tag_> i(&proxy_tag_);;)
-        {
-            i->destroying_ = b;
-
-            if (++ i == intrusive_list::iterator<node_proxy, &node_proxy::proxy_tag_>(&proxy_tag_))
-                break;
-        }
-    }
-
-
-    size_t size()
-    {
-        using namespace smart_ptr::detail;
-
-        size_t c = 0;
-
-        for (intrusive_list::iterator<node_proxy, &node_proxy::proxy_tag_> i(&proxy_tag_);;)
-        {
-            ++ c;
-
-            if (++ i == intrusive_list::iterator<node_proxy, &node_proxy::proxy_tag_>(&proxy_tag_))
-                break;
-        }
-
-        return c;
-    }
-
-
-    /**
-        Unification with a new @c node_proxy .
-
-        @param p       New @c node_proxy to unify with.
-    */
-
-    void unify(node_proxy const & p) const
-    {
-        proxy_tag_.insert(& p.proxy_tag_);
+        destroying_ = b;
     }
 
 
@@ -180,28 +160,16 @@ class node_proxy
     {
         using namespace smart_ptr::detail;
 
-        if (size() == 1)
+        // destroy cycles remaining
+        destroying(true);
+
+        for (intrusive_list::iterator<node_base, &node_base::node_tag_> m = node_list_.begin(), n = node_list_.begin(); m != node_list_.end(); m = n)
         {
-            // destroy
-            destroying(true);
-
-            for (intrusive_list::iterator<node_base, &node_base::node_tag_> m = node_list_.begin(), n = node_list_.begin(); m != node_list_.end(); m = n)
-            {
-                ++ n;
-                delete &* m;
-            }
-
-            destroying(false);
+            ++ n;
+            delete &* m;
         }
-        else
-        {
-            // free current proxy & transfer ownership of nodes
-            intrusive_list::iterator<node_proxy, &node_proxy::proxy_tag_> i(&proxy_tag_), j(&proxy_tag_);
 
-            ++ j;
-
-            j->node_list_.merge(i->node_list_);
-        }
+        destroying(false);
     }
 };
 
@@ -239,6 +207,14 @@ class node_proxy
         }
 
 
+template <typename T>
+    struct info_t
+    {
+        static void proxy(T * po, node_proxy const * px)
+        {
+        }
+    };
+    
 /**
     Deterministic region based memory manager.
 
@@ -258,7 +234,7 @@ template <typename T>
         using base::po_;
 
         /** Reference to the @c node_proxy node @c node_ptr<> belongs to. */
-        node_proxy const & x_;
+        mutable node_proxy const * px_;
 
     public:
         using base::reset;
@@ -271,7 +247,7 @@ template <typename T>
 
         explicit node_ptr(node_proxy const & x)
         : base()
-        , x_(x)
+        , px_(& x)
         {
         }
 
@@ -286,9 +262,9 @@ template <typename T>
         template <typename V, typename PoolAllocator>
             explicit node_ptr(node_proxy const & x, node<V, PoolAllocator> * p)
             : base(p)
-            , x_(x)
+            , px_(& x)
             {
-                x_.init(p);
+                px_->init(p);
             }
 
 
@@ -305,7 +281,7 @@ template <typename T>
         template <typename V>
             node_ptr(node_ptr<V> const & p)
             : base(p)
-            , x_(p.x_)
+            , px_(p.px_)
             {
             }
 
@@ -318,7 +294,7 @@ template <typename T>
 
             node_ptr(node_ptr<T> const & p)
             : base(p)
-            , x_(p.x_)
+            , px_(p.px_)
             {
             }
 
@@ -335,13 +311,30 @@ template <typename T>
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(node_proxy::static_mutex());
 #endif
-
-                x_.unify(p.x_);
-
+                // Change the proxy here if not in the same scope
+                if (px_->depth() < p.px_->depth())
+                    p.proxy(px_);
+                
                 base::operator = (p);
 
                 return * this;
             }
+            
+        
+        void proxy(node_proxy const * px) const
+        {
+            if (px_ != px)
+            {
+                px_ = px;
+                
+                if (base::po_)
+                {
+                    base::header()->node_tag_.erase();
+                    info_t<T>::proxy(base::po_, px_);
+                    px_->init(base::header());
+                }
+            }
+        }
 
 
         /**
@@ -368,8 +361,7 @@ template <typename T>
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(node_proxy::static_mutex());
 #endif
-
-                x_.init(p);
+                px_->init(p);
 
                 base::operator = (p);
 
@@ -415,7 +407,7 @@ template <typename T>
 
         bool cyclic() const
         {
-            return x_.destroying();
+            return px_->destroying();
         }
 
 
@@ -431,13 +423,13 @@ template <typename T>
 
 #if 0 //defined(BOOST_HAS_RVALUE_REFS)
     public:
-        node_ptr(node_ptr<T> && p): base(p.po_), x_(p.x_)
+        node_ptr(node_ptr<T> && p): base(p.po_), px_(p.px_)
         {
             p.po_ = 0;
         }
 
         template<class Y>
-            node_ptr(node_ptr<Y> && p): base(p.po_), x_(p.x_)
+            node_ptr(node_ptr<Y> && p): base(p.po_), px_(p.px_)
             {
                 p.po_ = 0;
             }
@@ -445,7 +437,7 @@ template <typename T>
         node_ptr<T> & operator = (node_ptr<T> && p)
         {
             std::swap(po_, p.po_);
-            std::swap(x_, p.x_);
+            std::swap(px_, p.px_);
 
             return *this;
         }
@@ -454,7 +446,7 @@ template <typename T>
             node_ptr & operator = (node_ptr<Y> && p)
             {
                 std::swap(po_, p.po_);
-                std::swap(x_, p.x_);
+                std::swap(px_, p.px_);
 
                 return *this;
             }
