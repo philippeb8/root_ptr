@@ -210,7 +210,7 @@ private:
 template <typename T>
     struct info_t
     {
-        static void proxy(T * po, node_proxy const * px)
+        static void proxy(T const & po, node_proxy const & px)
         {
         }
     };
@@ -311,28 +311,24 @@ template <typename T>
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(node_proxy::static_mutex());
 #endif
-                // Change the proxy here if not in the same scope
+                
+                // upscale the proxy of the operand
                 if (px_->depth() < p.px_->depth())
-                    p.proxy(px_);
+                    propagate(p);
                 
                 base::operator = (p);
 
                 return * this;
             }
             
-        
-        void proxy(node_proxy const * px) const
+            
+        void proxy(node_proxy const & x) const
         {
-            if (px_ != px)
+            if (px_ != & x)
             {
-                px_ = px;
+                px_ = & x;
                 
-                if (base::po_)
-                {
-                    base::header()->node_tag_.erase();
-                    info_t<T>::proxy(base::po_, px_);
-                    px_->init(base::header());
-                }
+                propagate(* this);
             }
         }
 
@@ -361,6 +357,7 @@ template <typename T>
 #ifndef BOOST_DISABLE_THREADS
                 mutex::scoped_lock scoped_lock(node_proxy::static_mutex());
 #endif
+                
                 px_->init(p);
 
                 base::operator = (p);
@@ -451,6 +448,18 @@ template <typename T>
                 return *this;
             }
 #endif
+
+    private:
+        template <typename V>
+            void propagate(node_ptr<V> const & p) const
+            {
+                if (p.base::po_)
+                {
+                    p.base::header()->node_tag_.erase();
+                    info_t<V>::proxy(* p.base::po_, * px_);
+                    px_->init(p.base::header());
+                }
+            }
     };
 
 

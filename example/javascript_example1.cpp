@@ -29,17 +29,19 @@ using namespace boost;
 // Example
 struct A
 {
-    node_ptr<int> i;
+    char const * name;
+    
+    node_ptr<A> i;
     node_ptr<int> j;
     
-    A(node_proxy const & x): i(x), j(x) 
+    A(node_proxy const & x, char const * name): name(name), i(x), j(make_node<int>(x, 10)) 
     {
-        cout << __PRETTY_FUNCTION__ << endl;         
+        cout << __PRETTY_FUNCTION__ << ": " << name << endl;         
     }
     
     ~A() 
     { 
-        cout << __PRETTY_FUNCTION__ << endl; 
+        cout << __PRETTY_FUNCTION__ << ": " << name << endl; 
     }
 };
 
@@ -50,10 +52,10 @@ namespace boost
 template <>
     struct info_t<A>
     {
-        static void proxy(A * po, node_proxy const * px)
+        static void proxy(A const & o, node_proxy const & px)
         {
-            po->i.proxy(px);
-            po->j.proxy(px);
+            o.i.proxy(px);
+            o.j.proxy(px);
         }
     };
 }
@@ -68,11 +70,13 @@ int main()
         cout << "Scope 1: BEGIN" << endl;
         {
             node_proxy x;
-            node_ptr<A> b = make_node<A>(x, x);
+            node_ptr<A> b = make_node<A>(x, x, "b1");
+            node_ptr<A> c = make_node<A>(x, x, "c1");
             
             a = b;
             
-            b = make_node<A>(x, x);
+            b = make_node<A>(x, x, "b2");
+            b->i = b;
         }
         cout << "Scope 1: END" << endl;
     }
