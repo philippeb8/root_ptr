@@ -52,10 +52,10 @@ namespace boost
 template <>
     struct info_t<A>
     {
-        static void proxy(A const & o, node_proxy const & px)
+        static void proxy(A const & o, node_proxy const & x)
         {
-            o.i.proxy(px);
-            o.j.proxy(px);
+            o.i.proxy(x);
+            o.j.proxy(x);
         }
     };
 }
@@ -64,19 +64,19 @@ int main()
 {
     cout << "Scope 0: BEGIN" << endl;
     {
-        node_proxy x;
-        node_ptr<A> a(x);
+        node_proxy x; // 1st proxy
+        node_ptr<A> a1 = make_node<A>(x, x, "a1");
         
         cout << "Scope 1: BEGIN" << endl;
         {
-            node_proxy x;
-            node_ptr<A> b = make_node<A>(x, x, "b1");
-            node_ptr<A> c = make_node<A>(x, x, "c1");
+            node_proxy x; // 2nd proxy
+            node_ptr<A> b1 = make_node<A>(x, x, "b1");
+            node_ptr<A> b2 = make_node<A>(x, x, "b2");
+
+            a1 = b1; // upscale scope of b1 to use 1st proxy
             
-            a = b;
-            
-            b = make_node<A>(x, x, "b2");
-            b->i = b;
+            b1 = make_node<A>(x, x, "b3"); // scope of b1 will still be associated with the 1st proxy
+            b1->i = b1; // cycle
         }
         cout << "Scope 1: END" << endl;
     }
