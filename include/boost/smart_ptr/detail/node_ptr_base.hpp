@@ -1,6 +1,6 @@
 /**
     @file
-    Boost node_ptr_base.hpp header file.
+    Boost QNodePtrBase.hpp header file.
 
     @note
     Copyright (c) 2003-2008 Phil Bouchard <pbouchard8@gmail.com>.
@@ -23,8 +23,10 @@
 #include <boost/smart_ptr/detail/node_base.hpp>
 
 
-namespace boost
+namespace Qt
 {
+
+using namespace boost;
 
 namespace smart_ptr
 {
@@ -40,12 +42,12 @@ namespace detail
 */
 
 template <typename T>
-    class node_ptr_common
+    class QNodePtrCommon
     {
-        template <typename> friend class node_ptr_common;
+        template <typename> friend class QNodePtrCommon;
 
         // Borland 5.5.1 specific workaround
-        typedef node_ptr_common<T> this_type;
+        typedef QNodePtrCommon<T> this_type;
 
     protected:
         typedef T value_type;
@@ -53,12 +55,12 @@ template <typename T>
         value_type * po_;
 
     public:
-        node_ptr_common() 
+        QNodePtrCommon() 
         : po_(0)
         {
         }
 
-        ~node_ptr_common()
+        ~QNodePtrCommon()
         {
             if (po_)
             {
@@ -67,31 +69,31 @@ template <typename T>
         }
 
         template <typename V, typename PoolAllocator>
-            node_ptr_common(node<V, PoolAllocator> * p) 
+            QNodePtrCommon(QNode<V, PoolAllocator> * p) 
             : po_(p->element())
             {
             }
 
         template <typename V>
-            node_ptr_common(node_ptr_common<V> const & p) 
+            QNodePtrCommon(QNodePtrCommon<V> const & p) 
             : po_(p.share())
             {
             }
 
-            node_ptr_common(node_ptr_common<value_type> const & p) 
+            QNodePtrCommon(QNodePtrCommon<value_type> const & p) 
             : po_(p.share())
             {
             }
 
         template <typename V, typename PoolAllocator>
-            node_ptr_common & operator = (node<V> * p)
+            QNodePtrCommon & operator = (QNode<V> * p)
             {
                 reset(p->element());
                 return * this;
             }
             
         template <typename V>
-            node_ptr_common & operator = (node_ptr_common<V> const & p)
+            QNodePtrCommon & operator = (QNodePtrCommon<V> const & p)
             {
                 if (p.po_ != po_)
                 {
@@ -100,7 +102,7 @@ template <typename T>
                 return * this;
             }
 
-            node_ptr_common & operator = (node_ptr_common<value_type> const & p)
+            QNodePtrCommon & operator = (QNodePtrCommon<value_type> const & p)
             {
                 return operator = <value_type>(p);
             }
@@ -177,11 +179,11 @@ template <typename T>
         }
 
     protected:
-        node_base * header() const
+        QNodeBase * header() const
         {
-            return static_cast<node_base *>
+            return static_cast<QNodeBase *>
             (
-                (typename node_element<value_type>::classof)
+                (typename QNodeElement<value_type>::classof)
                 (
                     static_cast<value_type *>
                     (
@@ -197,52 +199,52 @@ template <typename T>
 
 
 template <typename T>
-    class node_ptr_base : public node_ptr_common<T>
+    class QNodePtrBase : public QNodePtrCommon<T>
     {
-        typedef node_ptr_common<T> base;
+        typedef QNodePtrCommon<T> base;
         typedef typename base::value_type value_type;
         
     protected:
         using base::po_;
 
     public:
-        node_ptr_base() 
+        QNodePtrBase() 
         : base()
         {
         }
 
         template <typename V, typename PoolAllocator>
-            node_ptr_base(node<V, PoolAllocator> * p) 
+            QNodePtrBase(QNode<V, PoolAllocator> * p) 
             : base(p)
             {
             }
 
         template <typename V>
-            node_ptr_base(node_ptr_base<V> const & p) 
+            QNodePtrBase(QNodePtrBase<V> const & p) 
             : base(p)
             {
             }
 
-            node_ptr_base(node_ptr_base<value_type> const & p) 
+            QNodePtrBase(QNodePtrBase<value_type> const & p) 
             : base(p)
             {
             }
 
         template <typename V, typename PoolAllocator>
-            node_ptr_base & operator = (node<V, PoolAllocator> * p)
+            QNodePtrBase & operator = (QNode<V, PoolAllocator> * p)
             {
-                return static_cast<node_ptr_base &>(base::operator = (p));
+                return static_cast<QNodePtrBase &>(base::operator = (p));
             }
 
         template <typename V>
-            node_ptr_base & operator = (node_ptr_base<V> const & p)
+            QNodePtrBase & operator = (QNodePtrBase<V> const & p)
             {
-                return static_cast<node_ptr_base &>(base::operator = (p));
+                return static_cast<QNodePtrBase &>(base::operator = (p));
             }
 
-            node_ptr_base & operator = (node_ptr_base<value_type> const & p)
+            QNodePtrBase & operator = (QNodePtrBase<value_type> const & p)
             {
-                return static_cast<node_ptr_base &>(base::operator = (p));
+                return static_cast<QNodePtrBase &>(base::operator = (p));
             }
 
         value_type & operator * () const
@@ -259,52 +261,52 @@ template <typename T>
 
 #if !defined(_MSC_VER)
 template <typename T, size_t N>
-    class node_ptr_base<T [N]> : public node_ptr_common<T [N]>
+    class QNodePtrBase<T [N]> : public QNodePtrCommon<T [N]>
     {
-        typedef node_ptr_common<T [N]> base;
+        typedef QNodePtrCommon<T [N]> base;
         typedef typename base::value_type value_type;
 
     protected:
         using base::po_;
 
     public:
-        node_ptr_base() 
+        QNodePtrBase() 
         : base()
         {
         }
 
         template <typename V, typename PoolAllocator>
-            node_ptr_base(node<V, PoolAllocator> * p) 
+            QNodePtrBase(QNode<V, PoolAllocator> * p) 
             : base(p)
             {
             }
 
         template <typename V>
-            node_ptr_base(node_ptr_base<V> const & p) 
+            QNodePtrBase(QNodePtrBase<V> const & p) 
             : base(p)
             {
             }
 
-            node_ptr_base(node_ptr_base<value_type> const & p) 
+            QNodePtrBase(QNodePtrBase<value_type> const & p) 
             : base(p)
             {
             }
 
         template <typename V, typename PoolAllocator>
-            node_ptr_base & operator = (node<V, PoolAllocator> * p)
+            QNodePtrBase & operator = (QNode<V, PoolAllocator> * p)
             {
-                return static_cast<node_ptr_base &>(base::operator = (p));
+                return static_cast<QNodePtrBase &>(base::operator = (p));
             }
 
         template <typename V>
-            node_ptr_base & operator = (node_ptr_base<V> const & p)
+            QNodePtrBase & operator = (QNodePtrBase<V> const & p)
             {
-                return static_cast<node_ptr_base &>(base::operator = (p));
+                return static_cast<QNodePtrBase &>(base::operator = (p));
             }
 
-            node_ptr_base & operator = (node_ptr_base<value_type> const & p)
+            QNodePtrBase & operator = (QNodePtrBase<value_type> const & p)
             {
-                return static_cast<node_ptr_base &>(base::operator = (p));
+                return static_cast<QNodePtrBase &>(base::operator = (p));
             }
 
         T & operator [] (std::size_t n)
@@ -321,52 +323,52 @@ template <typename T, size_t N>
 
 
 template <>
-    class node_ptr_base<void> : public node_ptr_common<void>
+    class QNodePtrBase<void> : public QNodePtrCommon<void>
     {
-        typedef node_ptr_common<void> base;
+        typedef QNodePtrCommon<void> base;
         typedef typename base::value_type value_type;
 
     protected:
         using base::po_;
 
     public:
-        node_ptr_base() 
+        QNodePtrBase() 
         : base()
         {
         }
 
         template <typename V, typename PoolAllocator>
-            node_ptr_base(node<V, PoolAllocator> * p) 
+            QNodePtrBase(QNode<V, PoolAllocator> * p) 
             : base(p)
             {
             }
 
         template <typename V>
-            node_ptr_base(node_ptr_base<V> const & p) 
+            QNodePtrBase(QNodePtrBase<V> const & p) 
             : base(p)
             {
             }
 
-            node_ptr_base(node_ptr_base<value_type> const & p) 
+            QNodePtrBase(QNodePtrBase<value_type> const & p) 
             : base(p)
             {
             }
 
         template <typename V, typename PoolAllocator>
-            node_ptr_base & operator = (node<V, PoolAllocator> * p)
+            QNodePtrBase & operator = (QNode<V, PoolAllocator> * p)
             {
-                return static_cast<node_ptr_base &>(base::operator = (p));
+                return static_cast<QNodePtrBase &>(base::operator = (p));
             }
 
         template <typename V>
-            node_ptr_base & operator = (node_ptr_base<V> const & p)
+            QNodePtrBase & operator = (QNodePtrBase<V> const & p)
             {
-                return static_cast<node_ptr_base &>(base::operator = (p));
+                return static_cast<QNodePtrBase &>(base::operator = (p));
             }
 
-            node_ptr_base & operator = (node_ptr_base<value_type> const & p)
+            QNodePtrBase & operator = (QNodePtrBase<value_type> const & p)
             {
-                return static_cast<node_ptr_base &>(base::operator = (p));
+                return static_cast<QNodePtrBase &>(base::operator = (p));
             }
     };
 
@@ -375,7 +377,7 @@ template <>
 
 } // namespace smart_ptr
 
-} // namespace boost
+} // namespace Qt
 
 
 #endif

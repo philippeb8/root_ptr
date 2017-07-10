@@ -1,6 +1,6 @@
 /**
     @file
-    Boost intrusive_stack.hpp header file.
+    Boost QIntrusiveStack.hpp header file.
 
     @note
     Copyright (c) 2008 Phil Bouchard <pbouchard8@gmail.com>.
@@ -21,8 +21,10 @@
 #include <boost/smart_ptr/detail/classof.hpp>
 
 
-namespace boost
+namespace Qt
 {
+
+using namespace boost;
 
 namespace smart_ptr
 {
@@ -31,11 +33,11 @@ namespace detail
 {
 
 
-struct intrusive_stack_node
+struct QIntrusiveStackNode
 {
-    intrusive_stack_node * next;
+    QIntrusiveStackNode * next;
     
-    void insert(intrusive_stack_node * const p)
+    void insert(QIntrusiveStackNode * const p)
     {
         p->next = next;
         next = p;
@@ -43,12 +45,12 @@ struct intrusive_stack_node
 };
 
 
-class intrusive_stack_base
+class QIntrusiveStackBase
 {
 protected:
-    intrusive_stack_node impl;
+    QIntrusiveStackNode impl;
     
-    intrusive_stack_base()
+    QIntrusiveStackBase()
     { 
         clear(); 
     }
@@ -63,19 +65,19 @@ protected:
 /**
     Static stack.
     
-    Rewritten stack template with explicit access to internal nodes.  This 
+    Rewritten stack template with explicit access to internal QNodes.  This 
     allows usages of tags already part of an object, used to group objects 
     together without the need of any memory allocation.
 */
 
-class intrusive_stack : protected intrusive_stack_base
+class QIntrusiveStack : protected QIntrusiveStackBase
 {
-    typedef intrusive_stack_base base;
+    typedef QIntrusiveStackBase base;
 
 public:
-    typedef intrusive_stack_node node;
-    typedef intrusive_stack_node * pointer;
-    template <typename T, intrusive_stack_node T::* P> 
+    typedef QIntrusiveStackNode QNode;
+    typedef QIntrusiveStackNode * pointer;
+    template <typename T, QIntrusiveStackNode T::* P> 
         struct iterator;
 
 protected:
@@ -104,18 +106,18 @@ public:
 };
 
 
-template <typename T, intrusive_stack_node T::* P>
-    struct intrusive_stack::iterator
+template <typename T, QIntrusiveStackNode T::* P>
+    struct QIntrusiveStack::iterator
     {
         typedef iterator self_type;
-        typedef intrusive_stack_node node_type;
+        typedef QIntrusiveStackNode QNodeType;
 
         iterator() 
         : node_() 
         {
         }
         
-        iterator(intrusive_stack::pointer __x) 
+        iterator(QIntrusiveStack::pointer __x) 
         : node_(__x) 
         {
         }
@@ -146,7 +148,7 @@ template <typename T, intrusive_stack_node T::* P>
             return node_ != x.node_; 
         }
 
-        node_type * node_;
+        QNodeType * node_;
     };
 
 
@@ -154,7 +156,7 @@ template <typename T, intrusive_stack_node T::* P>
 
 } // namespace smart_ptr
 
-} // namespace boost
+} // namespace Qt
 
 
 #endif // #ifndef BOOST_INTRUSIVE_STACK_HPP_INCLUDED

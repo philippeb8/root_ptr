@@ -24,8 +24,10 @@
 #include <boost/type_traits/type_with_alignment.hpp>
 
 
-namespace boost
+namespace Qt
 {
+    
+using namespace boost;
 
 namespace smart_ptr
 {
@@ -119,7 +121,7 @@ template <typename T, typename U>
 
 } // namespace smart_ptr
 
-} // namespace boost
+} // namespace Qt
 
 
 #endif // #ifndef BOOST_DETAIL_ROOFOF_HPP_INCLUDED

@@ -1,6 +1,6 @@
 /*!
     \file
-    \brief Boost root_ptr.hpp mainheader file.
+    \brief Boost QRootPtr.hpp mainheader file.
 */
 /*
     Copyright 2008-2016 Phil Bouchard.
@@ -31,8 +31,10 @@
 #include <boost/smart_ptr/detail/node_ptr_base.hpp>
 
 
-namespace boost
+namespace Qt
 {
+
+using namespace boost;
 
 namespace smart_ptr
 {
@@ -41,7 +43,7 @@ namespace detail
 {
 
 
-struct node_base;
+struct QNodeBase;
 
 
 } // namespace detail
@@ -52,13 +54,13 @@ struct node_base;
 /**
     Set header.
 
-    Proxy object used to link a list of @c node<> blocks and a list of @c node_proxy .
+    Proxy object used to link a list of @c QNode<> blocks and a list of @c QNodeProxy .
 */
 
-class node_proxy
+class QNodeProxy
 {
-    template <typename> friend class node_ptr;
-    template <typename> friend class root_ptr;
+    template <typename> friend class QNodePtr;
+    template <typename> friend class QRootPtr;
 
     /** Stack depth. */
     int const depth_;
@@ -66,8 +68,8 @@ class node_proxy
     /** Destruction sequence flag. */
     bool destroying_;
 
-    /** List of all pointee objects belonging to a @c node_proxy . */
-    mutable smart_ptr::detail::intrusive_list node_list_;
+    /** List of all pointee objects belonging to a @c QNodeProxy . */
+    mutable smart_ptr::detail::QIntrusiveList node_list_;
 
 #ifndef BOOST_DISABLE_THREADS
     /** Main global mutex used for thread safety */
@@ -89,19 +91,19 @@ class node_proxy
 
 public:
     /**
-        Initialization of a single @c node_proxy .
+        Initialization of a single @c QNodeProxy .
     */
 
-    node_proxy() : depth_(static_depth() ++), destroying_(false)
+    QNodeProxy() : depth_(static_depth() ++), destroying_(false)
     {
     }
 
 
     /**
-        Copy of a single @c node_proxy and unification.
+        Copy of a single @c QNodeProxy and unification.
     */
 
-    node_proxy(node_proxy const & x)
+    QNodeProxy(QNodeProxy const & x)
     : depth_(static_depth() ++)
     , destroying_(x.destroying_)
     , node_list_(x.node_list_)
@@ -110,10 +112,10 @@ public:
 
 
     /**
-        Destruction of a single @c node_proxy and detaching itself from other @c node_proxy .
+        Destruction of a single @c QNodeProxy and detaching itself from other @c QNodeProxy .
     */
 
-    ~node_proxy()
+    ~QNodeProxy()
     {
         reset();
         
@@ -141,19 +143,19 @@ private:
 
 
     /**
-        Enlist & initialize pointee objects belonging to the same @c node_proxy .
+        Enlist & initialize pointee objects belonging to the same @c QNodeProxy .
 
         @param  p   Pointee object to initialize.
     */
 
-    void init(smart_ptr::detail::node_base * p) const
+    void init(smart_ptr::detail::QNodeBase * p) const
     {
         node_list_.push_back(& p->node_tag_);
     }
 
 
     /**
-        Get rid or delegate a series of @c node_proxy .
+        Get rid or delegate a series of @c QNodeProxy .
     */
 
     void reset()
@@ -163,7 +165,7 @@ private:
         // destroy cycles remaining
         destroying(true);
 
-        for (intrusive_list::iterator<node_base, &node_base::node_tag_> m = node_list_.begin(), n = node_list_.begin(); m != node_list_.end(); m = n)
+        for (QIntrusiveList::iterator<QNodeBase, &QNodeBase::node_tag_> m = node_list_.begin(), n = node_list_.begin(); m != node_list_.end(); m = n)
         {
             ++ n;
             delete &* m;
@@ -180,37 +182,37 @@ private:
 
 #define CONSTRUCT_MAKE_ROOT1(z, n, text)                                                                                \
     template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename PoolAllocator = pool_allocator<V> >            \
-        root_ptr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                          \
+        QRootPtr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                          \
         {                                                                                                               \
-            return root_ptr<V>(new node<V, PoolAllocator>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                      \
+            return QRootPtr<V>(new QNode<V, PoolAllocator>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                      \
         }
 
 #define CONSTRUCT_MAKE_NODE2(z, n, text)                                                                                \
     template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename PoolAllocator = pool_allocator<V> >            \
-        node_ptr<V> text(node_proxy const & x, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                    \
+        QNodePtr<V> text(QNodeProxy const & x, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                    \
         {                                                                                                               \
-            return node_ptr<V>(x, new node<V, PoolAllocator>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                   \
+            return QNodePtr<V>(x, new QNode<V, PoolAllocator>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                   \
         }
 
 #define CONSTRUCT_MAKE_ROOT3(z, n, text)                                                                                \
     template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename PoolAllocator = pool_allocator<V> >            \
-        root_ptr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                          \
+        QRootPtr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                          \
         {                                                                                                               \
-            return root_ptr<V>(new fastnode<V>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                                 \
+            return QRootPtr<V>(new QFastNode<V>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                                 \
         }
 
 #define CONSTRUCT_MAKE_NODE4(z, n, text)                                                                                \
     template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename PoolAllocator = pool_allocator<V> >            \
-        node_ptr<V> text(node_proxy const & x, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                    \
+        QNodePtr<V> text(QNodeProxy const & x, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                    \
         {                                                                                                               \
-            return node_ptr<V>(x, new fastnode<V>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                              \
+            return QNodePtr<V>(x, new QFastNode<V>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                              \
         }
 
 
 template <typename T>
     struct info_t
     {
-        static void proxy(T const & po, node_proxy const & px)
+        static void proxy(T const & po, QNodeProxy const & px)
         {
         }
     };
@@ -220,21 +222,21 @@ template <typename T>
 
     Complete memory management utility on top of standard reference counting.
 
-    @note Must be initialized with a reference to a @c node_proxy , given by a @c root_ptr<> .
+    @note Must be initialized with a reference to a @c QNodeProxy , given by a @c QRootPtr<> .
 */
 
 template <typename T>
-    class node_ptr : public smart_ptr::detail::node_ptr_base<T>
+    class QNodePtr : public smart_ptr::detail::QNodePtrBase<T>
     {
-        template <typename> friend class node_ptr;
+        template <typename> friend class QNodePtr;
 
-        typedef smart_ptr::detail::node_ptr_base<T> base;
+        typedef smart_ptr::detail::QNodePtrBase<T> base;
 
         using base::share;
         using base::po_;
 
-        /** Reference to the @c node_proxy node @c node_ptr<> belongs to. */
-        mutable node_proxy const * px_;
+        /** Reference to the @c QNodeProxy QNode @c QNodePtr<> belongs to. */
+        mutable QNodeProxy const * px_;
 
     public:
         using base::reset;
@@ -242,10 +244,10 @@ template <typename T>
         /**
             Initialization of a pointer.
 
-            @param  x   Reference to a @c node_proxy the pointer belongs to.
+            @param  x   Reference to a @c QNodeProxy the pointer belongs to.
         */
 
-        explicit node_ptr(node_proxy const & x)
+        explicit QNodePtr(QNodeProxy const & x)
         : base()
         , px_(& x)
         {
@@ -255,12 +257,12 @@ template <typename T>
         /**
             Initialization of a pointer.
 
-            @param  x   Reference to a @c node_proxy the pointer belongs to.
+            @param  x   Reference to a @c QNodeProxy the pointer belongs to.
             @param  p New pointee object to manage.
         */
 
         template <typename V, typename PoolAllocator>
-            explicit node_ptr(node_proxy const & x, node<V, PoolAllocator> * p)
+            explicit QNodePtr(QNodeProxy const & x, QNode<V, PoolAllocator> * p)
             : base(p)
             , px_(& x)
             {
@@ -279,7 +281,7 @@ template <typename T>
         */
 
         template <typename V>
-            node_ptr(node_ptr<V> const & p)
+            QNodePtr(QNodePtr<V> const & p)
             : base(p)
             , px_(p.px_)
             {
@@ -292,7 +294,7 @@ template <typename T>
             @param  p New pointer to manage.
         */
 
-            node_ptr(node_ptr<T> const & p)
+            QNodePtr(QNodePtr<T> const & p)
             : base(p)
             , px_(p.px_)
             {
@@ -306,10 +308,10 @@ template <typename T>
         */
 
         template <typename V>
-            node_ptr & operator = (node_ptr<V> const & p)
+            QNodePtr & operator = (QNodePtr<V> const & p)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(node_proxy::static_mutex());
+                mutex::scoped_lock scoped_lock(QNodeProxy::static_mutex());
 #endif
                 
                 // upscale the proxy of the operand
@@ -323,7 +325,7 @@ template <typename T>
             }
             
             
-        void proxy(node_proxy const & x) const
+        void proxy(QNodeProxy const & x) const
         {
             if (px_ != & x)
             {
@@ -340,7 +342,7 @@ template <typename T>
             @param  p New pointer to manage.
         */
 
-        node_ptr & operator = (node_ptr<T> const & p)
+        QNodePtr & operator = (QNodePtr<T> const & p)
         {
             return operator = <T>(p);
         }
@@ -353,10 +355,10 @@ template <typename T>
         */
 
         template <typename V, typename PoolAllocator>
-            node_ptr & operator = (node<V, PoolAllocator> * p)
+            QNodePtr & operator = (QNode<V, PoolAllocator> * p)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(node_proxy::static_mutex());
+                mutex::scoped_lock scoped_lock(QNodeProxy::static_mutex());
 #endif
                 
                 px_->init(p);
@@ -374,7 +376,7 @@ template <typename T>
         */
 
         template <typename V>
-            void reset(node_ptr<V> const & p)
+            void reset(QNodePtr<V> const & p)
             {
                 operator = <T>(p);
             }
@@ -387,7 +389,7 @@ template <typename T>
         */
 
         template <typename V, typename PoolAllocator>
-            void reset(node<V, PoolAllocator> * p)
+            void reset(QNode<V, PoolAllocator> * p)
             {
                 operator = <T>(p);
             }
@@ -399,7 +401,7 @@ template <typename T>
             @return Whether the pointer inside a destructor points to an object already destroyed.
 
             TODO I'm not sure what this means???  return @false if there is an object to destroy?
-            Need a link to the example here See root_ptr_example1.cpp for an unfinished on.
+            Need a link to the example here See QRootPtr_example1.cpp for an unfinished on.
 
         */
 
@@ -413,7 +415,7 @@ template <typename T>
             Destructor.
         */
 
-        ~node_ptr()
+        ~QNodePtr()
         {
             if (cyclic())
                 base::po_ = 0;
@@ -421,18 +423,18 @@ template <typename T>
 
 #if 0 //defined(BOOST_HAS_RVALUE_REFS)
     public:
-        node_ptr(node_ptr<T> && p): base(p.po_), px_(p.px_)
+        QNodePtr(QNodePtr<T> && p): base(p.po_), px_(p.px_)
         {
             p.po_ = 0;
         }
 
         template<class Y>
-            node_ptr(node_ptr<Y> && p): base(p.po_), px_(p.px_)
+            QNodePtr(QNodePtr<Y> && p): base(p.po_), px_(p.px_)
             {
                 p.po_ = 0;
             }
 
-        node_ptr<T> & operator = (node_ptr<T> && p)
+        QNodePtr<T> & operator = (QNodePtr<T> && p)
         {
             std::swap(po_, p.po_);
             std::swap(px_, p.px_);
@@ -441,7 +443,7 @@ template <typename T>
         }
 
         template<class Y>
-            node_ptr & operator = (node_ptr<Y> && p)
+            QNodePtr & operator = (QNodePtr<Y> && p)
             {
                 std::swap(po_, p.po_);
                 std::swap(px_, p.px_);
@@ -452,7 +454,7 @@ template <typename T>
 
     private:
         template <typename V>
-            void propagate(node_ptr<V> const & p) const
+            void propagate(QNodePtr<V> const & p) const
             {
                 if (p.base::po_)
                 {
@@ -469,11 +471,11 @@ template <typename T>
 
     Complete memory management utility on top of standard reference counting.
 
-    @note Needs to be instanciated for the use of further @c node_ptr<> .
+    @note Needs to be instanciated for the use of further @c QNodePtr<> .
 */
 
 template <typename T>
-    class root_ptr : public node_proxy, public node_ptr<T>
+    class QRootPtr : public QNodeProxy, public QNodePtr<T>
     {
     public:
 
@@ -481,16 +483,16 @@ template <typename T>
             Assignment.
         */
 
-        using node_ptr<T>::reset;
+        using QNodePtr<T>::reset;
 
 
         /**
             Initialization of a pointer.
         */
 
-        root_ptr()
-        : node_proxy()
-        , node_ptr<T>(* static_cast<node_proxy *>(this))
+        QRootPtr()
+        : QNodeProxy()
+        , QNodePtr<T>(* static_cast<QNodeProxy *>(this))
         {
         }
 
@@ -501,9 +503,9 @@ template <typename T>
             @param  p   New pointer to manage.
         */
 
-        root_ptr(root_ptr const & p)
-        : node_proxy(p)
-        , node_ptr<T>(static_cast<node_ptr<T> const &>(p))
+        QRootPtr(QRootPtr const & p)
+        : QNodeProxy(p)
+        , QNodePtr<T>(static_cast<QNodePtr<T> const &>(p))
         {
         }
 
@@ -515,8 +517,8 @@ template <typename T>
         */
 
         template <typename V, typename PoolAllocator>
-            root_ptr(node<V, PoolAllocator> * p)
-            : node_ptr<T>(*this, p)
+            QRootPtr(QNode<V, PoolAllocator> * p)
+            : QNodePtr<T>(*this, p)
             {
             }
 
@@ -528,9 +530,9 @@ template <typename T>
         */
 
         template <typename V>
-            root_ptr & operator = (node_ptr<V> const & p)
+            QRootPtr & operator = (QNodePtr<V> const & p)
             {
-                return static_cast<root_ptr &>(node_ptr<T>::operator = (p));
+                return static_cast<QRootPtr &>(QNodePtr<T>::operator = (p));
             }
 
 
@@ -540,7 +542,7 @@ template <typename T>
             @param  p   New pointer to manage.
         */
 
-        root_ptr & operator = (node_ptr<T> const & p)
+        QRootPtr & operator = (QNodePtr<T> const & p)
         {
             return operator = <T>(p);
         }
@@ -553,9 +555,9 @@ template <typename T>
         */
 
         template <typename V>
-            root_ptr & operator = (root_ptr<V> const & p)
+            QRootPtr & operator = (QRootPtr<V> const & p)
             {
-                return static_cast<root_ptr &>(node_ptr<T>::operator = (p));
+                return static_cast<QRootPtr &>(QNodePtr<T>::operator = (p));
             }
 
 
@@ -565,7 +567,7 @@ template <typename T>
             @param  p   New pointer to manage.
         */
 
-        root_ptr & operator = (root_ptr<T> const & p)
+        QRootPtr & operator = (QRootPtr<T> const & p)
         {
             return operator = <T>(p);
         }
@@ -578,19 +580,19 @@ template <typename T>
         */
 
         template <typename V, typename PoolAllocator>
-            root_ptr<T> & operator = (node<V, PoolAllocator> * p)
+            QRootPtr<T> & operator = (QNode<V, PoolAllocator> * p)
             {
-                return static_cast<root_ptr<T> &>(node_ptr<T>::operator = (p));
+                return static_cast<QRootPtr<T> &>(QNodePtr<T>::operator = (p));
             }
             
         
         /**
             Cast operation helper.
             
-            @return     @c node_proxy part of @c root_ptr .
+            @return     @c QNodeProxy part of @c QRootPtr .
         */
         
-        node_proxy & proxy() 
+        QNodeProxy & proxy() 
         {
             return *this;
         }
@@ -599,10 +601,10 @@ template <typename T>
         /**
             Cast operation helper.
             
-            @return     @c node_proxy part of @c root_ptr .
+            @return     @c QNodeProxy part of @c QRootPtr .
         */
         
-        node_proxy const & proxy() const
+        QNodeProxy const & proxy() const
         {
             return *this;
         }
@@ -610,54 +612,54 @@ template <typename T>
 
 
 /**
-    Instanciates a new @c root_ptr<> .
+    Instanciates a new @c QRootPtr<> .
 */
 
 template <typename V, typename PoolAllocator = pool_allocator<V> >
-    root_ptr<V> make_root()
+    QRootPtr<V> make_root()
     {
-        return root_ptr<V>(new node<V, PoolAllocator>());
+        return QRootPtr<V>(new QNode<V, PoolAllocator>());
     }
 
 
 /**
-    Instanciates a new @c node_ptr<> .
+    Instanciates a new @c QNodePtr<> .
 
-    @param  x   Reference to a @c node_proxy the pointer belongs to.
+    @param  x   Reference to a @c QNodeProxy the pointer belongs to.
 */
 
 template <typename V, typename PoolAllocator = pool_allocator<V> >
-    node_ptr<V> make_node(node_proxy const & x)
+    QNodePtr<V> make_node(QNodeProxy const & x)
     {
-        return node_ptr<V>(x, new node<V, PoolAllocator>());
+        return QNodePtr<V>(x, new QNode<V, PoolAllocator>());
     }
 
 
 /**
-    Instanciates a new @c root_ptr<> .
+    Instanciates a new @c QRootPtr<> .
 
     @note Uses @c fast_pool_allocator to instanciate the pointee object.
 */
 
 template <typename V, typename PoolAllocator = pool_allocator<V> >
-    root_ptr<V> make_fastroot()
+    QRootPtr<V> make_fastroot()
     {
-        return root_ptr<V>(new fastnode<V>());
+        return QRootPtr<V>(new QFastNode<V>());
     }
 
 
 /**
-    Instanciates a new @c node_ptr<> .
+    Instanciates a new @c QNodePtr<> .
 
-    @param  x   Reference to a @c node_proxy the pointer belongs to.
+    @param  x   Reference to a @c QNodeProxy the pointer belongs to.
 
     @note Uses @c fast_pool_allocator to instanciate the pointee object.
 */
 
 template <typename V, typename PoolAllocator = pool_allocator<V> >
-    node_ptr<V> make_fastnode(node_proxy const & x)
+    QNodePtr<V> make_fastnode(QNodeProxy const & x)
     {
-        return node_ptr<V>(x, new fastnode<V>());
+        return QNodePtr<V>(x, new QFastNode<V>());
     }
 
 
@@ -669,7 +671,7 @@ template <typename V, typename PoolAllocator = pool_allocator<V> >
 */
 
 template <typename T>
-    bool operator == (node_ptr<T> const &a1, node_ptr<T> const &a2)
+    bool operator == (QNodePtr<T> const &a1, QNodePtr<T> const &a2)
     {
         return a1.get() == a2.get();
     }
@@ -683,7 +685,7 @@ template <typename T>
 */
 
 template <typename T>
-    bool operator != (node_ptr<T> const &a1, node_ptr<T> const &a2)
+    bool operator != (QNodePtr<T> const &a1, QNodePtr<T> const &a2)
     {
         return a1.get() != a2.get();
     }
@@ -695,7 +697,7 @@ BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_ROOT3, make_fastroot)
 BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_NODE4, make_fastnode)
 
 
-} // namespace boost
+} // namespace Qt
 
 
 #if defined(_MSC_VER)

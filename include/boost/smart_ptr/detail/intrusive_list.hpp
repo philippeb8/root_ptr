@@ -1,6 +1,6 @@
 /**
     @file
-    Boost intrusive_list.hpp header file.
+    Boost QIntrusiveList.hpp header file.
 
     @note
     Copyright (c) 2008 Phil Bouchard <pbouchard8@gmail.com>.
@@ -21,8 +21,10 @@
 #include <boost/smart_ptr/detail/classof.hpp>
 
 
-namespace boost
+namespace Qt
 {
+
+using namespace boost;
 
 namespace smart_ptr
 {
@@ -31,16 +33,16 @@ namespace detail
 {
 
 
-struct intrusive_list_node
+struct QIntrusiveListNode
 {
-    intrusive_list_node * next;
-    intrusive_list_node * prev;
+    QIntrusiveListNode * next;
+    QIntrusiveListNode * prev;
     
-    intrusive_list_node() : next(this), prev(this)
+    QIntrusiveListNode() : next(this), prev(this)
     {
     }
 
-    void insert(intrusive_list_node * const p)
+    void insert(QIntrusiveListNode * const p)
     {
         p->next = this;
         p->prev = prev;
@@ -58,17 +60,17 @@ struct intrusive_list_node
         prev = this;
     }
     
-    ~intrusive_list_node()
+    ~QIntrusiveListNode()
     {
         erase();
     }
 };
 
 
-class intrusive_list_base
+class QIntrusiveListBase
 {
 protected:
-    intrusive_list_node impl;
+    QIntrusiveListNode impl;
 
     void clear()
     {
@@ -81,30 +83,30 @@ protected:
 /**
     Static list.
     
-    Rewritten list template with explicit access to internal nodes.  This 
+    Rewritten list template with explicit access to internal QNodes.  This 
     allows usages of tags already part of an object, used to group objects 
     together without the need of any memory allocation.
 */
 
-class intrusive_list : protected intrusive_list_base
+class QIntrusiveList : protected QIntrusiveListBase
 {
-    typedef intrusive_list_base base;
+    typedef QIntrusiveListBase base;
 
 public:
-    typedef intrusive_list_node node;
-    typedef intrusive_list_node * pointer;
-    template <typename T, intrusive_list_node T::* P> 
+    typedef QIntrusiveListNode QNode;
+    typedef QIntrusiveListNode * pointer;
+    template <typename T, QIntrusiveListNode T::* P> 
         struct iterator;
 
 protected:
     using base::impl;
 
 public:
-    intrusive_list()                                
+    QIntrusiveList()                                
     {
     }
     
-    intrusive_list(intrusive_list & x)
+    QIntrusiveList(QIntrusiveList & x)
     {
         merge(x);
     }
@@ -135,7 +137,7 @@ public:
         end()->insert(i);
     }
     
-    void merge(intrusive_list& x)
+    void merge(QIntrusiveList& x)
     {
         if (! x.empty())
         {
@@ -151,13 +153,13 @@ public:
 };
 
 
-template <typename T, intrusive_list_node T::* P>
-    struct intrusive_list::iterator
+template <typename T, QIntrusiveListNode T::* P>
+    struct QIntrusiveList::iterator
     {
         typedef iterator self_type;
-        typedef intrusive_list_node node_type;
+        typedef QIntrusiveListNode QNodeType;
 
-        iterator(intrusive_list::pointer __x) 
+        iterator(QIntrusiveList::pointer __x) 
         : node_(__x) 
         {
         }
@@ -200,7 +202,7 @@ template <typename T, intrusive_list_node T::* P>
             return node_ != x.node_; 
         }
 
-        node_type * node_;
+        QNodeType * node_;
     };
 
 
@@ -208,7 +210,7 @@ template <typename T, intrusive_list_node T::* P>
 
 } // namespace smart_ptr
 
-} // namespace boost
+} // namespace Qt
 
 
 #endif // #ifndef BOOST_INTRUSIVE_LIST_HPP_INCLUDED

@@ -1,6 +1,6 @@
 /**
     @file
-    Boost detail/node_base.hpp header file.
+    Boost detail/QNodeBase.hpp header file.
 
     @note
     Copyright (c) 2008-2016 Phil Bouchard <pbouchard8@gmail.com>.
@@ -52,8 +52,10 @@
 #include <boost/smart_ptr/detail/classof.hpp>
 
 
-namespace boost
+namespace Qt
 {
+
+using namespace boost;
 
 namespace smart_ptr
 {
@@ -62,24 +64,24 @@ namespace detail
 {
 
 
-struct node_proxy;
-struct node_base;
+struct QNodeProxy;
+struct QNodeBase;
 
 
 /**
     Root class of all pointee objects.
 */
 
-struct node_base : public boost::detail::sp_counted_base
+struct QNodeBase : public boost::detail::sp_counted_base
 {
-    /** Tag used to enlist to @c node_proxy::node_list_ . */
-    intrusive_list::node node_tag_;
+    /** Tag used to enlist to @c QNodeProxy::node_list_ . */
+    QIntrusiveList::QNode node_tag_;
 
-    node_base()
+    QNodeBase()
     {
     }
 
-    virtual ~node_base()
+    virtual ~QNodeBase()
     {
     }
 
@@ -135,16 +137,16 @@ protected:
 
 #define ALLOCATE_NODE1(z, n, text)                                                                                              \
     template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                                             \
-        static node * text(allocator_type const & a, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                      \
+        static QNode * text(allocator_type const & a, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                      \
         {                                                                                                                       \
-            return new (a) node(a, BOOST_PP_REPEAT(n, PARAMETER_DECL, 0));                                                      \
+            return new (a) QNode(a, BOOST_PP_REPEAT(n, PARAMETER_DECL, 0));                                                      \
         }
 
 #define MAKE_NODE_ALLOCATOR1(z, n, text)                                                                                        \
     template<template <typename, typename...> class Alloc, typename T, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename... Args>  \
-        typename node<T, Alloc<T, BOOST_PP_REPEAT(n, TEMPLATEARGUMENT_DECL, 0)> >::allocator_type text(Args&&... args)          \
+        typename QNode<T, Alloc<T, BOOST_PP_REPEAT(n, TEMPLATEARGUMENT_DECL, 0)> >::allocator_type text(Args&&... args)          \
         {                                                                                                                       \
-            return typename node<T, Alloc<T, BOOST_PP_REPEAT(n, TEMPLATEARGUMENT_DECL, 0)> >::allocator_type(args...);          \
+            return typename QNode<T, Alloc<T, BOOST_PP_REPEAT(n, TEMPLATEARGUMENT_DECL, 0)> >::allocator_type(args...);          \
         }
 
 
@@ -153,7 +155,7 @@ protected:
 */
 
 template <typename T>
-    class node_element : public smart_ptr::detail::node_base
+    class QNodeElement : public smart_ptr::detail::QNodeBase
     {
         friend class classof;
 
@@ -161,32 +163,32 @@ template <typename T>
         typedef T data_type;
 
         /**
-            Cast operator used by @c node_ptr_common::header() .
+            Cast operator used by @c QNodePtrCommon::header() .
         */
 
         class classof
         {
-            /** Address of the @c node the element belong to. */
-            node_element * p_;
+            /** Address of the @c QNode the element belong to. */
+            QNodeElement * p_;
 
         public:
             /**
-                Casts from a @c data_type to its parent @c node object.
+                Casts from a @c data_type to its parent @c QNode object.
 
                 @param  p   Address of a @c data_type member object to cast from.
             */
 
             classof(data_type * p)
-            : p_(smart_ptr::detail::classof((data_type node_element::*)(& node_element::elem_), p))
+            : p_(smart_ptr::detail::classof((data_type QNodeElement::*)(& QNodeElement::elem_), p))
             {
             }
 
 
             /**
-                @return     Address of the parent @c node object.
+                @return     Address of the parent @c QNode object.
             */
 
-            operator node_element * () const
+            operator QNodeElement * () const
             {
                 return p_;
             }
@@ -199,7 +201,7 @@ template <typename T>
 
 
 template <>
-    class node_element<void> : public smart_ptr::detail::node_base
+    class QNodeElement<void> : public smart_ptr::detail::QNodeBase
     {
         friend class classof;
 
@@ -207,32 +209,32 @@ template <>
         typedef int data_type;
 
         /**
-            Cast operator used by @c node_ptr_common::header() .
+            Cast operator used by @c QNodePtrCommon::header() .
         */
 
         class classof
         {
-            /** Address of the @c node the element belong to. */
-            node_element * p_;
+            /** Address of the @c QNode the element belong to. */
+            QNodeElement * p_;
 
         public:
             /**
-                Casts from a @c data_type to its parent @c node object.
+                Casts from a @c data_type to its parent @c QNode object.
 
                 @param  p   Address of a @c data_type member object to cast from.
             */
 
             classof(void * p)
-            : p_(smart_ptr::detail::classof((data_type node_element::*)(& node_element::elem_), static_cast<data_type *>(p)))
+            : p_(smart_ptr::detail::classof((data_type QNodeElement::*)(& QNodeElement::elem_), static_cast<data_type *>(p)))
             {
             }
 
 
             /**
-                @return     Address of the parent @c node object.
+                @return     Address of the parent @c QNode object.
             */
 
-            operator node_element * () const
+            operator QNodeElement * () const
             {
                 return p_;
             }
@@ -251,11 +253,11 @@ template <>
 */
 
 template <typename T, typename PoolAllocator = pool_allocator<T> >
-    class node : public node_element<T>
+    class QNode : public QNodeElement<T>
     {
     public:
         typedef T data_type;
-        typedef typename PoolAllocator::template rebind< node<T, PoolAllocator> >::other allocator_type;
+        typedef typename PoolAllocator::template rebind< QNode<T, PoolAllocator> >::other allocator_type;
 
 
         /**
@@ -264,7 +266,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             @note Will use a static copy of the allocator which has no parameter.
         */
 
-        node()
+        QNode()
         : a_(static_pool())
         {
             container::allocator_traits<allocator_type>::construct(a_, element());
@@ -277,14 +279,14 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             @param  a   Allocator to copy.
         */
 
-        node(allocator_type const & a)
+        QNode(allocator_type const & a)
         : a_(a)
         {
             container::allocator_traits<allocator_type>::construct(a_, element());
         }
 
-        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE1, node)
-        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE2, node)
+        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE1, QNode)
+        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE2, QNode)
 
 
         /**
@@ -301,17 +303,17 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             Destructor.
         */
 
-        virtual ~node()
+        virtual ~QNode()
         {
             container::allocator_traits<allocator_type>::destroy(a_, element());
         }
 
 
         /**
-            Allocates a new @c node using the static copy of @c PoolAllocator to be used.
+            Allocates a new @c QNode using the static copy of @c PoolAllocator to be used.
 
             @param  s   Disregarded.
-            @return     Pointer of the new @c node.
+            @return     Pointer of the new @c QNode.
         */
 
         void * operator new (size_t /* s */)
@@ -321,11 +323,11 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
 
         /**
-            Allocates a new @c node .
+            Allocates a new @c QNode .
 
             @param  s   Disregarded.
             @param  a   Copy of @c PoolAllocator to be used.
-            @return     Pointer of the new @c node.
+            @return     Pointer of the new @c QNode.
         */
 
         void * operator new (size_t s, allocator_type a)
@@ -335,51 +337,51 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
 
         /**
-            Allocates a new @c node .
+            Allocates a new @c QNode .
 
             @param  a   Copy of @c PoolAllocator to be used.
-            @return     Pointer of the new @c node.
+            @return     Pointer of the new @c QNode.
         */
 
-        static node<T> * allocate(allocator_type const & a)
+        static QNode<T> * allocate(allocator_type const & a)
         {
-            return new (a) node<T>(a);
+            return new (a) QNode<T>(a);
         }
 
         BOOST_PP_REPEAT_FROM_TO(1, 10, ALLOCATE_NODE1, allocate)
 
 
         /**
-            Deallocates a @c node from @c PoolAllocator .
+            Deallocates a @c QNode from @c PoolAllocator .
 
-            @param  p   Address of the @c node to deallocate.
+            @param  p   Address of the @c QNode to deallocate.
         */
 
         void operator delete (void * p)
         {
-            static_cast<node *>(p)->a_.deallocate(static_cast<node *>(p), 1);
+            static_cast<QNode *>(p)->a_.deallocate(static_cast<QNode *>(p), 1);
         }
 
 
         /**
-            Deallocates a @c node from @c PoolAllocator .
+            Deallocates a @c QNode from @c PoolAllocator .
 
-            @param  p   Address of the @c node to deallocate.
+            @param  p   Address of the @c QNode to deallocate.
             @param  a   Copy of @c PoolAllocator to be used.
         */
 
         void operator delete (void * p, allocator_type a)
         {
-            a.deallocate(static_cast<node *>(p), 1);
+            a.deallocate(static_cast<QNode *>(p), 1);
         }
 
   private:
-        using node_element<T>::elem_;
+        using QNodeElement<T>::elem_;
 
         /**
             Static pool.
 
-            This is where all @c node are allocated when @c PoolAllocator is not
+            This is where all @c QNode are allocated when @c PoolAllocator is not
             explicitly specified in the constructor.
          */
 
@@ -404,9 +406,9 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 */
 
 template <typename T>
-    class fastnode : public node<T, fast_pool_allocator<T> >
+    class QFastNode : public QNode<T, fast_pool_allocator<T> >
     {
-        typedef node<T, fast_pool_allocator<T> > base;
+        typedef QNode<T, fast_pool_allocator<T> > base;
 
     public:
         using typename base::allocator_type;
@@ -418,7 +420,7 @@ template <typename T>
             @note Will use a static copy of the allocator with no parameter.
         */
 
-        fastnode()
+        QFastNode()
         : base()
         {
         }
@@ -430,30 +432,30 @@ template <typename T>
             @param  a   Allocator to copy.
         */
 
-        fastnode(allocator_type const & a)
+        QFastNode(allocator_type const & a)
         : base(a)
         {
         }
 
 
-        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE3, fastnode)
-        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE4, fastnode)
+        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE3, QFastNode)
+        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE4, QFastNode)
     };
 
 
 /**
-    Allocates a new @c node using the respective allocator.
+    Allocates a new @c QNode using the respective allocator.
 
     @param  a   Allocator to be used.
     @param  args Arguments forwarded to the new object's constructor.
 
-    @note Calls @c node::allocate .
+    @note Calls @c QNode::allocate .
 */
 
 template<typename T, class Alloc, typename... Args>
-    node<T, Alloc> * allocate_node(const Alloc& a, Args&&... args)
+    QNode<T, Alloc> * allocate_node(const Alloc& a, Args&&... args)
     {
-        return node<T, Alloc>::allocate(a, args...);
+        return QNode<T, Alloc>::allocate(a, args...);
     }
 
 
@@ -462,20 +464,20 @@ template<typename T, class Alloc, typename... Args>
 
     @param  args Arguments forwarded to the allocator's constructor.
 
-    @note Instantiates a @c node::allocator_type .
+    @note Instantiates a @c QNode::allocator_type .
 */
 
 template<template <typename, typename...> class Alloc, typename T, typename... Args>
-    typename node<T, Alloc<T> >::allocator_type make_node_allocator(Args&&... args)
+    typename QNode<T, Alloc<T> >::allocator_type make_node_allocator(Args&&... args)
     {
-        return typename node<T, Alloc<T> >::allocator_type(args...);
+        return typename QNode<T, Alloc<T> >::allocator_type(args...);
     }
 
 
-BOOST_PP_REPEAT_FROM_TO(1, 10, MAKE_NODE_ALLOCATOR1, make_node_allocator)
+BOOST_PP_REPEAT_FROM_TO(1, 10, MAKE_NODE_ALLOCATOR1, make_QNode_allocator)
 
 
-} // namespace boost
+} // namespace Qt
 
 
 #endif  // #ifndef BOOST_DETAIL_NODE_BASE_HPP_INCLUDED
