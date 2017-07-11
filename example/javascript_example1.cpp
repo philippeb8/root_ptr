@@ -73,9 +73,9 @@ int main()
             QNodePtr<A> b1 = make_node<A>(x, x, "b1");
             QNodePtr<A> b2 = make_node<A>(x, x, "b2");
 
-            a1 = b1; // upscale scope of b1 to use 1st proxy
+            a1 = b1;
             
-            b1 = make_node<A>(x, x, "b3"); // scope of b1 will still be associated with the 1st proxy
+            b1 = make_node<A>(x, x, "b3");
             b1->i = b1; // cycle
         }
         cout << "Scope 1: END" << endl;
