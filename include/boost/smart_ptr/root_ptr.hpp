@@ -314,8 +314,7 @@ template <typename T>
                 
                 // upscale the proxy of the operand
                 if (px_->depth() < p.px_->depth())
-                    p.proxy(* px_);
-
+                    propagate(p);
                 
                 base::operator = (p);
 
