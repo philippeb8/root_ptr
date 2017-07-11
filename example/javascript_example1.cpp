@@ -31,6 +31,8 @@ using namespace Qt;
 
 struct type
 {
+    type() {}
+    virtual ~type() {}
     virtual QNodePtr<type> operator () () {}
     virtual QNodePtr<type> operator () (QNodePtr<type> &) {}
     virtual QNodePtr<type> operator () (QNodePtr<type> &, QNodePtr<type> &) {}
@@ -39,7 +41,7 @@ struct type
     virtual ostream & flush(ostream & out) const { return out; }
     
     friend ostream & operator << (ostream & out, QNodePtr<type> const & t) { return t->flush(out); }
-    friend QNodePtr<type> const & operator ++ (QNodePtr<type> const & t1);
+    //friend QNodePtr<type> const & operator ++ (QNodePtr<type> const & t1);
     friend QNodePtr<type> operator + (QNodePtr<type> const & t1, QNodePtr<type> const & t2);
 };
 
@@ -50,18 +52,20 @@ template <typename T>
     T t;
 
     template <typename... U>
-      type_t(U... u) : t(u...) 
+      type_t(U... u) : type(), t(u...)
       {
       }
       
     virtual ostream & flush(ostream & out) const { return out << t; }
   };
 
+/*
 inline QNodePtr<type> const & operator ++ (QNodePtr<type> const & t1)
 { 
     if (type_t<int> * p1 = dynamic_cast<type_t<int> *>(t1.get()))
         return ++ p1->t, t1;
 }
+*/
 
 inline QNodePtr<type> operator + (QNodePtr<type> const & t1, QNodePtr<type> const & t2)
 { 
