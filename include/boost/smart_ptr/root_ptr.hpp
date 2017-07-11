@@ -324,6 +324,30 @@ template <typename T>
             }
             
             
+        /**
+            Cast operation helper.
+            
+            @return     @c QNodeProxy part of @c QRootPtr .
+        */
+        
+        QNodeProxy & proxy() 
+        {
+            return *px_;
+        }
+
+        
+        /**
+            Cast operation helper.
+            
+            @return     @c QNodeProxy part of @c QRootPtr .
+        */
+        
+        QNodeProxy const & proxy() const
+        {
+            return *px_;
+        }
+
+        
         void proxy(QNodeProxy const & x) const
         {
             if (px_ != & x)
