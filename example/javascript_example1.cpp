@@ -89,40 +89,6 @@ template <typename T>
     };
 
   
-// Example
-struct A : type
-{
-    string name;
-    
-    QNodePtr<A> i;
-    QNodePtr<int> j;
-    
-    A(QNodeProxy const & x, string name): name(name), i(x), j(make_node<int>(x, 10)) 
-    {
-        cout << __PRETTY_FUNCTION__ << ": " << name << endl;         
-    }
-    
-    ~A() 
-    { 
-        cout << __PRETTY_FUNCTION__ << ": " << name << endl; 
-    }
-};
-
-
-// Metadata
-namespace Qt
-{
-template <>
-    struct info_t<A>
-    {
-        static void proxy(A const & o, QNodeProxy const & x)
-        {
-            o.i.proxy(x);
-            o.j.proxy(x);
-        }
-    };
-}
-
 template <typename T>
     struct QNodeStack : list<pair<string, QNodePtr<T>>>
     {
@@ -175,14 +141,13 @@ int main()
         { 
             cout << __PRETTY_FUNCTION__ << ": SCOPE 2 - BEGIN" << endl; 
             QNodeProxy x; // 2nd proxy
-            QNodeLocal<type>::Reserve r(1);
-
+            QNodeLocal<type>::Reserve r(2);
+            QNodeLocal<type>::stack.push_back(make_pair("a", make_node<type_t<int>>(x, type_t<int>(10))));
             QNodeLocal<type>::stack.push_back(make_pair("v", (*make_node<function_t<QNodePtr<type> ()>>(x, function_t<QNodePtr<type> ()>([] () -> QNodePtr<type> 
             { 
                 cout << __PRETTY_FUNCTION__ << ": SCOPE 3 - BEGIN" << endl; 
                 QNodeProxy x; // 3rd proxy
-                QNodeLocal<type>::Reserve r(2);
-                QNodeLocal<type>::stack.push_back(make_pair("a", make_node<type_t<int>>(x, type_t<int>(10))));
+                QNodeLocal<type>::Reserve r(1);
                 QNodeLocal<type>::stack.push_back(make_pair("b", make_node<type_t<int>>(x, type_t<int>(10))));
                 
                 return (QNodeLocal<type>::stack.at("a")->second + QNodeLocal<type>::stack.at("b")->second);
@@ -196,3 +161,39 @@ int main()
         (*QNodeLocal<type>::stack.at("f")->second)();
     }
 }
+
+/*
+// Example
+struct A : type
+{
+    string name;
+    
+    QNodePtr<A> i;
+    QNodePtr<int> j;
+    
+    A(QNodeProxy const & x, string name): name(name), i(x), j(make_node<int>(x, 10)) 
+    {
+        cout << __PRETTY_FUNCTION__ << ": " << name << endl;         
+    }
+    
+    ~A() 
+    { 
+        cout << __PRETTY_FUNCTION__ << ": " << name << endl; 
+    }
+};
+
+
+// Metadata
+namespace Qt
+{
+template <>
+    struct info_t<A>
+    {
+        static void proxy(A const & o, QNodeProxy const & x)
+        {
+            o.i.proxy(x);
+            o.j.proxy(x);
+        }
+    };
+}
+*/
