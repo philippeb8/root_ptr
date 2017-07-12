@@ -186,7 +186,7 @@ int main()
             
             return;
         }))));
-        QStackArea<type>::stack.push_back(make_pair("result", make_node<type_t<int>>(x, type_t<int>(20))));
+        QStackArea<type>::stack.push_back(make_pair("result", make_node<type>(x, type())));
         QStackArea<type>::stack.push_back(make_pair("foo", make_node<function1_t<void (QNodePtr<type> &)>>(x, function1_t<void (QNodePtr<type> &)>([] (QNodePtr<type> & result) -> void
         { 
             cout << __PRETTY_FUNCTION__ << endl; // main()::__lambda1
