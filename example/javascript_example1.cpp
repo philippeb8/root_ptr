@@ -160,6 +160,8 @@ template <typename T>
 /**
     Emulation of the following Javascript code:
     
+    var temporary;
+    
     function bar(object)
     {
         return 10;
@@ -172,42 +174,43 @@ template <typename T>
         return function() { return bar( object ) }
     }
     
-    foo();
+    for (var i = 0; i < 1000000; ++ i)
+        (foo())(temporary);
 */
 
 
 int main()
 {
-    cout << __PRETTY_FUNCTION__ << ": BEGIN" << endl; 
+    //cout << __PRETTY_FUNCTION__ << ": BEGIN" << endl; 
     {
         QNodeProxy x;
         QStackArea<type>::Reserve r(3);
         QStackArea<type>::stack.push_back(make_pair("bar", make_node<function2_t<QNodePtr<type> & (QNodePtr<type> &, QNodePtr<type> &)>>(x, function2_t<QNodePtr<type> & (QNodePtr<type> &, QNodePtr<type> &)>([] (QNodePtr<type> & result, QNodePtr<type> &) -> QNodePtr<type> &
         { 
-            cout << __PRETTY_FUNCTION__ << endl; // main()::__lambda0
+            //cout << __PRETTY_FUNCTION__ << endl; // main()::__lambda0
 
             QNodeProxy x;
 
             return result = make_node<type_t<int>>(x, type_t<int>(10));
         }))));
-        QStackArea<type>::stack.push_back(make_pair("result", make_node<type>(x, type())));
+        QStackArea<type>::stack.push_back(make_pair("temporary", make_node<type>(x, type())));
         QStackArea<type>::stack.push_back(make_pair("foo", make_node<function1_t<QNodePtr<type> & (QNodePtr<type> &)>>(x, function1_t<QNodePtr<type> & (QNodePtr<type> &)>([] (QNodePtr<type> & result) -> QNodePtr<type> &
         { 
-            cout << __PRETTY_FUNCTION__ << endl; // main()::__lambda1
+            //cout << __PRETTY_FUNCTION__ << endl; // main()::__lambda1
             
             QNodeProxy x;
             QStackArea<type>::Reserve r(2);
             QStackArea<type>::stack.push_back(make_pair("object", make_node<type_t<int>>(x, type_t<int>(30))));
             QStackArea<type>::stack.push_back(make_pair("result", make_node<function1_t<QNodePtr<type> & (QNodePtr<type> &)>>(x, function1_t<QNodePtr<type> & (QNodePtr<type> &)>([] (QNodePtr<type> & result) -> QNodePtr<type> &
             { 
-                cout << __PRETTY_FUNCTION__ << endl; 
+                //cout << __PRETTY_FUNCTION__ << endl; 
 
                 return result = QStackArea<type>::stack.at("object")->second;
             }))));
             
             return result = make_node<function1_t<QNodePtr<type> & (QNodePtr<type> &)>>(x, function1_t<QNodePtr<type> & (QNodePtr<type> &)>([] (QNodePtr<type> & result) -> QNodePtr<type> &
             { 
-                cout << __PRETTY_FUNCTION__ << endl; // main()::__lambda1::__lambda3
+                //cout << __PRETTY_FUNCTION__ << endl; // main()::__lambda1::__lambda3
                 
                 QNodeProxy x;
                 QStackArea<type>::Reserve r(1);
@@ -217,8 +220,8 @@ int main()
             }));
         }))));
 
-        for (int i = 0; i < 1000; ++ i)
-            cout << (* (* QStackArea<type>::stack.at("foo")->second)(QStackArea<type>::stack.at("result")->second))(QStackArea<type>::stack.at("result")->second) << endl;
+        for (int i = 0; i < 1000000; ++ i)
+            cout << (* (* QStackArea<type>::stack.at("foo")->second)(QStackArea<type>::stack.at("temporary")->second))(QStackArea<type>::stack.at("temporary")->second) << endl;
     }
-    cout << __PRETTY_FUNCTION__ << ": END" << endl; 
+    //cout << __PRETTY_FUNCTION__ << ": END" << endl; 
 }
