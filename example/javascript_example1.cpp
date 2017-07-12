@@ -32,12 +32,11 @@ using namespace Qt;
 
 struct type
 {
-    type() {}
     virtual ~type() {}
-    virtual void operator () () {}
-    virtual void operator () (QNodePtr<type> &) {}
-    virtual void operator () (QNodePtr<type> &, QNodePtr<type> &) {}
-    virtual void operator () (QNodePtr<type> &, QNodePtr<type> &, QNodePtr<type> &) {}
+    virtual QNodePtr<type> & operator () () {}
+    virtual QNodePtr<type> & operator () (QNodePtr<type> &) {}
+    virtual QNodePtr<type> & operator () (QNodePtr<type> &, QNodePtr<type> &) {}
+    virtual QNodePtr<type> & operator () (QNodePtr<type> &, QNodePtr<type> &, QNodePtr<type> &) {}
     
     virtual ostream & flush(ostream & out) const { return out; }
     
@@ -51,7 +50,7 @@ template <typename T>
         T t;
 
         template <typename... U>
-            type_t(U... u) : type(), t(u...)
+            type_t(U... u) : t(u...)
             {
             }
             
@@ -71,7 +70,7 @@ template <typename T>
             {
             }
 
-        virtual void operator () () 
+        virtual QNodePtr<type> & operator () () 
         { 
             return t.operator () (); 
         }
@@ -90,7 +89,7 @@ template <typename T>
             {
             }
 
-        virtual void operator () (QNodePtr<type> & t1) 
+        virtual QNodePtr<type> & operator () (QNodePtr<type> & t1) 
         { 
             return t.operator () (t1); 
         }
@@ -109,7 +108,7 @@ template <typename T>
             {
             }
 
-        virtual void operator () (QNodePtr<type> & t1, QNodePtr<type> & t2) 
+        virtual QNodePtr<type> & operator () (QNodePtr<type> & t1, QNodePtr<type> & t2) 
         { 
             return t.operator () (t1, t2); 
         }
@@ -161,12 +160,19 @@ template <typename T>
 /**
     Emulation of the following Javascript code:
     
+    function bar(object)
+    {
+        return 10;
+    }
+    
     function foo()
     {
         var object;
         var result = function() { return object }
         return function() { return bar( object ) }
-    }();
+    }
+    
+    foo();
 */
 
 
@@ -176,34 +182,30 @@ int main()
     {
         QNodeProxy x;
         QStackArea<type>::Reserve r(3);
-        QStackArea<type>::stack.push_back(make_pair("bar", make_node<function2_t<void (QNodePtr<type> &, QNodePtr<type> &)>>(x, function2_t<void (QNodePtr<type> &, QNodePtr<type> &)>([] (QNodePtr<type> & result, QNodePtr<type> &) -> void
+        QStackArea<type>::stack.push_back(make_pair("bar", make_node<function2_t<QNodePtr<type> & (QNodePtr<type> &, QNodePtr<type> &)>>(x, function2_t<QNodePtr<type> & (QNodePtr<type> &, QNodePtr<type> &)>([] (QNodePtr<type> & result, QNodePtr<type> &) -> QNodePtr<type> &
         { 
             cout << __PRETTY_FUNCTION__ << endl; // main()::__lambda0
 
             QNodeProxy x;
 
-            result = make_node<type_t<int>>(x, type_t<int>(10));
-            
-            return;
+            return result = make_node<type_t<int>>(x, type_t<int>(10));
         }))));
         QStackArea<type>::stack.push_back(make_pair("result", make_node<type>(x, type())));
-        QStackArea<type>::stack.push_back(make_pair("foo", make_node<function1_t<void (QNodePtr<type> &)>>(x, function1_t<void (QNodePtr<type> &)>([] (QNodePtr<type> & result) -> void
+        QStackArea<type>::stack.push_back(make_pair("foo", make_node<function1_t<QNodePtr<type> & (QNodePtr<type> &)>>(x, function1_t<QNodePtr<type> & (QNodePtr<type> &)>([] (QNodePtr<type> & result) -> QNodePtr<type> &
         { 
             cout << __PRETTY_FUNCTION__ << endl; // main()::__lambda1
             
             QNodeProxy x;
             QStackArea<type>::Reserve r(2);
             QStackArea<type>::stack.push_back(make_pair("object", make_node<type_t<int>>(x, type_t<int>(30))));
-            QStackArea<type>::stack.push_back(make_pair("result", make_node<function1_t<void (QNodePtr<type> &)>>(x, function1_t<void (QNodePtr<type> &)>([] (QNodePtr<type> & result) -> void
+            QStackArea<type>::stack.push_back(make_pair("result", make_node<function1_t<QNodePtr<type> & (QNodePtr<type> &)>>(x, function1_t<QNodePtr<type> & (QNodePtr<type> &)>([] (QNodePtr<type> & result) -> QNodePtr<type> &
             { 
                 cout << __PRETTY_FUNCTION__ << endl; 
 
-                result = QStackArea<type>::stack.at("object")->second;
-
-                return;
+                return result = QStackArea<type>::stack.at("object")->second;
             }))));
             
-            result = make_node<function1_t<void (QNodePtr<type> &)>>(x, function1_t<void (QNodePtr<type> &)>([] (QNodePtr<type> & result) -> void
+            return result = make_node<function1_t<QNodePtr<type> & (QNodePtr<type> &)>>(x, function1_t<QNodePtr<type> & (QNodePtr<type> &)>([] (QNodePtr<type> & result) -> QNodePtr<type> &
             { 
                 cout << __PRETTY_FUNCTION__ << endl; // main()::__lambda1::__lambda3
                 
@@ -211,18 +213,11 @@ int main()
                 QStackArea<type>::Reserve r(1);
                 QStackArea<type>::stack.push_back(make_pair("result", make_node<type>(x, type()))); 
             
-                (*QStackArea<type>::stack.at("bar")->second)(QStackArea<type>::stack.at("result")->second, QStackArea<type>::stack.at("object")->second);
-                
-                result = QStackArea<type>::stack.at("result")->second;
-                
-                return;
+                return result = (* QStackArea<type>::stack.at("bar")->second)(QStackArea<type>::stack.at("result")->second, QStackArea<type>::stack.at("object")->second);
             }));
-            
-            return;
         }))));
 
-        (* QStackArea<type>::stack.at("foo")->second)(QStackArea<type>::stack.at("result")->second);
-        (* QStackArea<type>::stack.at("result")->second)(QStackArea<type>::stack.at("result")->second);
+        cout << (* (* QStackArea<type>::stack.at("foo")->second)(QStackArea<type>::stack.at("result")->second))(QStackArea<type>::stack.at("result")->second) << endl;
     }
     cout << __PRETTY_FUNCTION__ << ": END" << endl; 
 }
