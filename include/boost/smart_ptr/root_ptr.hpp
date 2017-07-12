@@ -479,11 +479,11 @@ template <typename T>
         template <typename V>
             void propagate(QNodePtr<V> const & p) const
             {
-                if (p.base::po_)
+                if (p.po_)
                 {
-                    p.base::header()->node_tag_.erase();
-                    info_t<V>::proxy(* p.base::po_, * px_);
-                    px_->init(p.base::header());
+                    p.header()->node_tag_.erase();
+                    info_t<V>::proxy(* p.po_, * px_);
+                    px_->init(p.header());
                 }
             }
     };

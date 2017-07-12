@@ -1,6 +1,6 @@
 /*!
   \file
-  \brief Example 2 of using root_ptr.
+  \brief Javascript emulation.
 */
 /*
   Copyright Phil Bouchard 2017
@@ -22,6 +22,7 @@
 #include <list>
 #include <vector>
 #include <string>
+#include <typeinfo>
 #include <iostream>
 #include <functional>
 
@@ -33,65 +34,86 @@ struct type
 {
     type() {}
     virtual ~type() {}
-    virtual QNodePtr<type> operator () () {}
-    virtual QNodePtr<type> operator () (QNodePtr<type> &) {}
-    virtual QNodePtr<type> operator () (QNodePtr<type> &, QNodePtr<type> &) {}
-    virtual QNodePtr<type> operator () (QNodePtr<type> &, QNodePtr<type> &, QNodePtr<type> &) {}
+    virtual void operator () () {}
+    virtual void operator () (QNodePtr<type> &) {}
+    virtual void operator () (QNodePtr<type> &, QNodePtr<type> &) {}
+    virtual void operator () (QNodePtr<type> &, QNodePtr<type> &, QNodePtr<type> &) {}
     
     virtual ostream & flush(ostream & out) const { return out; }
     
     friend ostream & operator << (ostream & out, QNodePtr<type> const & t) { return t->flush(out); }
-    //friend QNodePtr<type> const & operator ++ (QNodePtr<type> const & t1);
-    friend QNodePtr<type> operator + (QNodePtr<type> const & t1, QNodePtr<type> const & t2);
 };
 
 
 template <typename T>
-  struct type_t : type
-  {
-    T t;
+    struct type_t : type
+    {
+        T t;
 
-    template <typename... U>
-      type_t(U... u) : type(), t(u...)
-      {
-      }
-      
-    virtual ostream & flush(ostream & out) const { return out << t; }
-  };
+        template <typename... U>
+            type_t(U... u) : type(), t(u...)
+            {
+            }
+            
+        virtual ostream & flush(ostream & out) const { return out << t; }
+    };
 
-/*
-inline QNodePtr<type> const & operator ++ (QNodePtr<type> const & t1)
-{ 
-    if (type_t<int> * p1 = dynamic_cast<type_t<int> *>(t1.get()))
-        return ++ p1->t, t1;
-}
-*/
-
-inline QNodePtr<type> operator + (QNodePtr<type> const & t1, QNodePtr<type> const & t2)
-{ 
-    if (type_t<int> * p1 = dynamic_cast<type_t<int> *>(t1.get()))
-        if (type_t<int> * p2 = dynamic_cast<type_t<int> *>(t2.get()))
-            return make_node<type_t<int>>(t1.proxy(), type_t<int>(p1->t + p2->t)); 
-}
   
 template <typename T>
-    struct function_t : type
+    struct function0_t : type
     {
         typedef typename function<T>::result_type result_type;
 
         function<T> t;
 
         template <typename... U>
-            function_t(U... u) : t(u...) 
+            function0_t(U... u) : t(u...) 
             {
             }
 
-        virtual QNodePtr<type> operator () () 
+        virtual void operator () () 
         { 
             return t.operator () (); 
         }
     };
 
+  
+template <typename T>
+    struct function1_t : type
+    {
+        typedef typename function<T>::result_type result_type;
+
+        function<T> t;
+
+        template <typename... U>
+            function1_t(U... u) : t(u...) 
+            {
+            }
+
+        virtual void operator () (QNodePtr<type> & t1) 
+        { 
+            return t.operator () (t1); 
+        }
+    };
+
+  
+template <typename T>
+    struct function2_t : type
+    {
+        typedef typename function<T>::result_type result_type;
+
+        function<T> t;
+
+        template <typename... U>
+            function2_t(U... u) : t(u...) 
+            {
+            }
+
+        virtual void operator () (QNodePtr<type> & t1, QNodePtr<type> & t2) 
+        { 
+            return t.operator () (t1, t2); 
+        }
+    };
   
 template <typename T>
     struct QNodeStack : list<pair<string, QNodePtr<T>>>
@@ -114,7 +136,7 @@ template <typename T>
     };
 
 template <typename T>
-    struct QNodeLocal
+    struct QStackArea
     {
         static QNodeStack<T> stack;
         
@@ -133,71 +155,74 @@ template <typename T>
     };
 
 template <typename T>
-    QNodeStack<T> QNodeLocal<T>::stack;
+    QNodeStack<T> QStackArea<T>::stack;
+
     
+/**
+    Emulation of the following Javascript code:
+    
+    function foo()
+    {
+        var object;
+        var result = function() { return object }
+        return function() { return bar( object ) }
+    }();
+*/
+
+
 int main()
 {
-    cout << __PRETTY_FUNCTION__ << ": SCOPE 1 - BEGIN" << endl; 
+    cout << __PRETTY_FUNCTION__ << ": BEGIN" << endl; 
     {
-        QNodeProxy x; // 1st proxy
-        QNodeLocal<type>::Reserve r(1);
-        QNodeLocal<type>::stack.push_back(make_pair("f", make_node<function_t<QNodePtr<type> ()>>(x, function_t<QNodePtr<type> ()>([] () -> QNodePtr<type> 
+        QNodeProxy x;
+        QStackArea<type>::Reserve r(3);
+        QStackArea<type>::stack.push_back(make_pair("bar", make_node<function2_t<void (QNodePtr<type> &, QNodePtr<type> &)>>(x, function2_t<void (QNodePtr<type> &, QNodePtr<type> &)>([] (QNodePtr<type> & result, QNodePtr<type> &) -> void
         { 
-            cout << __PRETTY_FUNCTION__ << ": SCOPE 2 - BEGIN" << endl; 
-            QNodeProxy x; // 2nd proxy
-            QNodeLocal<type>::Reserve r(2);
-            QNodeLocal<type>::stack.push_back(make_pair("a", make_node<type_t<int>>(x, type_t<int>(10))));
-            QNodeLocal<type>::stack.push_back(make_pair("v", (*make_node<function_t<QNodePtr<type> ()>>(x, function_t<QNodePtr<type> ()>([] () -> QNodePtr<type> 
+            cout << __PRETTY_FUNCTION__ << endl; // main()::__lambda0
+
+            QNodeProxy x;
+
+            result = make_node<type_t<int>>(x, type_t<int>(10));
+            
+            return;
+        }))));
+        QStackArea<type>::stack.push_back(make_pair("result", make_node<type_t<int>>(x, type_t<int>(20))));
+        QStackArea<type>::stack.push_back(make_pair("foo", make_node<function1_t<void (QNodePtr<type> &)>>(x, function1_t<void (QNodePtr<type> &)>([] (QNodePtr<type> & result) -> void
+        { 
+            cout << __PRETTY_FUNCTION__ << endl; // main()::__lambda1
+            
+            QNodeProxy x;
+            QStackArea<type>::Reserve r(2);
+            QStackArea<type>::stack.push_back(make_pair("object", make_node<type_t<int>>(x, type_t<int>(30))));
+            QStackArea<type>::stack.push_back(make_pair("result", make_node<function1_t<void (QNodePtr<type> &)>>(x, function1_t<void (QNodePtr<type> &)>([] (QNodePtr<type> & result) -> void
             { 
-                cout << __PRETTY_FUNCTION__ << ": SCOPE 3 - BEGIN" << endl; 
-                QNodeProxy x; // 3rd proxy
-                QNodeLocal<type>::Reserve r(1);
-                QNodeLocal<type>::stack.push_back(make_pair("b", make_node<type_t<int>>(x, type_t<int>(10))));
+                cout << __PRETTY_FUNCTION__ << endl; 
+
+                result = QStackArea<type>::stack.at("object")->second;
+
+                return;
+            }))));
+            
+            result = make_node<function1_t<void (QNodePtr<type> &)>>(x, function1_t<void (QNodePtr<type> &)>([] (QNodePtr<type> & result) -> void
+            { 
+                cout << __PRETTY_FUNCTION__ << endl; // main()::__lambda1::__lambda3
                 
-                return (QNodeLocal<type>::stack.at("a")->second + QNodeLocal<type>::stack.at("b")->second);
-            })))()));
-
-            cout << QNodeLocal<type>::stack.at("v")->second << endl;
-
-            return QNodePtr<type>(x);
+                QNodeProxy x;
+                QStackArea<type>::Reserve r(1);
+                QStackArea<type>::stack.push_back(make_pair("result", make_node<type>(x, type()))); 
+            
+                (*QStackArea<type>::stack.at("bar")->second)(QStackArea<type>::stack.at("result")->second, QStackArea<type>::stack.at("object")->second);
+                
+                result = QStackArea<type>::stack.at("result")->second;
+                
+                return;
+            }));
+            
+            return;
         }))));
 
-        (*QNodeLocal<type>::stack.at("f")->second)();
+        (* QStackArea<type>::stack.at("foo")->second)(QStackArea<type>::stack.at("result")->second);
+        (* QStackArea<type>::stack.at("result")->second)(QStackArea<type>::stack.at("result")->second);
     }
+    cout << __PRETTY_FUNCTION__ << ": END" << endl; 
 }
-
-/*
-// Example
-struct A : type
-{
-    string name;
-    
-    QNodePtr<A> i;
-    QNodePtr<int> j;
-    
-    A(QNodeProxy const & x, string name): name(name), i(x), j(make_node<int>(x, 10)) 
-    {
-        cout << __PRETTY_FUNCTION__ << ": " << name << endl;         
-    }
-    
-    ~A() 
-    { 
-        cout << __PRETTY_FUNCTION__ << ": " << name << endl; 
-    }
-};
-
-
-// Metadata
-namespace Qt
-{
-template <>
-    struct info_t<A>
-    {
-        static void proxy(A const & o, QNodeProxy const & x)
-        {
-            o.i.proxy(x);
-            o.j.proxy(x);
-        }
-    };
-}
-*/
