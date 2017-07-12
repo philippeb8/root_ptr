@@ -211,13 +211,14 @@ int main()
                 
                 QNodeProxy x;
                 QStackArea<type>::Reserve r(1);
-                QStackArea<type>::stack.push_back(make_pair("result", make_node<type>(x, type()))); 
+                QStackArea<type>::stack.push_back(make_pair("temporary", make_node<type>(x, type()))); 
             
-                return result = (* QStackArea<type>::stack.at("bar")->second)(QStackArea<type>::stack.at("result")->second, QStackArea<type>::stack.at("object")->second);
+                return result = (* QStackArea<type>::stack.at("bar")->second)(QStackArea<type>::stack.at("temporary")->second, QStackArea<type>::stack.at("object")->second);
             }));
         }))));
 
-        cout << (* (* QStackArea<type>::stack.at("foo")->second)(QStackArea<type>::stack.at("result")->second))(QStackArea<type>::stack.at("result")->second) << endl;
+        for (int i = 0; i < 1000; ++ i)
+            cout << (* (* QStackArea<type>::stack.at("foo")->second)(QStackArea<type>::stack.at("result")->second))(QStackArea<type>::stack.at("result")->second) << endl;
     }
     cout << __PRETTY_FUNCTION__ << ": END" << endl; 
 }
