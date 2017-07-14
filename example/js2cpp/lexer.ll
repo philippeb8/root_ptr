@@ -20,14 +20,13 @@
 
 %{
 #include "parser_yacc.h"
-
-#include "dispatch.h"
-
-using namespace fdi;
-//%option yylineno
+#include <iostream>
+    
+using namespace std;
 %}
 
 %option noyywrap
+%option prefix="JS2CPP"
 
 %%
 
@@ -97,17 +96,17 @@ using namespace fdi;
                                         }
 
 [0-9]+                                  {
-                                                ((JS2CPPParser *) (this))->parserlval.s = dispatch<char *, string>()(yytext);
+                                                static_cast<JS2CPPParser *>(this)->parserlval.s << yytext;
                                                 return JS2CPPParser::INTEGER;
                                         }
 
 \.[0-9]+(e[+-]?[0-9]+)?                 {
-                                                ((JS2CPPParser *) (this))->parserlval.s = dispatch<char *, string>()(yytext);
+                                                static_cast<JS2CPPParser *>(this)->parserlval.s << yytext;
                                                 return JS2CPPParser::DOUBLE;
                                         }
 
 [0-9]+(\.[0-9]*)?(e[+-]?[0-9]+)?        {
-                                                ((JS2CPPParser *) (this))->parserlval.s = dispatch<char *, string>()(yytext);
+                                                static_cast<JS2CPPParser *>(this)->parserlval.s << yytext;
                                                 return JS2CPPParser::DOUBLE;
                                         }
 
@@ -119,6 +118,10 @@ using namespace fdi;
                                         }
 
 [ \t]+                                  {
+                                        }
+
+"function"                              {
+                                                return JS2CPPParser::FUNCTION;
                                         }
 
 "var"                                   {
@@ -146,7 +149,7 @@ using namespace fdi;
                                         }
 
 [a-zA-Z_][a-zA-Z_0-9]*                  {
-                                                ((JS2CPPParser *) (this))->parserlval.s = dispatch<char *, string>()(yytext);
+                                                static_cast<JS2CPPParser *>(this)->parserlval.s << yytext;
                                                 return JS2CPPParser::ID;
                                         }
 

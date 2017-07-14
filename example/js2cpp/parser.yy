@@ -22,18 +22,33 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#define yyFlexLexer lexerFlexLexer
+#if !defined(yyFlexLexerOnce)
+#define yyFlexLexer JS2CPPFlexLexer
 #include <FlexLexer.h>
+#endif
 
-#include <string>
 #include <sstream>
-#include "javascript.h"
 
 
 struct val
 {
-    string s;
-    stringstream t;
+    std::stringstream s;
+    
+    val()
+    {
+    }
+    
+    val(val & v)
+    {
+        s << v.s.rdbuf();
+    }
+    
+    val & operator = (val & v)
+    {
+        s << v.s.rdbuf();
+        
+        return * this;
+    }
 };
 
 #define ON symbol = true;
@@ -45,77 +60,67 @@ struct val
 
 %name JS2CPPParser
 
-%define INHERIT : public lexerFlexLexer
+%define INHERIT : public JS2CPPFlexLexer
 
 %define STYPE val
 
-%define LEX_BODY { return lexerFlexLexer::yylex(); }
+%define LEX_BODY { return JS2CPPFlexLexer::yylex(); }
 
-%define ERROR_BODY { * yyout << string("Invalid Statement"); }
+%define ERROR_BODY { * yyout << "Invalid Statement"; }
 
 %define CONSTRUCTOR_INIT : symbol(false)
 
-%define MEMBERS bool symbol; type_t<type_p> config; void state(int s) { yy_start = 1 + 2 * s; }
+%define MEMBERS bool symbol; void state(int s) { yy_start = 1 + 2 * s; }
 
 
-%token		EOL
-%token		FUNCTION1stRESULT
-
+%token          EOL
 %token          VAR
-%token		IF
-%token		ELSE
-%token		FOR
-%token		WHILE
-%token		EXIT
+%token          IF
+%token          ELSE
+%token          FOR
+%token          WHILE
+%token          EXIT
 
-%token	<c>	ID
-%token	<i>	INDEX
-%token	<d>	DOUBLE
-%token	<d>	INTEGER
+%token  <s>     ID
+%token  <s>     DOUBLE
+%token  <s>     INTEGER
 
+%token          FUNCTION
+%token          FUNCTION2ndINCREMENT
+%token          FUNCTION2ndDECREMENT
 
-%token	<ed>	FUNCTION0ed
-%token	<fd>	FUNCTION1st
-%token	<gd>	FUNCTION2nd
-%token  <gd>    FUNCTION2ndINCREMENT
-%token  <gd>    FUNCTION2ndDECREMENT
-%token	<hd>	FUNCTION3rd
+%right          '='
+%left           FUNCTION2ndOR
+%left           FUNCTION2ndXOR
+%left           FUNCTION2ndAND
+%left           FUNCTION1stNOT
+%left           FUNCTION2ndEQUAL FUNCTION2ndLESS FUNCTION2ndGREATER FUNCTION2ndNOTEQUAL FUNCTION2ndLESSEQUAL FUNCTION2ndGREATEREQUAL
+%left           FUNCTION2ndLEFTSHIFT FUNCTION2ndRIGHTSHIFT
+%left           '+' '-'
+%left           '*' '/' ':' FUNCTION2ndMODULO
+%right          '^'
+%left           '!'
 
-
-%right	'='
-%left	FUNCTION2ndOR
-%left	FUNCTION2ndXOR
-%left	FUNCTION2ndAND
-%left	FUNCTION1stNOT
-%left	FUNCTION2ndEQUAL FUNCTION2ndLESS FUNCTION2ndGREATER FUNCTION2ndNOTEQUAL FUNCTION2ndLESSEQUAL FUNCTION2ndGREATEREQUAL
-%left	FUNCTION2ndLEFTSHIFT FUNCTION2ndRIGHTSHIFT
-%left	'+' '-'
-%left	'*' '/' ':' FUNCTION2ndMODULO
-%right	'^'
-%left	'!'
-
-
-%type	<t>	start
-%type	<t>	statement
-%type	<t>	statement_list
-%type	<t>	number
-%type	<t>	terminal
-%type	<t>	expression
-%type	<t>	expression_list
-%type	<t>	expression_binary
-%type	<t>	expression_add
-%type	<t>	expression_mul
-%type	<t>	expression_signed
-%type	<t>	expression_unsigned
-%type	<t>	expression_unary
-%type	<t>	expression_factorial
-
+%type   <s>     start
+%type   <s>     statement
+%type   <s>     statement_list
+%type   <s>     number
+%type   <s>     terminal
+%type   <s>     expression
+%type   <s>     expression_list
+%type   <s>     expression_binary
+%type   <s>     expression_add
+%type   <s>     expression_mul
+%type   <s>     expression_signed
+%type   <s>     expression_unsigned
+%type   <s>     expression_unary
+%type   <s>     expression_factorial
 
 %%
 
 start:			statement_list
                         {
-                                config.value = $1;
+                                $$ << $1.rdbuf();
                                 YYACCEPT;
                         }
                         ;
@@ -133,7 +138,7 @@ statement_list:		statement_list statement
 
 statement:		expression_binary EOL
                         {
-                                $$ << $1.rdbuf() << "; " << endl;
+                                $$ << $1.rdbuf() << ";" << std::endl;
                         }
                         |
                         '{' statement_list '}'
@@ -174,6 +179,7 @@ expression:		{
                                         YYABORT;
                                 }
                         }
+                        |
                         expression_binary
                         {
                                 $$ << $1.rdbuf();
@@ -187,7 +193,7 @@ expression_binary:	expression_add
                         |
                         ID '=' expression_binary
                         {
-                                $$ << $1 << " = " << $3.rdbuf();
+                                $$ << $1.rdbuf() << " = " << $3.rdbuf();
                         }
                         |
                         FUNCTION1stNOT expression_binary
@@ -336,24 +342,24 @@ expression_factorial:	expression_factorial '!'
                                 $$ << $1.rdbuf() << " !";
                         }
                         |
-                        ID FUNCTION2ndINCREMENT
+                        expression FUNCTION2ndINCREMENT
                         {
-                                $$ << $1 << " ++";
+                                $$ << $1.rdbuf() << " ++";
                         }
-                        ID FUNCTION2ndDECREMENT
+                        expression FUNCTION2ndDECREMENT
                         {
-                                $$ << $1 << " --";
+                                $$ << $1.rdbuf() << " --";
                         }
                         |
                         |
                         '(' expression ')'
                         {
-                                $$ << "(" << $1.rdbuf() << ")";
+                                $$ << "(" << $2.rdbuf() << ")";
                         }
                         |
                         '[' expression_list ']'
                         {
-                                $$ << "[" << $1.rdbuf() << "]";
+                                $$ << "[" << $2.rdbuf() << "]";
                         }
                         |
                         terminal
@@ -361,30 +367,9 @@ expression_factorial:	expression_factorial '!'
                                 $$ << $1.rdbuf();
                         }
                         |
-                        FUNCTION0ed '(' ')'
+                        FUNCTION '(' expression_list ')'
                         {
-                                if (symbol)
-                                {
-                                        parsererror(yytext);
-                                        YYABORT;
-                                }
-
-                                $$ << $1 << "(" << ")";
-                        }
-                        |
-                        FUNCTION1st '(' expression ')'
-                        {
-                                $$ << $1 << "(" << $3.rdbuf() << ")";
-                        }
-                        |
-                        FUNCTION2nd '(' expression ',' expression ')'
-                        {
-                                $$ << $1 << "(" << $3.rdbuf() << ", " << $5.rdbuf() << ")";
-                        }
-                        |
-                        FUNCTION3rd '(' expression ',' expression ',' expression ')'
-                        {
-                                $$ << $1 << "(" << $3.rdbuf() << ", " << $5.rdbuf() << ", " << $7.rdbuf() << ")";
+                                $$ << "function (" << $3.rdbuf() << ")";
                         }
                         ;
 
@@ -401,18 +386,18 @@ terminal:		number
                         |
                         ID
                         {
-                                $$ << $1;
+                                $$ << $1.rdbuf();
                         }
                         ;
 
 number:			INTEGER
                         {
-                                $$ << $1;
+                                $$ << $1.rdbuf();
                         }
                         |
                         DOUBLE
                         {
-                                $$ << $1;
+                                $$ << $1.rdbuf();
                         }
                         ;
 

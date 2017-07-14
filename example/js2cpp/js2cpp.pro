@@ -10,9 +10,9 @@ QMAKE_YACCFLAGS = -d -l
 
 TARGET    = js2cpp
 
-YACCSOURCES += parser.yy parser_postfix.yy
+YACCSOURCES += parser.yy
 
 LEXSOURCES  += lexer.ll
 
-HEADERS	 += parser_yacc.h parser_postfix_yacc.h
-SOURCES	 += parser_yacc.cpp parser_postfix_yacc.cpp lexer_lex.cpp
+HEADERS	 += parser_yacc.h
+SOURCES	 += parser_yacc.cpp lexer_lex.cpp
