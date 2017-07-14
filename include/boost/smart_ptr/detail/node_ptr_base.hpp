@@ -3,15 +3,23 @@
     Boost QNodePtrBase.hpp header file.
 
     @note
-    Copyright (c) 2003-2008 Phil Bouchard <pbouchard8@gmail.com>.
+    Root Pointer - Deterministic Memory Manager.
+
+    Copyright (c) 2003-2017 Phil Bouchard <pbouchard8@gmail.com>.
     Copyright (c) 2001-2007 Peter Dimov
 
-    Distributed under the Boost Software License, Version 1.0.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    See accompanying file LICENSE_1_0.txt or copy at
-    http://www.boost.org/LICENSE_1_0.txt
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-    See http://www.boost.org/libs/smart_ptr/doc/index.html for documentation.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
