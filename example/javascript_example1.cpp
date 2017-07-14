@@ -22,7 +22,7 @@
 */
 
 
-#include "javascript_example1.h"
+#include "javascript.h"
 
 
 /**
