@@ -70,7 +70,7 @@ struct val
 
 %define CONSTRUCTOR_INIT : symbol(false)
 
-%define MEMBERS bool symbol; void state(int s) { yy_start = 1 + 2 * s; }
+%define MEMBERS bool symbol;
 
 
 %token          EOL
