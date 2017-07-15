@@ -23,6 +23,7 @@
 #define PARSER_H
 
 #if !defined(yyFlexLexerOnce)
+#undef yylex
 #define yyFlexLexer JS2CPPFlexLexer
 #include <FlexLexer.h>
 #endif

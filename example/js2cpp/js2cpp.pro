@@ -3,8 +3,6 @@ TARGET          = js2cpp
 INCLUDEPATH     += ../include
 INCLUDEPATH     += ../../include
 
-LIBS            += -lfl
-
 QMAKE_CXXFLAGS  += -std=c++11
 
 QMAKE_LEX       = flex
