@@ -29,6 +29,7 @@
 #endif
 
 #include <string>
+#include <algorithm>
 
 
 struct val
@@ -62,10 +63,12 @@ struct val
 %token          FOR
 %token          WHILE
 %token          RETURN
+%token          EXTERN
 
 %token  <s>     ID
 %token  <s>     DOUBLE
 %token  <s>     INTEGER
+%token  <s>     STRING
 
 %token          FUNCTION
 %token          FUNCTION2ndINCREMENT
@@ -159,7 +162,7 @@ statement:              expression EOL
 
                                 $$ += "QNodeProxy x;";
                                 $$ += "QStackArea<QType>::Reserve r(1);";
-                                $$ += "QStackArea<QType>::stack().push_back(make_pair(\"temporary\", make_node<QType>(x, QType())));";
+                                $$ += "QStackArea<QType>::stack().push_back(make_pair(\"__temporary\", make_node<QType>(x, QType())));";
                         
                                 $$ += $2;
                                 $$ += "}";
@@ -188,6 +191,12 @@ statement:              expression EOL
                         RETURN expression EOL
                         {
                                 $$ = "return result = " + $2 + "; ";
+                        }
+                        |
+                        EXTERN STRING EOL
+                        {
+                                $2.erase(remove($2.begin(), $2.end(), '\"'), $2.end());
+                                $$ = $2;
                         }
                         ;
 
@@ -392,9 +401,14 @@ expression_factorial:   expression_factorial '!'
                                 $$ = $1;
                         }
                         |
+                        expression '(' ')'
+                        {
+                                $$ = "(* " + $1 + ")(QStackArea<QType>::stack().at(\"__temporary\")->second)";
+                        }
+                        |
                         expression '(' expression_list ')'
                         {
-                                $$ = "(* " + $1 + ")(QStackArea<QType>::stack().at(\"temporary\")->second, " + $3 + ")";
+                                $$ = "(* " + $1 + ")(QStackArea<QType>::stack().at(\"__temporary\")->second, " + $3 + ")";
                         }
                         |
                         FUNCTION '(' ')' statement

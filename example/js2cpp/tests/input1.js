@@ -10,9 +10,9 @@
     {
         var object;
         var result = function() { return object; };
-        return function() { return bar( object ); };
+        return function(argument) { return bar( object ); };
     };
     
-    for (var i = 0; i < 1000000; ++ i)
-        console_log((foo())(temporary));
+    extern "for (int i = 0; i < 1000000; ++ i)";
+        (foo())(temporary);
 }

@@ -116,6 +116,10 @@ using namespace std;
 [ \t]+                                  {
                                         }
 
+"extern"                                {
+                                                return JS2CPPParser::EXTERN;
+                                        }
+
 "return"                                {
                                                 return JS2CPPParser::RETURN;
                                         }
@@ -149,6 +153,11 @@ using namespace std;
                                                 return JS2CPPParser::ID;
                                         }
 
+L?\"(\\.|[^\\"])*\"                     {
+                                                static_cast<JS2CPPParser *>(this)->parserlval.s = yytext;
+                                                return JS2CPPParser::STRING;
+                                        }
+                                        
 \n                                      {
                                                 ++ yylineno;
                                         }
