@@ -197,7 +197,7 @@ expression_binary:	expression_add
                                 $$ << "! " << $2.rdbuf();
                         }
                         |
-                        expression '=' expression
+                        expression_binary '=' expression_binary
                         {
                                 $$ << $1.rdbuf() << " = " << $3.rdbuf();
                         }
