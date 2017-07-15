@@ -128,18 +128,18 @@ start:			statement_list
 
 statement_list:		statement_list statement
                         {
-                                $$ << $1.rdbuf() << $2.rdbuf() << ";" << std::endl;
+                                $$ << $1.rdbuf() << $2.rdbuf();
                         }
                         |
                         statement
                         {
-                                $$ << $1.rdbuf() << ";" << std::endl;
+                                $$ << $1.rdbuf();
                         }
                         ;
 
 statement:		expression EOL
                         {
-                                $$ << $1.rdbuf();
+                                $$ << $1.rdbuf() << ";" << std::endl;
                         }
                         |
                         '{' statement_list '}'
@@ -169,7 +169,7 @@ statement:		expression EOL
                         |
                         RETURN expression EOL
                         {
-                                $$ << "return " << $2.rdbuf();
+                                $$ << "return " << $2.rdbuf() << ";" << std::endl;
                         }
                         ;
 
