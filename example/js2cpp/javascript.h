@@ -41,10 +41,10 @@ using namespace Qt;
 struct type
 {
     virtual ~type() {}
-    virtual QNodePtr<type> & operator () () {}
-    virtual QNodePtr<type> & operator () (QNodePtr<type> &) {}
-    virtual QNodePtr<type> & operator () (QNodePtr<type> &, QNodePtr<type> &) {}
-    virtual QNodePtr<type> & operator () (QNodePtr<type> &, QNodePtr<type> &, QNodePtr<type> &) {}
+    virtual QNodePtr<type> & operator () () { throw std::runtime_error("wrong number of arguments"); }
+    virtual QNodePtr<type> & operator () (QNodePtr<type> &) { throw std::runtime_error("wrong number of arguments"); }
+    virtual QNodePtr<type> & operator () (QNodePtr<type> &, QNodePtr<type> &) { throw std::runtime_error("wrong number of arguments"); }
+    virtual QNodePtr<type> & operator () (QNodePtr<type> &, QNodePtr<type> &, QNodePtr<type> &) { throw std::runtime_error("wrong number of arguments"); }
     
     virtual std::ostream & flush(std::ostream & out) const { return out; }
     
