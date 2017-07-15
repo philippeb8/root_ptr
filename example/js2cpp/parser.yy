@@ -124,6 +124,7 @@ start:                  statement_list
                                 value.s += '\n';
                                 value.s += "#include \"javascript.h\"\n";
                                 value.s += '\n';
+                                value.s += "using namespace std;\n";
                                 value.s += "using namespace js2cpp;\n";
                                 value.s += '\n';
                                 value.s += '\n';
@@ -419,7 +420,7 @@ terminal:               number
                         |
                         VAR ID
                         {
-                                $$ = "(++ r.n, QStackArea<type>::stack().push_back(make_pair(\"" + $2 + "\", make_node<type>(x, type()))), QStackArea<type>::stack().back())";
+                                $$ = "(++ r.n, QStackArea<type>::stack().push_back(make_pair(\"" + $2 + "\", make_node<type>(x, type()))), QStackArea<type>::stack().back().second)";
                         }
                         ;
 
