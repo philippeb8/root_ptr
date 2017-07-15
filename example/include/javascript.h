@@ -155,9 +155,9 @@ template <typename T>
         
         struct Reserve
         {
-            int const n;
+            int n;
             
-            Reserve(int n) : n(n) {}
+            Reserve(int n = 0) : n(n) {}
             
             ~Reserve()
             {
