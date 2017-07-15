@@ -50,7 +50,9 @@ struct val
 
 %define ERROR_BODY { * yyout << JS2CPPFlexLexer::lineno() << ": parse error before '" << JS2CPPFlexLexer::YYText() << "'" << std::endl; }
 
-%define MEMBERS val value;
+%define CONSTRUCTOR_INIT : indent(0)
+
+%define MEMBERS val value; int indent;
 
 
 %token          EOL
@@ -107,7 +109,7 @@ start:			statement_list
 
 statement_list:		statement_list statement
                         {
-                                $$ = $1 + $2;
+                                $$ = $1 + '\n' + $2;
                         }
                         |
                         statement
@@ -118,7 +120,7 @@ statement_list:		statement_list statement
 
 statement:		expression EOL
                         {
-                                $$ = $1 + ";\n";
+                                $$ = $1 + "; ";
                         }
                         |
                         '{' statement_list '}'
@@ -133,22 +135,22 @@ statement:		expression EOL
                         |
                         IF '(' expression ')' statement ELSE statement
                         {
-                                $$ = "if (" + $3 + ")" + $5 + "else" + $7;
+                                $$ = "if (" + $3 + ") " + $5 + " else " + $7;
                         }
                         |
                         WHILE '(' expression ')' statement
                         {
-                                $$ = "while (" + $3 + ")" + $5;
+                                $$ = "while (" + $3 + ") " + $5;
                         }
                         |
                         FOR '(' expression EOL expression EOL expression ')' statement
                         {
-                                $$ = "for (" + $3 + "; " + $5 + "; " + $7 + ")" + $9;
+                                $$ = "for (" + $3 + "; " + $5 + "; " + $7 + ") " + $9;
                         }
                         |
                         RETURN expression EOL
                         {
-                                $$ = "return " + $2 + ";\n";
+                                $$ = "return " + $2 + "; ";
                         }
                         ;
 
@@ -360,7 +362,7 @@ expression_factorial:	expression_factorial '!'
                         |
                         FUNCTION '(' expression_list ')' statement
                         {
-                                $$ = "function (" + $3 + ")" + $5;
+                                $$ = "function (" + $3 + ") " + $5;
                         }
                         ;
 
