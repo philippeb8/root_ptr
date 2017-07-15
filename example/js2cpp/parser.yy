@@ -118,7 +118,7 @@ statement_list:		statement_list statement
 
 statement:		expression EOL
                         {
-                                $$ = $1 + ";";
+                                $$ = $1 + ";\n";
                         }
                         |
                         '{' statement_list '}'
@@ -148,7 +148,7 @@ statement:		expression EOL
                         |
                         RETURN expression EOL
                         {
-                                $$ = "return " + $2 + ";";
+                                $$ = "return " + $2 + ";\n";
                         }
                         ;
 
@@ -376,7 +376,7 @@ terminal:		number
                         |
                         VAR ID
                         {
-                                $$ = $2;
+                                $$ = "var " + $2;
                         }
                         ;
 
