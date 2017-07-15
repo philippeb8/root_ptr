@@ -67,7 +67,7 @@ struct val
 
 %define LEX_BODY { return JS2CPPFlexLexer::yylex(); }
 
-%define ERROR_BODY { * yyout << "Invalid Statement"; }
+%define ERROR_BODY { * yyout << JS2CPPFlexLexer::lineno() << ": parse error before '" << JS2CPPFlexLexer::YYText() << "'" << std::endl; }
 
 %define CONSTRUCTOR_INIT : symbol(false)
 
@@ -98,7 +98,7 @@ struct val
 %left           FUNCTION2ndEQUAL FUNCTION2ndLESS FUNCTION2ndGREATER FUNCTION2ndNOTEQUAL FUNCTION2ndLESSEQUAL FUNCTION2ndGREATEREQUAL
 %left           FUNCTION2ndLEFTSHIFT FUNCTION2ndRIGHTSHIFT
 %left           '+' '-'
-%left           '*' '/' ':' FUNCTION2ndMODULO
+%left           '*' '/' '%'
 %right          '^'
 %left           '!'
 
@@ -171,6 +171,16 @@ statement:		expression_binary EOL
                         {
                                 $$ << "exit(-1)";
                         }
+                        |
+                        VAR ID
+                        {
+                                $$ << $2.rdbuf();
+                        }
+                        |
+                        VAR ID '=' expression_binary
+                        {
+                                $$ << $2.rdbuf() << " = " << $4.rdbuf();
+                        }
                         ;
 
 expression:		{
@@ -190,11 +200,6 @@ expression:		{
 expression_binary:	expression_add
                         {
                                 $$ << $1.rdbuf();
-                        }
-                        |
-                        ID '=' expression_binary
-                        {
-                                $$ << $1.rdbuf() << " = " << $3.rdbuf();
                         }
                         |
                         FUNCTION1stNOT expression_binary
@@ -289,7 +294,7 @@ expression_mul:		expression_signed
                                 $$ << $1.rdbuf() << " / " << $3.rdbuf();
                         }
                         |
-                        expression_mul FUNCTION2ndMODULO expression_mul
+                        expression_mul '%' expression_mul
                         {
                                 $$ << $1.rdbuf() << " % " << $3.rdbuf();
                         }

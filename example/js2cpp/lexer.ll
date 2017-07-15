@@ -31,7 +31,7 @@ using namespace std;
 %%
 
 
-"!"                                     {
+"not"                                   {
                                                 return JS2CPPParser::FUNCTION1stNOT;
                                         }
 
@@ -57,10 +57,6 @@ using namespace std;
 
 "||"                                    {
                                                 return JS2CPPParser::FUNCTION2ndOR;
-                                        }
-
-"%"                                     {
-                                                return JS2CPPParser::FUNCTION2ndMODULO;
                                         }
 
 "=="                                    {
@@ -153,4 +149,7 @@ using namespace std;
                                                 return JS2CPPParser::ID;
                                         }
 
+.                                       {
+                                                return * yytext;
+                                        }
 %%
