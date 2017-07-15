@@ -81,6 +81,7 @@ struct val
 %token          FOR
 %token          WHILE
 %token          EXIT
+%token          RETURN
 
 %token  <s>     ID
 %token  <s>     DOUBLE
@@ -126,20 +127,20 @@ start:			statement_list
                         }
                         ;
 
-statement_list:		statement_list statement
+statement_list:		statement_list statement EOL
                         {
-                                $$ << $1.rdbuf() << $2.rdbuf();
+                                $$ << $1.rdbuf() << $2.rdbuf() << ";" << std::endl;
                         }
                         |
-                        statement
+                        statement EOL
                         {
-                                $$ << $1.rdbuf();
+                                $$ << $1.rdbuf() << ";" << std::endl;
                         }
                         ;
 
-statement:		expression_binary EOL
+statement:		expression_binary
                         {
-                                $$ << $1.rdbuf() << ";" << std::endl;
+                                $$ << $1.rdbuf();
                         }
                         |
                         '{' statement_list '}'
@@ -180,6 +181,11 @@ statement:		expression_binary EOL
                         VAR ID '=' expression_binary
                         {
                                 $$ << $2.rdbuf() << " = " << $4.rdbuf();
+                        }
+                        |
+                        RETURN expression_binary
+                        {
+                                $$ << "return " << $2.rdbuf();
                         }
                         ;
 
@@ -373,9 +379,9 @@ expression_factorial:	expression_factorial '!'
                                 $$ << $1.rdbuf();
                         }
                         |
-                        FUNCTION '(' expression_list ')'
+                        FUNCTION '(' expression_list ')' statement_list
                         {
-                                $$ << "function (" << $3.rdbuf() << ")";
+                                $$ << "function (" << $3.rdbuf() << ")" << $5.rdbuf();
                         }
                         ;
 

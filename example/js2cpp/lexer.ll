@@ -116,6 +116,10 @@ using namespace std;
 [ \t]+                                  {
                                         }
 
+"return"                                {
+                                                return JS2CPPParser::RETURN;
+                                        }
+
 "function"                              {
                                                 return JS2CPPParser::FUNCTION;
                                         }
@@ -149,6 +153,10 @@ using namespace std;
                                                 return JS2CPPParser::ID;
                                         }
 
+\n                                      {
+                                                ++ yylineno;
+                                        }
+                                        
 .                                       {
                                                 return * yytext;
                                         }
