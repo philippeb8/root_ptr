@@ -52,9 +52,6 @@ struct val
     }
 };
 
-#define ON symbol = true;
-
-#define OFF symbol = false;
 
 #endif
 %}
@@ -69,9 +66,7 @@ struct val
 
 %define ERROR_BODY { * yyout << JS2CPPFlexLexer::lineno() << ": parse error before '" << JS2CPPFlexLexer::YYText() << "'" << std::endl; }
 
-%define CONSTRUCTOR_INIT : symbol(false)
-
-%define MEMBERS bool symbol;
+%define MEMBERS val value;
 
 
 %token          EOL
@@ -121,7 +116,7 @@ struct val
 
 start:			statement_list
                         {
-                                $$ << $1.rdbuf();
+                                value.s << $1.rdbuf();
                                 YYACCEPT;
                         }
                         ;
@@ -139,7 +134,7 @@ statement_list:		statement_list statement
 
 statement:		expression EOL
                         {
-                                $$ << $1.rdbuf() << ";" << std::endl;
+                                $$ << $1.rdbuf() << ";";
                         }
                         |
                         '{' statement_list '}'
@@ -169,16 +164,12 @@ statement:		expression EOL
                         |
                         RETURN expression EOL
                         {
-                                $$ << "return " << $2.rdbuf() << ";" << std::endl;
+                                $$ << "return " << $2.rdbuf() << ";";
                         }
                         ;
 
 expression:		{
-                                if (symbol)
-                                {
-                                        parsererror(yytext);
-                                        YYABORT;
-                                }
+                                $$ << "";
                         }
                         |
                         expression_binary
@@ -194,7 +185,7 @@ expression_binary:	expression_add
                         |
                         FUNCTION1stNOT expression_binary
                         {
-                                $$ << "! " << $2.rdbuf();
+                                $$ << "NOT " << $2.rdbuf();
                         }
                         |
                         expression_binary '=' expression_binary
@@ -265,7 +256,7 @@ expression_add:		expression_mul
                         |
                         expression_add '+' expression_add
                         {
-                                $$ << $1.rdbuf() << " + " << $3.rdbuf();
+                                $$ << $1.rdbuf() << " << " << $3.rdbuf();
                         }
                         |
                         expression_add '-' expression_add
@@ -300,9 +291,9 @@ expression_signed:	expression_unary
                                 $$ << $1.rdbuf();
                         }
                         |
-                        expression_unary '^' {OFF} expression_signed
+                        expression_unary '^' expression_signed
                         {
-                                $$ << $1.rdbuf() << "^" << $4.rdbuf();
+                                $$ << $1.rdbuf() << "^" << $3.rdbuf();
                         }
                         ;
 
@@ -311,9 +302,9 @@ expression_unsigned:	expression_factorial
                                 $$ << $1.rdbuf();
                         }
                         |
-                        expression_factorial '^' {OFF} expression_signed
+                        expression_factorial '^' expression_signed
                         {
-                                $$ << $1.rdbuf() << "^" << $4.rdbuf();
+                                $$ << $1.rdbuf() << "^" << $3.rdbuf();
                         }
                         ;
 
@@ -391,12 +382,6 @@ expression_factorial:	expression_factorial '!'
 
 terminal:		number
                         {
-                                if (symbol)
-                                {
-                                        parsererror(yytext);
-                                        YYABORT;
-                                }
-
                                 $$ << $1.rdbuf();
                         }
                         |
