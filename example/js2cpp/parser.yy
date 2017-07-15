@@ -394,7 +394,7 @@ expression_factorial:   expression_factorial '!'
                         |
                         expression '(' expression_list ')'
                         {
-                                $$ = "(* " + $1 + ")(" + $3 + ")";
+                                $$ = "(* " + $1 + ")(QStackArea<type>::stack().at(\"temporary\")->second, " + $3 + ")";
                         }
                         |
                         FUNCTION '(' ')' statement
