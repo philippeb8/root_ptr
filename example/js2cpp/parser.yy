@@ -100,7 +100,7 @@ struct val
 
 %%
 
-start:			statement_list
+start:                  statement_list
                         {
                                 value.s = "/*\n";
                                 value.s += "    JS2CPP - Generated Code.\n";
@@ -133,7 +133,7 @@ start:			statement_list
                         }
                         ;
 
-statement_list:		statement_list statement
+statement_list:         statement_list statement
                         {
                                 $$ = $1 + $2;
                         }
@@ -144,7 +144,7 @@ statement_list:		statement_list statement
                         }
                         ;
 
-statement:		expression EOL
+statement:              expression EOL
                         {
                                 $$ = $1 + "; ";
                         }
@@ -187,7 +187,7 @@ statement:		expression EOL
                         }
                         ;
 
-expression:		{
+expression:             {
                                 $$ = "";
                         }
                         |
@@ -197,7 +197,7 @@ expression:		{
                         }
                         ;
 
-expression_binary:	expression_add
+expression_binary:      expression_add
                         {
                                 $$ = $1;
                         }
@@ -268,7 +268,7 @@ expression_binary:	expression_add
                         }
                         ;
 
-expression_add:		expression_mul
+expression_add:         expression_mul
                         {
                                 $$ = $1;
                         }
@@ -284,7 +284,7 @@ expression_add:		expression_mul
                         }
                         ;
 
-expression_mul:		expression_signed
+expression_mul:         expression_signed
                         {
                                 $$ = $1;
                         }
@@ -305,7 +305,7 @@ expression_mul:		expression_signed
                         }
                         ;
 
-expression_signed:	expression_unary
+expression_signed:      expression_unary
                         {
                                 $$ = $1;
                         }
@@ -316,7 +316,7 @@ expression_signed:	expression_unary
                         }
                         ;
 
-expression_unsigned:	expression_factorial
+expression_unsigned:    expression_factorial
                         {
                                 $$ = $1;
                         }
@@ -327,7 +327,7 @@ expression_unsigned:	expression_factorial
                         }
                         ;
 
-expression_unary:	expression_factorial
+expression_unary:       expression_factorial
                         {
                                 $$ = $1;
                         }
@@ -348,7 +348,7 @@ expression_unary:	expression_factorial
                         }
                         ;
 
-expression_factorial:	expression_factorial '!'
+expression_factorial:   expression_factorial '!'
                         {
                                 $$ = $1 + " !";
                         }
@@ -404,7 +404,7 @@ expression_factorial:	expression_factorial '!'
                         }
                         ;
 
-terminal:		number
+terminal:               number
                         {
                                 $$ = $1;
                         }
@@ -420,7 +420,7 @@ terminal:		number
                         }
                         ;
 
-number:			INTEGER
+number:                 INTEGER
                         {
                                 $$ = "make_node<type_t<int>>(x, type_t<int>(" + $1 + "))";
                         }
@@ -431,7 +431,7 @@ number:			INTEGER
                         }
                         ;
 
-expression_list:	expression_list ',' expression
+expression_list:        expression_list ',' expression
                         {
                                 $$ = $1 + ", " + $3;
                         }
