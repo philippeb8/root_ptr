@@ -122,7 +122,7 @@ start:                  statement_list
                                 value.s += "*/\n";
                                 value.s += '\n';
                                 value.s += '\n';
-                                value.s += "#include \"javascript.h\"\n";
+                                value.s += "#include \"js2cpp.h\"\n";
                                 value.s += '\n';
                                 value.s += "using namespace std;\n";
                                 value.s += "using namespace js2cpp;\n";

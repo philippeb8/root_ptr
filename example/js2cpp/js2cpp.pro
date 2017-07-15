@@ -1,6 +1,5 @@
 TARGET          = js2cpp
 
-INCLUDEPATH     += ../include
 INCLUDEPATH     += ../../include
 
 QMAKE_CXXFLAGS  += -std=c++11
