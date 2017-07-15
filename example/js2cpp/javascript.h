@@ -38,27 +38,27 @@ namespace js2cpp
 using namespace Qt;
 
 
-struct type
+struct QType
 {
-    virtual ~type() {}
-    virtual QNodePtr<type> & operator () () { throw std::runtime_error("wrong number of arguments"); }
-    virtual QNodePtr<type> & operator () (QNodePtr<type> &) { throw std::runtime_error("wrong number of arguments"); }
-    virtual QNodePtr<type> & operator () (QNodePtr<type> &, QNodePtr<type> &) { throw std::runtime_error("wrong number of arguments"); }
-    virtual QNodePtr<type> & operator () (QNodePtr<type> &, QNodePtr<type> &, QNodePtr<type> &) { throw std::runtime_error("wrong number of arguments"); }
+    virtual ~QType() {}
+    virtual QNodePtr<QType> & operator () () { throw std::runtime_error("wrong number of arguments"); }
+    virtual QNodePtr<QType> & operator () (QNodePtr<QType> &) { throw std::runtime_error("wrong number of arguments"); }
+    virtual QNodePtr<QType> & operator () (QNodePtr<QType> &, QNodePtr<QType> &) { throw std::runtime_error("wrong number of arguments"); }
+    virtual QNodePtr<QType> & operator () (QNodePtr<QType> &, QNodePtr<QType> &, QNodePtr<QType> &) { throw std::runtime_error("wrong number of arguments"); }
     
     virtual std::ostream & flush(std::ostream & out) const { return out; }
     
-    friend std::ostream & operator << (std::ostream & out, QNodePtr<type> const & t) { return t->flush(out); }
+    friend std::ostream & operator << (std::ostream & out, QNodePtr<QType> const & t) { return t->flush(out); }
 };
 
 
 template <typename T>
-    struct type_t : type
+    struct QTypeType : QType
     {
         T t;
 
         template <typename... U>
-            type_t(U... u) : t(u...)
+            QTypeType(U... u) : t(u...)
             {
             }
             
@@ -67,18 +67,18 @@ template <typename T>
 
   
 template <typename T>
-    struct function0_t : type
+    struct QFunction0Type : QType
     {
         typedef typename std::function<T>::result_type result_type;
 
         std::function<T> t;
 
         template <typename... U>
-            function0_t(U... u) : t(u...) 
+            QFunction0Type(U... u) : t(u...) 
             {
             }
 
-        virtual QNodePtr<type> & operator () () 
+        virtual QNodePtr<QType> & operator () () 
         { 
             return t.operator () (); 
         }
@@ -86,18 +86,18 @@ template <typename T>
 
   
 template <typename T>
-    struct function1_t : type
+    struct QFunction1Type : QType
     {
         typedef typename std::function<T>::result_type result_type;
 
         std::function<T> t;
 
         template <typename... U>
-            function1_t(U... u) : t(u...) 
+            QFunction1Type(U... u) : t(u...) 
             {
             }
 
-        virtual QNodePtr<type> & operator () (QNodePtr<type> & t1) 
+        virtual QNodePtr<QType> & operator () (QNodePtr<QType> & t1) 
         { 
             return t.operator () (t1); 
         }
@@ -105,18 +105,18 @@ template <typename T>
 
   
 template <typename T>
-    struct function2_t : type
+    struct QFunction2Type : QType
     {
         typedef typename std::function<T>::result_type result_type;
 
         std::function<T> t;
 
         template <typename... U>
-            function2_t(U... u) : t(u...) 
+            QFunction2Type(U... u) : t(u...) 
             {
             }
 
-        virtual QNodePtr<type> & operator () (QNodePtr<type> & t1, QNodePtr<type> & t2) 
+        virtual QNodePtr<QType> & operator () (QNodePtr<QType> & t1, QNodePtr<QType> & t2) 
         { 
             return t.operator () (t1, t2); 
         }

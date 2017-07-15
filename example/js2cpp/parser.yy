@@ -158,8 +158,8 @@ statement:              expression EOL
                                 $$ = "{";
 
                                 $$ += "QNodeProxy x;";
-                                $$ += "QStackArea<type>::Reserve r(1);";
-                                $$ += "QStackArea<type>::stack().push_back(make_pair(\"temporary\", make_node<type>(x, type())));";
+                                $$ += "QStackArea<QType>::Reserve r(1);";
+                                $$ += "QStackArea<QType>::stack().push_back(make_pair(\"temporary\", make_node<QType>(x, QType())));";
                         
                                 $$ += $2;
                                 $$ += "}";
@@ -394,17 +394,17 @@ expression_factorial:   expression_factorial '!'
                         |
                         expression '(' expression_list ')'
                         {
-                                $$ = "(* " + $1 + ")(QStackArea<type>::stack().at(\"temporary\")->second, " + $3 + ")";
+                                $$ = "(* " + $1 + ")(QStackArea<QType>::stack().at(\"temporary\")->second, " + $3 + ")";
                         }
                         |
                         FUNCTION '(' ')' statement
                         {
-                                $$ = "make_node<function1_t<QNodePtr<type> & (QNodePtr<type> &)>>(x, function1_t<QNodePtr<type> & (QNodePtr<type> &)>([] (QNodePtr<type> & result) -> QNodePtr<type> & " + $4 + "))";
+                                $$ = "make_node<QFunction1Type<QNodePtr<QType> & (QNodePtr<QType> &)>>(x, QFunction1Type<QNodePtr<QType> & (QNodePtr<QType> &)>([] (QNodePtr<QType> & result) -> QNodePtr<QType> & " + $4 + "))";
                         }
                         |
                         FUNCTION '(' ID ')' statement
                         {
-                                $$ = "make_node<function2_t<QNodePtr<type> & (QNodePtr<type> &, QNodePtr<type> &)>>(x, function2_t<QNodePtr<type> & (QNodePtr<type> &, QNodePtr<type> &)>([] (QNodePtr<type> & result, QNodePtr<type> & " + $3 + ") -> QNodePtr<type> & " + $5 + "))";
+                                $$ = "make_node<QFunction2Type<QNodePtr<QType> & (QNodePtr<QType> &, QNodePtr<QType> &)>>(x, QFunction2Type<QNodePtr<QType> & (QNodePtr<QType> &, QNodePtr<QType> &)>([] (QNodePtr<QType> & result, QNodePtr<QType> & " + $3 + ") -> QNodePtr<QType> & " + $5 + "))";
                         }
                         ;
 
@@ -415,23 +415,23 @@ terminal:               number
                         |
                         ID
                         {
-                                $$ = "QStackArea<type>::stack().at(\"" + $1 + "\")->second";
+                                $$ = "QStackArea<QType>::stack().at(\"" + $1 + "\")->second";
                         }
                         |
                         VAR ID
                         {
-                                $$ = "(++ r.n, QStackArea<type>::stack().push_back(make_pair(\"" + $2 + "\", make_node<type>(x, type()))), QStackArea<type>::stack().back().second)";
+                                $$ = "(++ r.n, QStackArea<QType>::stack().push_back(make_pair(\"" + $2 + "\", make_node<QType>(x, QType()))), QStackArea<QType>::stack().back().second)";
                         }
                         ;
 
 number:                 INTEGER
                         {
-                                $$ = "make_node<type_t<int>>(x, type_t<int>(" + $1 + "))";
+                                $$ = "make_node<QTypeType<int>>(x, QTypeType<int>(" + $1 + "))";
                         }
                         |
                         DOUBLE
                         {
-                                $$ = "make_node<type_t<double>>(x, type_t<double>(" + $1 + "))";
+                                $$ = "make_node<QTypeType<double>>(x, QTypeType<double>(" + $1 + "))";
                         }
                         ;
 
