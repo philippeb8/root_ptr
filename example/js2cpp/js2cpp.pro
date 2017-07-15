@@ -13,3 +13,6 @@ QMAKE_YACCFLAGS = -d -l
 YACCSOURCES     += parser.yy
 
 LEXSOURCES      += lexer.ll
+
+HEADERS  += parser_yacc.h
+SOURCES  += js2cpp.cpp
