@@ -80,7 +80,6 @@ struct val
 %token          ELSE
 %token          FOR
 %token          WHILE
-%token          EXIT
 %token          RETURN
 
 %token  <s>     ID
@@ -127,18 +126,18 @@ start:			statement_list
                         }
                         ;
 
-statement_list:		statement_list statement EOL
+statement_list:		statement_list statement
                         {
                                 $$ << $1.rdbuf() << $2.rdbuf() << ";" << std::endl;
                         }
                         |
-                        statement EOL
+                        statement
                         {
                                 $$ << $1.rdbuf() << ";" << std::endl;
                         }
                         ;
 
-statement:		expression_binary
+statement:		expression EOL
                         {
                                 $$ << $1.rdbuf();
                         }
@@ -168,22 +167,7 @@ statement:		expression_binary
                                 $$ << "for (" << $3.rdbuf() << "; " << $5.rdbuf() << "; " << $7.rdbuf() << ")" << $9.rdbuf();
                         }
                         |
-                        EXIT
-                        {
-                                $$ << "exit(-1)";
-                        }
-                        |
-                        VAR ID
-                        {
-                                $$ << $2.rdbuf();
-                        }
-                        |
-                        VAR ID '=' expression_binary
-                        {
-                                $$ << $2.rdbuf() << " = " << $4.rdbuf();
-                        }
-                        |
-                        RETURN expression_binary
+                        RETURN expression EOL
                         {
                                 $$ << "return " << $2.rdbuf();
                         }
@@ -358,11 +342,21 @@ expression_factorial:	expression_factorial '!'
                         {
                                 $$ << $1.rdbuf() << " ++";
                         }
+                        |
                         expression FUNCTION2ndDECREMENT
                         {
                                 $$ << $1.rdbuf() << " --";
                         }
                         |
+                        FUNCTION2ndINCREMENT expression
+                        {
+                                $$ << "++ " << $2.rdbuf();
+                        }
+                        |
+                        FUNCTION2ndDECREMENT expression
+                        {
+                                $$ << "-- " << $2.rdbuf();
+                        }
                         |
                         '(' expression ')'
                         {
@@ -379,7 +373,12 @@ expression_factorial:	expression_factorial '!'
                                 $$ << $1.rdbuf();
                         }
                         |
-                        FUNCTION '(' expression_list ')' statement_list
+                        expression '(' expression_list ')'
+                        {
+                                $$ << $1.rdbuf() << "(" << $3.rdbuf() << ")";
+                        }
+                        |
+                        FUNCTION '(' expression_list ')' statement
                         {
                                 $$ << "function (" << $3.rdbuf() << ")" << $5.rdbuf();
                         }
@@ -399,6 +398,16 @@ terminal:		number
                         ID
                         {
                                 $$ << $1.rdbuf();
+                        }
+                        |
+                        VAR ID
+                        {
+                                $$ << $2.rdbuf();
+                        }
+                        |
+                        VAR ID '=' expression
+                        {
+                                $$ << $2.rdbuf() << " = " << $4.rdbuf();
                         }
                         ;
 

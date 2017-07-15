@@ -144,10 +144,6 @@ using namespace std;
                                                 return JS2CPPParser::WHILE;
                                         }
 
-"exit"                                  {
-                                                return JS2CPPParser::EXIT;
-                                        }
-
 [a-zA-Z_][a-zA-Z_0-9]*                  {
                                                 static_cast<JS2CPPParser *>(this)->parserlval.s << yytext;
                                                 return JS2CPPParser::ID;
