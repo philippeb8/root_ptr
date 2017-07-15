@@ -197,6 +197,11 @@ expression_binary:	expression_add
                                 $$ << "! " << $2.rdbuf();
                         }
                         |
+                        expression '=' expression
+                        {
+                                $$ << $1.rdbuf() << " = " << $3.rdbuf();
+                        }
+                        |
                         expression_binary FUNCTION2ndOR expression_binary
                         {
                                 $$ << $1.rdbuf() << " || " << $3.rdbuf();
@@ -403,11 +408,6 @@ terminal:		number
                         VAR ID
                         {
                                 $$ << $2.rdbuf();
-                        }
-                        |
-                        VAR ID '=' expression
-                        {
-                                $$ << $2.rdbuf() << " = " << $4.rdbuf();
                         }
                         ;
 
