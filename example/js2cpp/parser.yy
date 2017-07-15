@@ -102,14 +102,40 @@ struct val
 
 start:			statement_list
                         {
-                                value.s = $1;
+                                value.s = "/*\n";
+                                value.s += "    JS2CPP - Generated Code.\n";
+                                value.s += '\n';
+                                value.s += "    Copyright (C) 2017  Phil Bouchard <pbouchard8@gmail.com>\n";
+                                value.s += '\n';
+                                value.s += "    This program is free software: you can redistribute it and/or modify\n";
+                                value.s += "    it under the terms of the GNU General Public License as published by\n";
+                                value.s += "    the Free Software Foundation, either version 3 of the License, or\n";
+                                value.s += "    (at your option) any later version.\n";
+                                value.s += '\n';
+                                value.s += "    This program is distributed in the hope that it will be useful,\n";
+                                value.s += "    but WITHOUT ANY WARRANTY; without even the implied warranty of\n";
+                                value.s += "    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n";
+                                value.s += "    GNU General Public License for more details.\n";
+                                value.s += '\n';
+                                value.s += "    You should have received a copy of the GNU General Public License\n";
+                                value.s += "    along with this program.  If not, see <http://www.gnu.org/licenses/>.\n";
+                                value.s += "*/\n";
+                                value.s += '\n';
+                                value.s += '\n';
+                                value.s += "#include \"javascript.h\"\n";
+                                value.s += '\n';
+                                
+                                value.s += "int main()\n";
+                                value.s += $1;
+                                value.s += '\n';
+                                
                                 YYACCEPT;
                         }
                         ;
 
 statement_list:		statement_list statement
                         {
-                                $$ = $1 + '\n' + $2;
+                                $$ = $1 + $2;
                         }
                         |
                         statement
@@ -125,7 +151,14 @@ statement:		expression EOL
                         |
                         '{' statement_list '}'
                         {
-                                $$ = "{" + $2 + "}";
+                                $$ = "{";
+
+                                $$ += "QNodeProxy x;";
+                                $$ += "QStackArea<type>::Reserve r(1);";
+                                $$ += "QStackArea<type>::stack().push_back(make_pair(\"temporary\", make_node<type>(x, type())));";
+                        
+                                $$ += $2;
+                                $$ += "}";
                         }
                         |
                         IF '(' expression ')' statement
@@ -150,7 +183,7 @@ statement:		expression EOL
                         |
                         RETURN expression EOL
                         {
-                                $$ = "return " + $2 + "; ";
+                                $$ = "return result = " + $2 + "; ";
                         }
                         ;
 
@@ -357,12 +390,17 @@ expression_factorial:	expression_factorial '!'
                         |
                         expression '(' expression_list ')'
                         {
-                                $$ = $1 + "(" + $3 + ")";
+                                $$ = "(* " + $1 + ")(" + $3 + ")";
                         }
                         |
-                        FUNCTION '(' expression_list ')' statement
+                        FUNCTION '(' ')' statement
                         {
-                                $$ = "function (" + $3 + ") " + $5;
+                                $$ = "make_node<function1_t<QNodePtr<type> & (QNodePtr<type> &)>>(x, function1_t<QNodePtr<type> & (QNodePtr<type> &)>([] (QNodePtr<type> & result) -> QNodePtr<type> & " + $4 + "))";
+                        }
+                        |
+                        FUNCTION '(' ID ')' statement
+                        {
+                                $$ = "make_node<function2_t<QNodePtr<type> & (QNodePtr<type> &, QNodePtr<type> &)>>(x, function2_t<QNodePtr<type> & (QNodePtr<type> &, QNodePtr<type> &)>([] (QNodePtr<type> & result, QNodePtr<type> & " + $3 + ") -> QNodePtr<type> & " + $5 + "))";
                         }
                         ;
 
@@ -373,23 +411,23 @@ terminal:		number
                         |
                         ID
                         {
-                                $$ = $1;
+                                $$ = "QStackArea<type>::stack().at(\"" + $1 + "\")->second";
                         }
                         |
                         VAR ID
                         {
-                                $$ = "var " + $2;
+                                $$ = "(++ r.n, QStackArea<type>::stack().push_back(make_pair(\"" + $2 + "\", make_node<type>(x, type()))), QStackArea<type>::stack().back())";
                         }
                         ;
 
 number:			INTEGER
                         {
-                                $$ = $1;
+                                $$ = "make_node<type_t<int>>(x, type_t<int>(" + $1 + "))";
                         }
                         |
                         DOUBLE
                         {
-                                $$ = $1;
+                                $$ = "make_node<type_t<double>>(x, type_t<double>(" + $1 + "))";
                         }
                         ;
 
