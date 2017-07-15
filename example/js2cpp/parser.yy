@@ -124,6 +124,9 @@ start:                  statement_list
                                 value.s += '\n';
                                 value.s += "#include \"javascript.h\"\n";
                                 value.s += '\n';
+                                value.s += "using namespace js2cpp;\n";
+                                value.s += '\n';
+                                value.s += '\n';
                                 
                                 value.s += "int main()\n";
                                 value.s += $1;

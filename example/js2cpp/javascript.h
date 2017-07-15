@@ -33,7 +33,8 @@
 #include <functional>
 
 
-using namespace std;
+namespace js2cpp
+{
 using namespace Qt;
 
 
@@ -45,9 +46,9 @@ struct type
     virtual QNodePtr<type> & operator () (QNodePtr<type> &, QNodePtr<type> &) {}
     virtual QNodePtr<type> & operator () (QNodePtr<type> &, QNodePtr<type> &, QNodePtr<type> &) {}
     
-    virtual ostream & flush(ostream & out) const { return out; }
+    virtual std::ostream & flush(std::ostream & out) const { return out; }
     
-    friend ostream & operator << (ostream & out, QNodePtr<type> const & t) { return t->flush(out); }
+    friend std::ostream & operator << (std::ostream & out, QNodePtr<type> const & t) { return t->flush(out); }
 };
 
 
@@ -61,16 +62,16 @@ template <typename T>
             {
             }
             
-        virtual ostream & flush(ostream & out) const { return out << t; }
+        virtual std::ostream & flush(std::ostream & out) const { return out << t; }
     };
 
   
 template <typename T>
     struct function0_t : type
     {
-        typedef typename function<T>::result_type result_type;
+        typedef typename std::function<T>::result_type result_type;
 
-        function<T> t;
+        std::function<T> t;
 
         template <typename... U>
             function0_t(U... u) : t(u...) 
@@ -87,9 +88,9 @@ template <typename T>
 template <typename T>
     struct function1_t : type
     {
-        typedef typename function<T>::result_type result_type;
+        typedef typename std::function<T>::result_type result_type;
 
-        function<T> t;
+        std::function<T> t;
 
         template <typename... U>
             function1_t(U... u) : t(u...) 
@@ -106,9 +107,9 @@ template <typename T>
 template <typename T>
     struct function2_t : type
     {
-        typedef typename function<T>::result_type result_type;
+        typedef typename std::function<T>::result_type result_type;
 
-        function<T> t;
+        std::function<T> t;
 
         template <typename... U>
             function2_t(U... u) : t(u...) 
@@ -123,16 +124,16 @@ template <typename T>
   
     
 template <typename T>
-    struct QNodeStack : list<pair<string, QNodePtr<T>>>
+    struct QNodeStack : std::list<std::pair<std::string, QNodePtr<T>>>
     {
-        typedef list<pair<string, QNodePtr<T>>> base;
+        typedef std::list<std::pair<std::string, QNodePtr<T>>> base;
         typedef typename base::iterator iterator;
         typedef typename base::reverse_iterator reverse_iterator;
         
         using base::rbegin;
         using base::rend;
         
-        reverse_iterator at(string const & s) 
+        reverse_iterator at(std::string const & s) 
         { 
             for (reverse_iterator i = rbegin(); i != rend(); ++ i)
                 if (s == i->first)
@@ -166,6 +167,6 @@ template <typename T>
             }
         };
     };
-    
+}
     
 #endif
