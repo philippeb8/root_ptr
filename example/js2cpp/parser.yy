@@ -28,28 +28,12 @@
 #include <FlexLexer.h>
 #endif
 
-#include <sstream>
+#include <string>
 
 
 struct val
 {
-    std::stringstream s;
-    
-    val()
-    {
-    }
-    
-    val(val & v)
-    {
-        s << v.s.rdbuf();
-    }
-    
-    val & operator = (val & v)
-    {
-        s << v.s.rdbuf();
-        
-        return * this;
-    }
+    std::string s;
 };
 
 
@@ -116,305 +100,305 @@ struct val
 
 start:			statement_list
                         {
-                                value.s << $1.rdbuf();
+                                value.s = $1;
                                 YYACCEPT;
                         }
                         ;
 
 statement_list:		statement_list statement
                         {
-                                $$ << $1.rdbuf() << $2.rdbuf();
+                                $$ = $1 + $2;
                         }
                         |
                         statement
                         {
-                                $$ << $1.rdbuf();
+                                $$ = $1;
                         }
                         ;
 
 statement:		expression EOL
                         {
-                                $$ << $1.rdbuf() << ";";
+                                $$ = $1 + ";";
                         }
                         |
                         '{' statement_list '}'
                         {
-                                $$ << "{" << $2.rdbuf() << "}";
+                                $$ = "{" + $2 + "}";
                         }
                         |
                         IF '(' expression ')' statement
                         {
-                                $$ << "if (" << $3.rdbuf() << ")" << $5.rdbuf();
+                                $$ = "if (" + $3 + ")" + $5;
                         }
                         |
                         IF '(' expression ')' statement ELSE statement
                         {
-                                $$ << "if (" << $3.rdbuf() << ")" << $5.rdbuf() << "else" << $7.rdbuf();
+                                $$ = "if (" + $3 + ")" + $5 + "else" + $7;
                         }
                         |
                         WHILE '(' expression ')' statement
                         {
-                                $$ << "while (" << $3.rdbuf() << ")" << $5.rdbuf();
+                                $$ = "while (" + $3 + ")" + $5;
                         }
                         |
                         FOR '(' expression EOL expression EOL expression ')' statement
                         {
-                                $$ << "for (" << $3.rdbuf() << "; " << $5.rdbuf() << "; " << $7.rdbuf() << ")" << $9.rdbuf();
+                                $$ = "for (" + $3 + "; " + $5 + "; " + $7 + ")" + $9;
                         }
                         |
                         RETURN expression EOL
                         {
-                                $$ << "return " << $2.rdbuf() << ";";
+                                $$ = "return " + $2 + ";";
                         }
                         ;
 
 expression:		{
-                                $$ << "";
+                                $$ = "";
                         }
                         |
                         expression_binary
                         {
-                                $$ << $1.rdbuf();
+                                $$ = $1;
                         }
                         ;
 
 expression_binary:	expression_add
                         {
-                                $$ << $1.rdbuf();
+                                $$ = $1;
                         }
                         |
                         FUNCTION1stNOT expression_binary
                         {
-                                $$ << "NOT " << $2.rdbuf();
+                                $$ = "NOT " + $2;
                         }
                         |
                         expression_binary '=' expression_binary
                         {
-                                $$ << $1.rdbuf() << " = " << $3.rdbuf();
+                                $$ = $1 + " = " + $3;
                         }
                         |
                         expression_binary FUNCTION2ndOR expression_binary
                         {
-                                $$ << $1.rdbuf() << " || " << $3.rdbuf();
+                                $$ = $1 + " || " + $3;
                         }
                         |
                         expression_binary FUNCTION2ndXOR expression_binary
                         {
-                                $$ << $1.rdbuf() << " XOR " << $3.rdbuf();
+                                $$ = $1 + " XOR " + $3;
                         }
                         |
                         expression_binary FUNCTION2ndAND expression_binary
                         {
-                                $$ << $1.rdbuf() << " && " << $3.rdbuf();
+                                $$ = $1 + " && " + $3;
                         }
                         |
                         expression_binary FUNCTION2ndEQUAL expression_binary
                         {
-                                $$ << $1.rdbuf() << " == " << $3.rdbuf();
+                                $$ = $1 + " == " + $3;
                         }
                         |
                         expression_binary FUNCTION2ndLESS expression_binary
                         {
-                                $$ << $1.rdbuf() << " < " << $3.rdbuf();
+                                $$ = $1 + " < " + $3;
                         }
                         |
                         expression_binary FUNCTION2ndGREATER expression_binary
                         {
-                                $$ << $1.rdbuf() << " > " << $3.rdbuf();
+                                $$ = $1 + " > " + $3;
                         }
                         |
                         expression_binary FUNCTION2ndNOTEQUAL expression_binary
                         {
-                                $$ << $1.rdbuf() << " != " << $3.rdbuf();
+                                $$ = $1 + " != " + $3;
                         }
                         |
                         expression_binary FUNCTION2ndLESSEQUAL expression_binary
                         {
-                                $$ << $1.rdbuf() << " <= " << $3.rdbuf();
+                                $$ = $1 + " <= " + $3;
                         }
                         |
                         expression_binary FUNCTION2ndGREATEREQUAL expression_binary
                         {
-                                $$ << $1.rdbuf() << " >= " << $3.rdbuf();
+                                $$ = $1 + " >= " + $3;
                         }
                         |
                         expression_binary FUNCTION2ndLEFTSHIFT expression_binary
                         {
-                                $$ << $1.rdbuf() << " << " << $3.rdbuf();
+                                $$ = $1 + " + " + $3;
                         }
                         |
                         expression_binary FUNCTION2ndRIGHTSHIFT expression_binary
                         {
-                                $$ << $1.rdbuf() << " >> " << $3.rdbuf();
+                                $$ = $1 + " >> " + $3;
                         }
                         ;
 
 expression_add:		expression_mul
                         {
-                                $$ << $1.rdbuf();
+                                $$ = $1;
                         }
                         |
                         expression_add '+' expression_add
                         {
-                                $$ << $1.rdbuf() << " << " << $3.rdbuf();
+                                $$ = $1 + " + " + $3;
                         }
                         |
                         expression_add '-' expression_add
                         {
-                                $$ << $1.rdbuf() << " - " << $3.rdbuf();
+                                $$ = $1 + " - " + $3;
                         }
                         ;
 
 expression_mul:		expression_signed
                         {
-                                $$ << $1.rdbuf();
+                                $$ = $1;
                         }
                         |
                         expression_mul '*' expression_mul
                         {
-                                $$ << $1.rdbuf() << " * " << $3.rdbuf();
+                                $$ = $1 + " * " + $3;
                         }
                         |
                         expression_mul '/' expression_mul
                         {
-                                $$ << $1.rdbuf() << " / " << $3.rdbuf();
+                                $$ = $1 + " / " + $3;
                         }
                         |
                         expression_mul '%' expression_mul
                         {
-                                $$ << $1.rdbuf() << " % " << $3.rdbuf();
+                                $$ = $1 + " % " + $3;
                         }
                         ;
 
 expression_signed:	expression_unary
                         {
-                                $$ << $1.rdbuf();
+                                $$ = $1;
                         }
                         |
                         expression_unary '^' expression_signed
                         {
-                                $$ << $1.rdbuf() << "^" << $3.rdbuf();
+                                $$ = $1 + "^" + $3;
                         }
                         ;
 
 expression_unsigned:	expression_factorial
                         {
-                                $$ << $1.rdbuf();
+                                $$ = $1;
                         }
                         |
                         expression_factorial '^' expression_signed
                         {
-                                $$ << $1.rdbuf() << "^" << $3.rdbuf();
+                                $$ = $1 + "^" + $3;
                         }
                         ;
 
 expression_unary:	expression_factorial
                         {
-                                $$ << $1.rdbuf();
+                                $$ = $1;
                         }
                         |
                         '|' expression '|'
                         {
-                                $$ << "|" << $2.rdbuf() << "|";
+                                $$ = "|" + $2 + "|";
                         }
                         |
                         '+' expression_unary
                         {
-                                $$ << "+ " << $2.rdbuf();
+                                $$ = "+ " + $2;
                         }
                         |
                         '-' expression_unary
                         {
-                                $$ << "- " << $2.rdbuf();
+                                $$ = "- " + $2;
                         }
                         ;
 
 expression_factorial:	expression_factorial '!'
                         {
-                                $$ << $1.rdbuf() << " !";
+                                $$ = $1 + " !";
                         }
                         |
                         expression FUNCTION2ndINCREMENT
                         {
-                                $$ << $1.rdbuf() << " ++";
+                                $$ = $1 + " ++";
                         }
                         |
                         expression FUNCTION2ndDECREMENT
                         {
-                                $$ << $1.rdbuf() << " --";
+                                $$ = $1 + " --";
                         }
                         |
                         FUNCTION2ndINCREMENT expression
                         {
-                                $$ << "++ " << $2.rdbuf();
+                                $$ = "++ " + $2;
                         }
                         |
                         FUNCTION2ndDECREMENT expression
                         {
-                                $$ << "-- " << $2.rdbuf();
+                                $$ = "-- " + $2;
                         }
                         |
                         '(' expression ')'
                         {
-                                $$ << "(" << $2.rdbuf() << ")";
+                                $$ = "(" + $2 + ")";
                         }
                         |
                         '[' expression_list ']'
                         {
-                                $$ << "[" << $2.rdbuf() << "]";
+                                $$ = "[" + $2 + "]";
                         }
                         |
                         terminal
                         {
-                                $$ << $1.rdbuf();
+                                $$ = $1;
                         }
                         |
                         expression '(' expression_list ')'
                         {
-                                $$ << $1.rdbuf() << "(" << $3.rdbuf() << ")";
+                                $$ = $1 + "(" + $3 + ")";
                         }
                         |
                         FUNCTION '(' expression_list ')' statement
                         {
-                                $$ << "function (" << $3.rdbuf() << ")" << $5.rdbuf();
+                                $$ = "function (" + $3 + ")" + $5;
                         }
                         ;
 
 terminal:		number
                         {
-                                $$ << $1.rdbuf();
+                                $$ = $1;
                         }
                         |
                         ID
                         {
-                                $$ << $1.rdbuf();
+                                $$ = $1;
                         }
                         |
                         VAR ID
                         {
-                                $$ << $2.rdbuf();
+                                $$ = $2;
                         }
                         ;
 
 number:			INTEGER
                         {
-                                $$ << $1.rdbuf();
+                                $$ = $1;
                         }
                         |
                         DOUBLE
                         {
-                                $$ << $1.rdbuf();
+                                $$ = $1;
                         }
                         ;
 
 expression_list:	expression_list ',' expression
                         {
-                                $$ << $1.rdbuf() << ", " << $3.rdbuf();
+                                $$ = $1 + ", " + $3;
                         }
                         |
                         expression
                         {
-                                $$ << $1.rdbuf();
+                                $$ = $1;
                         }
                         ;
 

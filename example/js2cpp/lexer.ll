@@ -92,17 +92,17 @@ using namespace std;
                                         }
 
 [0-9]+                                  {
-                                                static_cast<JS2CPPParser *>(this)->parserlval.s << yytext;
+                                                static_cast<JS2CPPParser *>(this)->parserlval.s = yytext;
                                                 return JS2CPPParser::INTEGER;
                                         }
 
 \.[0-9]+(e[+-]?[0-9]+)?                 {
-                                                static_cast<JS2CPPParser *>(this)->parserlval.s << yytext;
+                                                static_cast<JS2CPPParser *>(this)->parserlval.s = yytext;
                                                 return JS2CPPParser::DOUBLE;
                                         }
 
 [0-9]+(\.[0-9]*)?(e[+-]?[0-9]+)?        {
-                                                static_cast<JS2CPPParser *>(this)->parserlval.s << yytext;
+                                                static_cast<JS2CPPParser *>(this)->parserlval.s = yytext;
                                                 return JS2CPPParser::DOUBLE;
                                         }
 
@@ -145,7 +145,7 @@ using namespace std;
                                         }
 
 [a-zA-Z_][a-zA-Z_0-9]*                  {
-                                                static_cast<JS2CPPParser *>(this)->parserlval.s << yytext;
+                                                static_cast<JS2CPPParser *>(this)->parserlval.s = yytext;
                                                 return JS2CPPParser::ID;
                                         }
 

@@ -11,5 +11,5 @@ int main()
     parser.switch_streams(& cin, & cerr);
 
     if (! parser.parserparse())
-        cout << parser.value.s.rdbuf() << endl;
+        cout << parser.value.s << endl;
 }
