@@ -1,5 +1,5 @@
 {
-    extern "cout << __PRETTY_FUNCTION__ << endl;";
+    //extern "cout << __PRETTY_FUNCTION__ << endl;";
     
     var temporary = 0;
     
@@ -16,5 +16,11 @@
     };
     
     extern "for (int i = 0; i < 1000000; ++ i)";
-        (foo())(temporary);
+        extern "{";
+        extern "cout << "; (foo())(temporary);
+        extern "cout << endl;";
+        extern "}";
+        
+    //for (var i = 0; i < 1000000; ++ i)
+    //    console.log((foo())(temporary));
 }
