@@ -1,4 +1,6 @@
 {
+    extern "cout << __PRETTY_FUNCTION__ << endl;";
+    
     var temporary = 0;
     
     var bar = function (object)
