@@ -139,7 +139,7 @@ template <typename T>
                 if (s == i->first)
                     return i;
 
-            return rend();
+            throw std::runtime_error(std::string("'") + s + "' not found");
         }        
     };
 
