@@ -1,6 +1,6 @@
 Dependencies:
 
-Flex, Bison++, Boost, Qt
+Flex, Bison++, Boost
 
 
 Comparison with Node.JS:
