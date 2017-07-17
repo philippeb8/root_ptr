@@ -116,7 +116,11 @@ using namespace std;
 [ \t]+                                  {
                                         }
 
-"new"                                {
+"const"                                 {
+                                                return JS2CPPParser::CONST;
+                                        }
+
+"new"                                   {
                                                 return JS2CPPParser::NEW;
                                         }
 

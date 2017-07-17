@@ -63,6 +63,7 @@ struct val
 %token          WHILE
 %token          RETURN
 %token          NEW
+%token          CONST
 
 %token  <s>     ID
 %token  <s>     DOUBLE
@@ -89,6 +90,8 @@ struct val
 %type   <s>     statement
 %type   <s>     statement_list
 %type   <s>     number
+%type   <s>     type
+%type   <s>     type_modifier
 %type   <s>     terminal
 %type   <s>     expression
 %type   <s>     expression_list
@@ -426,12 +429,7 @@ terminal:               number
                                 $$ = $1;
                         }
                         |
-                        VAR ID
-                        {
-                                $$ = "node_ptr<type> " + $2;
-                        }
-                        |
-                        ID ID
+                        type_modifier ID
                         {
                                 $$ = $1 + " " + $2;
                         }
@@ -449,7 +447,39 @@ number:                 INTEGER
                         |
                         NEW ID '(' expression ')'
                         {
-                                $$ = "make_node<type_t<" + $2 + ">>(__x, type_t<int>(" + $4 + "))";
+                                $$ = "make_node<type_t<" + $2 + ">>(__x, type_t<" + $2 + ">(" + $4 + "))";
+                        }
+                        ;
+                        
+type_modifier:          type
+                        {
+                                $$ = $1;
+                        }
+                        |
+                        type '&'
+                        {
+                                $$ = $1 + " &";
+                        }
+                        |
+                        type CONST
+                        {
+                                $$ = $1 + " const";
+                        }
+                        |
+                        type CONST '&'
+                        {
+                                $$ = $1 + " const &";
+                        }
+                        ;
+
+type:                   ID
+                        {
+                                $$ = $1;
+                        }
+                        |
+                        VAR
+                        {
+                                $$ = "node_ptr<type>";
                         }
                         ;
 
