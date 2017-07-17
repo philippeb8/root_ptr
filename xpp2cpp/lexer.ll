@@ -116,6 +116,14 @@ using namespace std;
 [ \t]+                                  {
                                         }
 
+"class"                                 {
+                                                return JS2CPPParser::CLASS;
+                                        }
+
+"struct"                                {
+                                                return JS2CPPParser::CLASS;
+                                        }
+
 "const"                                 {
                                                 return JS2CPPParser::CONST;
                                         }

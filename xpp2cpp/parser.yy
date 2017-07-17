@@ -64,6 +64,7 @@ struct val
 %token          RETURN
 %token          NEW
 %token          CONST
+%token          CLASS
 
 %token  <s>     ID
 %token  <s>     DOUBLE
@@ -91,7 +92,11 @@ struct val
 %type   <s>     statement_list
 %type   <s>     number
 %type   <s>     type
+%type   <s>     type_list
 %type   <s>     type_modifier
+%type   <s>     member
+%type   <s>     member_list
+%type   <s>     scope_list
 %type   <s>     terminal
 %type   <s>     expression
 %type   <s>     expression_list
@@ -153,6 +158,10 @@ statement_list:         statement_list statement
                         {
                                 $$ = $1;
                         }
+                        |
+                        {
+                                $$ = "";
+                        }
                         ;
 
 statement:              expression EOL
@@ -195,8 +204,39 @@ statement:              expression EOL
                         {
                                 $$ = "return __result = " + $2 + "; ";
                         }
+                        |
+                        CLASS ID '{' member_list '}' EOL
+                        {
+                                $$ = "struct " + $2 + " {" + $4 + "}; ";
+                        }
+                        |
+                        CLASS ID ':' type_list '{' member_list '}' EOL
+                        {
+                                $$ = "struct " + $2 + " : " + $4 + " {" + $6 + "}; ";
+                        }
                         ;
 
+member_list:            member_list member
+                        {
+                                $$ = $1 + $2;
+                        }
+                        |
+                        member
+                        {
+                                $$ = $1;
+                        }
+                        |
+                        {
+                                $$ = "";
+                        }
+                        ;
+
+member:                 expression EOL
+                        {
+                                $$ = $1 + "; ";
+                        }
+                        ;
+                        
 expression:             {
                                 $$ = "";
                         }
@@ -410,12 +450,12 @@ expression_factorial:   expression_factorial '!'
                         |
                         FUNCTION '(' ')' statement
                         {
-                                $$ = "make_node<function1_t<node_ptr<type> & (node_ptr<type> &)>>(__x, function1_t<node_ptr<type> & (node_ptr<type> &)>([] (node_ptr<type> & __result) -> node_ptr<type> & " + $4 + "))";
+                                $$ = "make_fastnode<function1_t<node_ptr<type> & (node_ptr<type> &)>>(__x, function1_t<node_ptr<type> & (node_ptr<type> &)>([] (node_ptr<type> & __result) -> node_ptr<type> & " + $4 + "))";
                         }
                         |
                         FUNCTION '(' ID ')' statement
                         {
-                                $$ = "make_node<function2_t<node_ptr<type> & (node_ptr<type> &, node_ptr<type> &)>>(__x, function2_t<node_ptr<type> & (node_ptr<type> &, node_ptr<type> &)>([] (node_ptr<type> & __result, node_ptr<type> & " + $3 + ") -> node_ptr<type> & " + $5 + "))";
+                                $$ = "make_fastnode<function2_t<node_ptr<type> & (node_ptr<type> &, node_ptr<type> &)>>(__x, function2_t<node_ptr<type> & (node_ptr<type> &, node_ptr<type> &)>([] (node_ptr<type> & __result, node_ptr<type> & " + $3 + ") -> node_ptr<type> & " + $5 + "))";
                         }
                         ;
 
@@ -425,6 +465,11 @@ terminal:               number
                         }
                         |
                         ID
+                        {
+                                $$ = $1;
+                        }
+                        |
+                        scope_list
                         {
                                 $$ = $1;
                         }
@@ -447,7 +492,7 @@ number:                 INTEGER
                         |
                         NEW ID '(' expression ')'
                         {
-                                $$ = "make_node<type_t<" + $2 + ">>(__x, type_t<" + $2 + ">(" + $4 + "))";
+                                $$ = "make_fastnode<type_t<" + $2 + ">>(__x, type_t<" + $2 + ">(" + $4 + "))";
                         }
                         ;
                         
@@ -482,6 +527,29 @@ type:                   ID
                                 $$ = "node_ptr<type>";
                         }
                         ;
+
+type_list:              type_list ',' type
+                        {
+                                $$ = $1 + ", " + $3;
+                        }
+                        |
+                        type
+                        {
+                                $$ = $1;
+                        }
+                        ;
+
+scope_list:             scope_list '.' ID
+                        {
+                                $$ = $1 + "." + $3;
+                        }
+                        |
+                        ID
+                        {
+                                $$ = $1;
+                        }
+                        ;
+
 
 expression_list:        expression_list ',' expression
                         {
