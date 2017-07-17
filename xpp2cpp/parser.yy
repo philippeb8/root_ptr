@@ -125,7 +125,9 @@ start:                  statement_list
                                 value.s += '\n';
                                 value.s += '\n';
                                 value.s += "#include \"xpp2cpp.h\"\n";
+                                value.s += "#include <iostream>\n";
                                 value.s += '\n';
+                                value.s += "using namespace std;\n";
                                 value.s += "using namespace boost;\n";
                                 value.s += "using namespace xpp2cpp;\n";
                                 value.s += '\n';
@@ -264,7 +266,7 @@ expression_binary:      expression_add
                         |
                         expression_binary FUNCTION2ndLEFTSHIFT expression_binary
                         {
-                                $$ = $1 + " + " + $3;
+                                $$ = $1 + " << " + $3;
                         }
                         |
                         expression_binary FUNCTION2ndRIGHTSHIFT expression_binary
