@@ -87,6 +87,7 @@ class node_proxy
         return depth_;
     }
 
+public:
     /**
         Initialization of a single @c node_proxy .
     */
@@ -126,6 +127,7 @@ class node_proxy
     }
 
     
+private:
     bool destroying() const
     {
         return destroying_;
@@ -161,7 +163,7 @@ class node_proxy
         // destroy cycles remaining
         destroying(true);
 
-        for (QIntrusiveList::iterator<QNodeBase, &QNodeBase::node_tag_> m = node_list_.begin(), n = node_list_.begin(); m != node_list_.end(); m = n)
+        for (intrusive_list::iterator<node_base, &node_base::node_tag_> m = node_list_.begin(), n = node_list_.begin(); m != node_list_.end(); m = n)
         {
             ++ n;
             delete &* m;
@@ -233,7 +235,7 @@ template <typename T>
         using base::po_;
 
         /** Reference to the @c node_proxy node @c node_ptr<> belongs to. */
-        mutable QNodeProxy const * px_;
+        mutable node_proxy const * px_;
 
     public:
         using base::reset;
@@ -324,10 +326,10 @@ template <typename T>
         /**
             Returns associated proxy.
             
-            @return     @c node_proxy part of @c QRootPtr .
+            @return     @c node_proxy part of @c root_ptr .
         */
         
-        node_proxy & proxy() 
+        node_proxy const & proxy() 
         {
             return *px_;
         }
@@ -336,7 +338,7 @@ template <typename T>
         /**
             Returns associated proxy.
             
-            @return     @c node_proxy part of @c QRootPtr .
+            @return     @c node_proxy part of @c root_ptr .
         */
         
         node_proxy const & proxy() const
@@ -478,7 +480,7 @@ template <typename T>
 
     private:
         template <typename V>
-            void propagate(QNodePtr<V> const & p) const
+            void propagate(node_ptr<V> const & p) const
             {
                 if (p.po_)
                 {

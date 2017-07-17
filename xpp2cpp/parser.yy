@@ -160,7 +160,7 @@ statement:              expression EOL
                                 $$ = "{";
 
                                 $$ += "node_proxy __x;";
-                                $$ += "node_ptr<type> __temporary;";
+                                $$ += "node_ptr<type> __temporary(__x);";
                         
                                 $$ += $2;
                                 $$ += "}";
@@ -447,12 +447,12 @@ number:                 INTEGER
                         |
                         NEW INTEGER
                         {
-                                $$ = "make_node<type_t<int>>(__x, type_t<int>(" + $1 + "))";
+                                $$ = "make_node<type_t<int>>(__x, type_t<int>(" + $2 + "))";
                         }
                         |
                         NEW DOUBLE
                         {
-                                $$ = "make_node<type_t<double>>(__x, type_t<double>(" + $1 + "))";
+                                $$ = "make_node<type_t<double>>(__x, type_t<double>(" + $2 + "))";
                         }
                         ;
 

@@ -39,19 +39,19 @@ struct type
 {
     virtual ~type() {}
 
-    virtual node_ptr<type> & operator () () { throw std::runtime_error("wrong number of arguments"); }
-    virtual node_ptr<type> & operator () (node_ptr<type> &) { throw std::runtime_error("wrong number of arguments"); }
-    virtual node_ptr<type> & operator () (node_ptr<type> &, node_ptr<type> &) { throw std::runtime_error("wrong number of arguments"); }
-    virtual node_ptr<type> & operator () (node_ptr<type> &, node_ptr<type> &, node_ptr<type> &) { throw std::runtime_error("wrong number of arguments"); }
+    virtual boost::node_ptr<type> & operator () () { throw std::runtime_error("wrong number of arguments"); }
+    virtual boost::node_ptr<type> & operator () (boost::node_ptr<type> &) { throw std::runtime_error("wrong number of arguments"); }
+    virtual boost::node_ptr<type> & operator () (boost::node_ptr<type> &, boost::node_ptr<type> &) { throw std::runtime_error("wrong number of arguments"); }
+    virtual boost::node_ptr<type> & operator () (boost::node_ptr<type> &, boost::node_ptr<type> &, boost::node_ptr<type> &) { throw std::runtime_error("wrong number of arguments"); }
     
-    virtual node_ptr<type> & add(node_ptr<type> & __result, node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
-    virtual node_ptr<type> & sub(node_ptr<type> & __result, node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
-    virtual node_ptr<type> & mul(node_ptr<type> & __result, node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
-    virtual node_ptr<type> & div(node_ptr<type> & __result, node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> & add(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> & sub(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> & mul(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> & div(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
 
     virtual std::ostream & flush(std::ostream & out) const { return out; }
     
-    friend std::ostream & operator << (std::ostream & out, node_ptr<type> const & t) { return t->flush(out); }
+    friend std::ostream & operator << (std::ostream & out, boost::node_ptr<type> const & t) { return t->flush(out); }
 };
 
 
@@ -65,34 +65,34 @@ template <typename T>
             {
             }
             
-        virtual node_ptr<type> & add(node_ptr<type> & __result, node_ptr<type> const & p) const
+        virtual boost::node_ptr<type> & add(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p) const
         {
             if (auto q = dynamic_cast<type_t<T> const *>(p.get()))
-                return __result = make_node<type>(__result.proxy(), type_t<T>(t + q->t));
+                return __result = boost::make_node<type>(__result.proxy(), type_t<T>(t + q->t));
             
             throw std::runtime_error("invalid operand types");
         }
         
-        virtual node_ptr<type> & sub(node_ptr<type> & __result, node_ptr<type> const & p) const
+        virtual boost::node_ptr<type> & sub(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p) const
         {
             if (auto q = dynamic_cast<type_t<T> const *>(p.get()))
-                return __result = make_node<type>(__result.proxy(), type_t<T>(t - q->t));
+                return __result = boost::make_node<type>(__result.proxy(), type_t<T>(t - q->t));
             
             throw std::runtime_error("invalid operand types");
         }
         
-        virtual node_ptr<type> & mul(node_ptr<type> & __result, node_ptr<type> const & p) const
+        virtual boost::node_ptr<type> & mul(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p) const
         {
             if (auto q = dynamic_cast<type_t<T> const *>(p.get()))
-                return __result = make_node<type>(__result.proxy(), type_t<T>(t * q->t));
+                return __result = boost::make_node<type>(__result.proxy(), type_t<T>(t * q->t));
             
             throw std::runtime_error("invalid operand types");
         }
         
-        virtual node_ptr<type> & div(node_ptr<type> & __result, node_ptr<type> const & p) const
+        virtual boost::node_ptr<type> & div(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p) const
         {
             if (auto q = dynamic_cast<type_t<T> const *>(p.get()))
-                return __result = make_node<type>(__result.proxy(), type_t<T>(t / q->t));
+                return __result = boost::make_node<type>(__result.proxy(), type_t<T>(t / q->t));
             
             throw std::runtime_error("invalid operand types");
         }
@@ -113,7 +113,7 @@ template <typename T>
             {
             }
 
-        virtual node_ptr<type> & operator () () 
+        virtual boost::node_ptr<type> & operator () () 
         { 
             return t.operator () (); 
         }
@@ -132,7 +132,7 @@ template <typename T>
             {
             }
 
-        virtual node_ptr<type> & operator () (node_ptr<type> & t1) 
+        virtual boost::node_ptr<type> & operator () (boost::node_ptr<type> & t1) 
         { 
             return t.operator () (t1); 
         }
@@ -151,7 +151,7 @@ template <typename T>
             {
             }
 
-        virtual node_ptr<type> & operator () (node_ptr<type> & t1, node_ptr<type> & t2) 
+        virtual boost::node_ptr<type> & operator () (boost::node_ptr<type> & t1, boost::node_ptr<type> & t2) 
         { 
             return t.operator () (t1, t2); 
         }
@@ -159,48 +159,48 @@ template <typename T>
 
     
 template <typename T, typename U>
-    inline auto add(node_ptr<type> & __result, T const & p, U const & q) -> decltype(p + q)
+    inline auto add(boost::node_ptr<type> & __result, T const & p, U const & q) -> decltype(p + q)
     {
         return p + q;
     }
 
-    inline node_ptr<type> & add(node_ptr<type> & __result, node_ptr<type> const & p, node_ptr<type> const & q)
+    inline boost::node_ptr<type> & add(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p, boost::node_ptr<type> const & q)
     {
         return __result = p->add(__result, q);
     }
 
     
 template <typename T, typename U>
-    inline auto sub(node_ptr<type> & __result, T const & p, U const & q) -> decltype(p - q)
+    inline auto sub(boost::node_ptr<type> & __result, T const & p, U const & q) -> decltype(p - q)
     {
         return p - q;
     }
 
-    inline node_ptr<type> & sub(node_ptr<type> & __result, node_ptr<type> const & p, node_ptr<type> const & q)
+    inline boost::node_ptr<type> & sub(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p, boost::node_ptr<type> const & q)
     {
         return __result = p->sub(__result, q);
     }
 
     
 template <typename T, typename U>
-    inline auto mul(node_ptr<type> & __result, T const & p, U const & q) -> decltype(p * q)
+    inline auto mul(boost::node_ptr<type> & __result, T const & p, U const & q) -> decltype(p * q)
     {
         return p * q;
     }
 
-    inline node_ptr<type> & mul(node_ptr<type> & __result, node_ptr<type> const & p, node_ptr<type> const & q)
+    inline boost::node_ptr<type> & mul(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p, boost::node_ptr<type> const & q)
     {
         return __result = p->mul(__result, q);
     }
 
     
 template <typename T, typename U>
-    inline auto div(node_ptr<type> & __result, T const & p, U const & q) -> decltype(p / q)
+    inline auto div(boost::node_ptr<type> & __result, T const & p, U const & q) -> decltype(p / q)
     {
         return p / q;
     }
 
-    inline node_ptr<type> & div(node_ptr<type> & __result, node_ptr<type> const & p, node_ptr<type> const & q)
+    inline boost::node_ptr<type> & div(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p, boost::node_ptr<type> const & q)
     {
         return __result = p->div(__result, q);
     }    
