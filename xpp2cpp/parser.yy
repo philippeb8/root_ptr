@@ -447,14 +447,9 @@ number:                 INTEGER
                                 $$ = $1;
                         }
                         |
-                        NEW INTEGER
+                        NEW ID '(' expression ')'
                         {
-                                $$ = "make_node<type_t<int>>(__x, type_t<int>(" + $2 + "))";
-                        }
-                        |
-                        NEW DOUBLE
-                        {
-                                $$ = "make_node<type_t<double>>(__x, type_t<double>(" + $2 + "))";
+                                $$ = "make_node<type_t<" + $2 + ">>(__x, type_t<int>(" + $4 + "))";
                         }
                         ;
 
