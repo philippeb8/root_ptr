@@ -39,10 +39,10 @@ struct type
 {
     virtual ~type() {}
 
-    virtual boost::node_ptr<type> & operator () () { throw std::runtime_error("wrong number of arguments"); }
-    virtual boost::node_ptr<type> & operator () (boost::node_ptr<type> &) { throw std::runtime_error("wrong number of arguments"); }
-    virtual boost::node_ptr<type> & operator () (boost::node_ptr<type> &, boost::node_ptr<type> &) { throw std::runtime_error("wrong number of arguments"); }
-    virtual boost::node_ptr<type> & operator () (boost::node_ptr<type> &, boost::node_ptr<type> &, boost::node_ptr<type> &) { throw std::runtime_error("wrong number of arguments"); }
+    virtual boost::node_ptr<type> operator () () { throw std::runtime_error("wrong number of arguments"); }
+    virtual boost::node_ptr<type> operator () (boost::node_ptr<type> &) { throw std::runtime_error("wrong number of arguments"); }
+    virtual boost::node_ptr<type> operator () (boost::node_ptr<type> &, boost::node_ptr<type> &) { throw std::runtime_error("wrong number of arguments"); }
+    virtual boost::node_ptr<type> operator () (boost::node_ptr<type> &, boost::node_ptr<type> &, boost::node_ptr<type> &) { throw std::runtime_error("wrong number of arguments"); }
     
     virtual boost::node_ptr<type> operator_add(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
     virtual boost::node_ptr<type> operator_sub(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
@@ -142,7 +142,7 @@ template <typename T>
             {
             }
 
-        virtual boost::node_ptr<type> & operator () () 
+        virtual boost::node_ptr<type> operator () () 
         { 
             return t.operator () (); 
         }
@@ -161,7 +161,7 @@ template <typename T>
             {
             }
 
-        virtual boost::node_ptr<type> & operator () (boost::node_ptr<type> & t1) 
+        virtual boost::node_ptr<type> operator () (boost::node_ptr<type> & t1) 
         { 
             return t.operator () (t1); 
         }
@@ -180,7 +180,7 @@ template <typename T>
             {
             }
 
-        virtual boost::node_ptr<type> & operator () (boost::node_ptr<type> & t1, boost::node_ptr<type> & t2) 
+        virtual boost::node_ptr<type> operator () (boost::node_ptr<type> & t1, boost::node_ptr<type> & t2) 
         { 
             return t.operator () (t1, t2); 
         }

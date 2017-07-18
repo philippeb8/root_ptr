@@ -438,12 +438,12 @@ expression_factorial:   expression_factorial '!'
                         |
                         FUNCTION '(' ')' statement
                         {
-                                $$ = "make_fastnode<function1_t<node_ptr<type> & (node_ptr<type> &)>>(__x, function1_t<node_ptr<type> & (node_ptr<type> &)>([] (node_ptr<type> & __result) -> node_ptr<type> & " + $4 + "))";
+                                $$ = "make_fastnode<function1_t<node_ptr<type> (node_ptr<type> &)>>(__x, function1_t<node_ptr<type> (node_ptr<type> &)>([] (node_ptr<type> & __result) -> node_ptr<type> " + $4 + "))";
                         }
                         |
                         FUNCTION '(' ID ')' statement
                         {
-                                $$ = "make_fastnode<function2_t<node_ptr<type> & (node_ptr<type> &, node_ptr<type> &)>>(__x, function2_t<node_ptr<type> & (node_ptr<type> &, node_ptr<type> &)>([] (node_ptr<type> & __result, node_ptr<type> & " + $3 + ") -> node_ptr<type> & " + $5 + "))";
+                                $$ = "make_fastnode<function2_t<node_ptr<type> (node_ptr<type> &, node_ptr<type> &)>>(__x, function2_t<node_ptr<type> (node_ptr<type> &, node_ptr<type> &)>([] (node_ptr<type> & __result, node_ptr<type> & " + $3 + ") -> node_ptr<type> " + $5 + "))";
                         }
                         ;
 
