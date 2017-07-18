@@ -1,5 +1,5 @@
 /**
-    JS2CPP - Javascript to C++ converter.
+    BBPP2CPP - Javascript to C++ converter.
 
     Copyright (C) 2017  Phil Bouchard <pbouchard8@gmail.com>
 
@@ -26,88 +26,88 @@ using namespace std;
 %}
 
 %option noyywrap
-%option prefix="JS2CPP"
+%option prefix="BBPP2CPP"
 
 %%
 
 
 "not"                                   {
-                                                return JS2CPPParser::FUNCTION1stNOT;
+                                                return BBPP2CPPParser::FUNCTION1stNOT;
                                         }
 
 "<<"                                    {
-                                                return JS2CPPParser::FUNCTION2ndLEFTSHIFT;
+                                                return BBPP2CPPParser::FUNCTION2ndLEFTSHIFT;
                                         }
 
 ">>"                                    {
-                                                return JS2CPPParser::FUNCTION2ndRIGHTSHIFT;
+                                                return BBPP2CPPParser::FUNCTION2ndRIGHTSHIFT;
                                         }
 
 "&&"                                    {
-                                                return JS2CPPParser::FUNCTION2ndAND;
+                                                return BBPP2CPPParser::FUNCTION2ndAND;
                                         }
 
 "xor"                                   {
-                                                return JS2CPPParser::FUNCTION2ndXOR;
+                                                return BBPP2CPPParser::FUNCTION2ndXOR;
                                         }
 
 "xnor"                                  {
-                                                return JS2CPPParser::FUNCTION2ndXOR;
+                                                return BBPP2CPPParser::FUNCTION2ndXOR;
                                         }
 
 "||"                                    {
-                                                return JS2CPPParser::FUNCTION2ndOR;
+                                                return BBPP2CPPParser::FUNCTION2ndOR;
                                         }
 
 "=="                                    {
-                                                return JS2CPPParser::FUNCTION2ndEQUAL;
+                                                return BBPP2CPPParser::FUNCTION2ndEQUAL;
                                         }
 
 "<"                                     {
-                                                return JS2CPPParser::FUNCTION2ndLESS;
+                                                return BBPP2CPPParser::FUNCTION2ndLESS;
                                         }
 
 ">"                                     {
-                                                return JS2CPPParser::FUNCTION2ndGREATER;
+                                                return BBPP2CPPParser::FUNCTION2ndGREATER;
                                         }
 
 "!="                                    {
-                                                return JS2CPPParser::FUNCTION2ndNOTEQUAL;
+                                                return BBPP2CPPParser::FUNCTION2ndNOTEQUAL;
                                         }
 
 "<="                                    {
-                                                return JS2CPPParser::FUNCTION2ndLESSEQUAL;
+                                                return BBPP2CPPParser::FUNCTION2ndLESSEQUAL;
                                         }
 
 ">="                                    {
-                                                return JS2CPPParser::FUNCTION2ndGREATEREQUAL;
+                                                return BBPP2CPPParser::FUNCTION2ndGREATEREQUAL;
                                         }
 
 "++"                                    {
-                                                return JS2CPPParser::FUNCTION2ndINCREMENT;
+                                                return BBPP2CPPParser::FUNCTION2ndINCREMENT;
                                         }
 
 "--"                                    {
-                                                return JS2CPPParser::FUNCTION2ndDECREMENT;
+                                                return BBPP2CPPParser::FUNCTION2ndDECREMENT;
                                         }
 
 [0-9]+                                  {
-                                                static_cast<JS2CPPParser *>(this)->parserlval.s = yytext;
-                                                return JS2CPPParser::INTEGER;
+                                                static_cast<BBPP2CPPParser *>(this)->parserlval.s = yytext;
+                                                return BBPP2CPPParser::INTEGER;
                                         }
 
 \.[0-9]+(e[+-]?[0-9]+)?                 {
-                                                static_cast<JS2CPPParser *>(this)->parserlval.s = yytext;
-                                                return JS2CPPParser::DOUBLE;
+                                                static_cast<BBPP2CPPParser *>(this)->parserlval.s = yytext;
+                                                return BBPP2CPPParser::DOUBLE;
                                         }
 
 [0-9]+(\.[0-9]*)?(e[+-]?[0-9]+)?        {
-                                                static_cast<JS2CPPParser *>(this)->parserlval.s = yytext;
-                                                return JS2CPPParser::DOUBLE;
+                                                static_cast<BBPP2CPPParser *>(this)->parserlval.s = yytext;
+                                                return BBPP2CPPParser::DOUBLE;
                                         }
 
 \;                                      {
-                                                return JS2CPPParser::EOL;
+                                                return BBPP2CPPParser::EOL;
                                         }
 
 \/\/.*                                  {
@@ -117,57 +117,57 @@ using namespace std;
                                         }
 
 "class"                                 {
-                                                return JS2CPPParser::CLASS;
+                                                return BBPP2CPPParser::CLASS;
                                         }
 
 "struct"                                {
-                                                return JS2CPPParser::CLASS;
+                                                return BBPP2CPPParser::CLASS;
                                         }
 
 "const"                                 {
-                                                return JS2CPPParser::CONST;
+                                                return BBPP2CPPParser::CONST;
                                         }
 
 "new"                                   {
-                                                return JS2CPPParser::NEW;
+                                                return BBPP2CPPParser::NEW;
                                         }
 
 "return"                                {
-                                                return JS2CPPParser::RETURN;
+                                                return BBPP2CPPParser::RETURN;
                                         }
 
 "function"                              {
-                                                return JS2CPPParser::FUNCTION;
+                                                return BBPP2CPPParser::FUNCTION;
                                         }
 
 "var"                                   {
-                                                return JS2CPPParser::VAR;
+                                                return BBPP2CPPParser::VAR;
                                         }
 
 "if"                                    {
-                                                return JS2CPPParser::IF;
+                                                return BBPP2CPPParser::IF;
                                         }
 
 "else"                                  {
-                                                return JS2CPPParser::ELSE;
+                                                return BBPP2CPPParser::ELSE;
                                         }
 
 "for"                                   {
-                                                return JS2CPPParser::FOR;
+                                                return BBPP2CPPParser::FOR;
                                         }
 
 "while"                                 {
-                                                return JS2CPPParser::WHILE;
+                                                return BBPP2CPPParser::WHILE;
                                         }
 
 [a-zA-Z_][a-zA-Z_0-9]*                  {
-                                                static_cast<JS2CPPParser *>(this)->parserlval.s = yytext;
-                                                return JS2CPPParser::ID;
+                                                static_cast<BBPP2CPPParser *>(this)->parserlval.s = yytext;
+                                                return BBPP2CPPParser::ID;
                                         }
 
 L?\"(\\.|[^\\"])*\"                     {
-                                                static_cast<JS2CPPParser *>(this)->parserlval.s = yytext;
-                                                return JS2CPPParser::STRING;
+                                                static_cast<BBPP2CPPParser *>(this)->parserlval.s = yytext;
+                                                return BBPP2CPPParser::STRING;
                                         }
                                         
 \n                                      {

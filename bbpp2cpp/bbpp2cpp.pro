@@ -1,4 +1,4 @@
-TARGET          = xpp2cpp
+TARGET          = bbpp2cpp
 
 INCLUDEPATH     += ../../include
 
@@ -14,4 +14,4 @@ YACCSOURCES     += parser.yy
 LEXSOURCES      += lexer.ll
 
 HEADERS  += parser_yacc.h
-SOURCES  += xpp2cpp.cpp
+SOURCES  += bbpp2cpp.cpp

@@ -6,7 +6,7 @@ using namespace std;
 
 int main()
 {
-    JS2CPPParser parser;
+    BBPP2CPPParser parser;
 
     parser.switch_streams(& cin, & cerr);
 

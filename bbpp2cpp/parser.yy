@@ -1,5 +1,5 @@
 /**
-    XPP2CPP - X++ to C++ converter.
+    BBPP2CPP - BB++ to C++ converter.
 
     Copyright (C) 2017  Phil Bouchard <pbouchard8@gmail.com>
 
@@ -24,7 +24,7 @@
 
 #if !defined(yyFlexLexerOnce)
 #undef yylex
-#define yyFlexLexer JS2CPPFlexLexer
+#define yyFlexLexer BBPP2CPPFlexLexer
 #include <FlexLexer.h>
 #endif
 
@@ -40,15 +40,15 @@ struct val
 #endif
 %}
 
-%name JS2CPPParser
+%name BBPP2CPPParser
 
-%define INHERIT : public JS2CPPFlexLexer
+%define INHERIT : public BBPP2CPPFlexLexer
 
 %define STYPE val
 
-%define LEX_BODY { return JS2CPPFlexLexer::yylex(); }
+%define LEX_BODY { return BBPP2CPPFlexLexer::yylex(); }
 
-%define ERROR_BODY { * yyout << JS2CPPFlexLexer::lineno() << ": parse error before '" << JS2CPPFlexLexer::YYText() << "'" << std::endl; }
+%define ERROR_BODY { * yyout << BBPP2CPPFlexLexer::lineno() << ": parse error before '" << JS2CPPFlexLexer::YYText() << "'" << std::endl; }
 
 %define CONSTRUCTOR_INIT : indent(0)
 
@@ -131,12 +131,12 @@ start:                  statement_list
                                 value.s += "*/\n";
                                 value.s += '\n';
                                 value.s += '\n';
-                                value.s += "#include \"xpp2cpp.h\"\n";
+                                value.s += "#include \"bbpp.h\"\n";
                                 value.s += "#include <iostream>\n";
                                 value.s += '\n';
                                 value.s += "using namespace std;\n";
                                 value.s += "using namespace boost;\n";
-                                value.s += "using namespace xpp2cpp;\n";
+                                value.s += "using namespace bbpp2cpp;\n";
                                 value.s += '\n';
                                 value.s += '\n';
                                 

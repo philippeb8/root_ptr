@@ -33,7 +33,7 @@
 #include <functional>
 
 
-namespace xpp2cpp
+namespace bbpp
 {
 struct type
 {
