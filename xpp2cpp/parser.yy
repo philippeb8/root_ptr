@@ -172,8 +172,8 @@ statement:              expression EOL
                         {
                                 $$ = "{";
 
-                                $$ += "node_proxy __x;";
-                                $$ += "node_ptr<type> __temporary(__x);";
+                                $$ += "node_proxy __x; ";
+                                $$ += "node_ptr<type> __temporary(__x); ";
                         
                                 $$ += $2;
                                 $$ += "}";
