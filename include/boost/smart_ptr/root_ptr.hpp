@@ -20,6 +20,8 @@
 #include <new.h>
 #endif
 
+#include <utility>
+
 #ifndef BOOST_DISABLE_THREADS
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -237,6 +239,34 @@ template <typename T>
         /** Reference to the @c node_proxy node @c node_ptr<> belongs to. */
         mutable node_proxy const * px_;
 
+
+        /**
+            Initialization of a pointer.
+
+            @param  p New pointer to manage.
+        */
+
+        template <typename V>
+            node_ptr(node_ptr<V> const & p)
+            : base(p)
+            , px_(p.px_)
+            {
+            }
+
+
+        /**
+            Initialization of a pointer.
+
+            @param  p New pointer to manage.
+        */
+
+            node_ptr(node_ptr<T> const & p)
+            : base(p)
+            , px_(p.px_)
+            {
+            }
+
+            
     public:
         using base::reset;
 
@@ -271,33 +301,6 @@ template <typename T>
 
     public:
         typedef T value_type;
-
-
-        /**
-            Initialization of a pointer.
-
-            @param  p New pointer to manage.
-        */
-
-        template <typename V>
-            node_ptr(node_ptr<V> const & p)
-            : base(p)
-            , px_(p.px_)
-            {
-            }
-
-
-        /**
-            Initialization of a pointer.
-
-            @param  p New pointer to manage.
-        */
-
-            node_ptr(node_ptr<T> const & p)
-            : base(p)
-            , px_(p.px_)
-            {
-            }
 
 
         /**
@@ -447,15 +450,15 @@ template <typename T>
                 base::po_ = 0;
         }
 
-#if 0 //defined(BOOST_HAS_RVALUE_REFS)
+#if defined(BOOST_HAS_RVALUE_REFS)
     public:
-        node_ptr(node_ptr<T> && p): base(p.po_), x_(p.x_)
+        node_ptr(node_ptr<T> && p): base(p), px_(p.px_)
         {
             p.po_ = 0;
         }
 
         template<class Y>
-            node_ptr(node_ptr<Y> && p): base(p.po_), x_(p.x_)
+            node_ptr(node_ptr<Y> && p): base(p), px_(p.px_)
             {
                 p.po_ = 0;
             }
@@ -463,19 +466,20 @@ template <typename T>
         node_ptr<T> & operator = (node_ptr<T> && p)
         {
             std::swap(po_, p.po_);
-            std::swap(x_, p.x_);
+            std::swap(px_, p.px_);
 
             return *this;
         }
-
+/*
         template<class Y>
             node_ptr & operator = (node_ptr<Y> && p)
             {
                 std::swap(po_, p.po_);
-                std::swap(x_, p.x_);
+                std::swap(px_, p.px_);
 
                 return *this;
             }
+*/
 #endif
 
     private:
