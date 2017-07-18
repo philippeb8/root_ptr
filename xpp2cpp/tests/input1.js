@@ -1,17 +1,16 @@
 {
-    var temporary = 0;
+    var temporary = 1;
     
     var bar = function ()
     {
-        return 10;
+        return 2;
     };
     
     var foo = function ()
     {
-        var object = 11;
         return function(argument) { return argument; };
     };
     
     for (var i = 0; i < 1000000; ++ i)
-        console.log((foo())(temporary));
+        console.log((foo())(temporary) + bar());
 }

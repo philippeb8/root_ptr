@@ -8,7 +8,6 @@
     
     var foo = function ()
     {
-        var object = new int(11);
         return function(argument) { return argument; };
     };
     
