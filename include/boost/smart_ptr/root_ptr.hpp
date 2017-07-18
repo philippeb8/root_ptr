@@ -240,33 +240,6 @@ template <typename T>
         mutable node_proxy const * px_;
 
 
-        /**
-            Initialization of a pointer.
-
-            @param  p New pointer to manage.
-        */
-
-        template <typename V>
-            node_ptr(node_ptr<V> const & p)
-            : base(p)
-            , px_(p.px_)
-            {
-            }
-
-
-        /**
-            Initialization of a pointer.
-
-            @param  p New pointer to manage.
-        */
-
-            node_ptr(node_ptr<T> const & p)
-            : base(p)
-            , px_(p.px_)
-            {
-            }
-
-            
     public:
         using base::reset;
 
@@ -303,6 +276,33 @@ template <typename T>
         typedef T value_type;
 
 
+        /**
+            Initialization of a pointer.
+
+            @param  p New pointer to manage.
+        */
+
+        template <typename V>
+            node_ptr(node_ptr<V> const & p)
+            : base(p)
+            , px_(p.px_)
+            {
+            }
+
+
+        /**
+            Initialization of a pointer.
+
+            @param  p New pointer to manage.
+        */
+
+            node_ptr(node_ptr<T> const & p)
+            : base(p)
+            , px_(p.px_)
+            {
+            }
+
+            
         /**
             Assignment.
 
@@ -450,7 +450,7 @@ template <typename T>
                 base::po_ = 0;
         }
 
-#if defined(BOOST_HAS_RVALUE_REFS)
+#if 0 //defined(BOOST_HAS_RVALUE_REFS)
     public:
         node_ptr(node_ptr<T> && p): base(p), px_(p.px_)
         {
