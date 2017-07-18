@@ -1,7 +1,5 @@
 /*!
-    \brief Backbone++ Programming Language.
-
-    Root Pointer - Deterministic Memory Manager.
+    Backbone++ Programming Language.
 
     Copyright (C) 2017  Phil Bouchard <pbouchard8@gmail.com>
 
