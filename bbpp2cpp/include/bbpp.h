@@ -1,8 +1,6 @@
 /*!
-  \file
-  \brief Javascript eoperator_mulation.
-*/
-/*
+    \brief Backbone++ Programming Language.
+
     Root Pointer - Deterministic Memory Manager.
 
     Copyright (C) 2017  Phil Bouchard <pbouchard8@gmail.com>
@@ -22,8 +20,8 @@
 */
 
 
-#ifndef XPP2CPP_INCLUDED
-#define XPP2CPP_INCLUDED
+#ifndef BBPP_INCLUDED
+#define BBPP_INCLUDED
 
 #include <boost/smart_ptr/root_ptr.hpp>
 
