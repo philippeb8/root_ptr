@@ -462,24 +462,6 @@ template <typename T>
             {
                 p.po_ = 0;
             }
-
-        node_ptr<T> & operator = (node_ptr<T> && p)
-        {
-            std::swap(po_, p.po_);
-            std::swap(px_, p.px_);
-
-            return *this;
-        }
-/*
-        template<class Y>
-            node_ptr & operator = (node_ptr<Y> && p)
-            {
-                std::swap(po_, p.po_);
-                std::swap(px_, p.px_);
-
-                return *this;
-            }
-*/
 #endif
 
     private:
