@@ -104,7 +104,6 @@ struct val
 %type   <s>     expression_add
 %type   <s>     expression_mul
 %type   <s>     expression_signed
-%type   <s>     expression_unsigned
 %type   <s>     expression_unary
 %type   <s>     expression_factorial
 
@@ -254,7 +253,7 @@ expression_binary:      expression_add
                         |
                         FUNCTION1stNOT expression_binary
                         {
-                                $$ = "NOT " + $2;
+                                $$ = "operator_not(__temporary, " + $2 + ")";
                         }
                         |
                         expression_binary '=' expression_binary
@@ -264,47 +263,47 @@ expression_binary:      expression_add
                         |
                         expression_binary FUNCTION2ndOR expression_binary
                         {
-                                $$ = $1 + " || " + $3;
+                                $$ = "operator_or(__temporary, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndXOR expression_binary
                         {
-                                $$ = $1 + " XOR " + $3;
+                                $$ = "operator_xor(__temporary, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndAND expression_binary
                         {
-                                $$ = $1 + " && " + $3;
+                                $$ = "operator_and(__temporary, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndEQUAL expression_binary
                         {
-                                $$ = $1 + " == " + $3;
+                                $$ = "operator_equal(__temporary, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndLESS expression_binary
                         {
-                                $$ = $1 + " < " + $3;
+                                $$ = "operator_less(__temporary, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndGREATER expression_binary
                         {
-                                $$ = $1 + " > " + $3;
+                                $$ = "operator_greater(__temporary, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndNOTEQUAL expression_binary
                         {
-                                $$ = $1 + " != " + $3;
+                                $$ = "operator_notequal(__temporary, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndLESSEQUAL expression_binary
                         {
-                                $$ = $1 + " <= " + $3;
+                                $$ = "operator_lessequal(__temporary, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndGREATEREQUAL expression_binary
                         {
-                                $$ = $1 + " >= " + $3;
+                                $$ = "operator_greaterequal(__temporary, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndLEFTSHIFT expression_binary
@@ -325,12 +324,12 @@ expression_add:         expression_mul
                         |
                         expression_add '+' expression_add
                         {
-                                $$ = "add(__temporary, " + $1 + ", " + $3 + ")";
+                                $$ = "operator_add(__temporary, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_add '-' expression_add
                         {
-                                $$ = "sub(__temporary, " + $1 + ", " + $3 + ")";
+                                $$ = "operator_sub(__temporary, " + $1 + ", " + $3 + ")";
                         }
                         ;
 
@@ -341,17 +340,17 @@ expression_mul:         expression_signed
                         |
                         expression_mul '*' expression_mul
                         {
-                                $$ = "mul(__temporary, " + $1 + ", " + $3 + ")";
+                                $$ = "operator_mul(__temporary, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_mul '/' expression_mul
                         {
-                                $$ = "div(__temporary, " + $1 + ", " + $3 + ")";
+                                $$ = "operator_div(__temporary, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_mul '%' expression_mul
                         {
-                                $$ = "mod(__temporary, " + $1 + ", " + $3 + ")";
+                                $$ = "operator_mod(__temporary, " + $1 + ", " + $3 + ")";
                         }
                         ;
 
@@ -362,18 +361,7 @@ expression_signed:      expression_unary
                         |
                         expression_unary '^' expression_signed
                         {
-                                $$ = $1 + "^" + $3;
-                        }
-                        ;
-
-expression_unsigned:    expression_factorial
-                        {
-                                $$ = $1;
-                        }
-                        |
-                        expression_factorial '^' expression_signed
-                        {
-                                $$ = $1 + "^" + $3;
+                                $$ = "operator_pow(__temporary, " + $1 + ", " + $3 + ")";
                         }
                         ;
 
@@ -384,43 +372,43 @@ expression_unary:       expression_factorial
                         |
                         '|' expression '|'
                         {
-                                $$ = "|" + $2 + "|";
+                                $$ = "operator_abs(__temporary, " + $2 + ")";
                         }
                         |
                         '+' expression_unary
                         {
-                                $$ = "+ " + $2;
+                                $$ = $2;
                         }
                         |
                         '-' expression_unary
                         {
-                                $$ = "- " + $2;
+                                $$ = "operator_neg(__temporary, " + $2 + ")";
                         }
                         ;
 
 expression_factorial:   expression_factorial '!'
                         {
-                                $$ = $1 + " !";
+                                $$ = "operator_factorial(__temporary, " + $1 + ")";
                         }
                         |
                         expression FUNCTION2ndINCREMENT
                         {
-                                $$ = $1 + " ++";
+                                $$ = "operator_postinc(__temporary, " + $1 + ")";
                         }
                         |
                         expression FUNCTION2ndDECREMENT
                         {
-                                $$ = $1 + " --";
+                                $$ = "operator_postdec(__temporary, " + $1 + ")";
                         }
                         |
                         FUNCTION2ndINCREMENT expression
                         {
-                                $$ = "++ " + $2;
+                                $$ = "operator_preinc(__temporary, " + $2 + ")";
                         }
                         |
                         FUNCTION2ndDECREMENT expression
                         {
-                                $$ = "-- " + $2;
+                                $$ = "operator_predec(__temporary, " + $2 + ")";
                         }
                         |
                         '(' expression ')'
