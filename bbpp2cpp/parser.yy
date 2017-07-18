@@ -48,7 +48,7 @@ struct val
 
 %define LEX_BODY { return BBPP2CPPFlexLexer::yylex(); }
 
-%define ERROR_BODY { * yyout << BBPP2CPPFlexLexer::lineno() << ": parse error before '" << JS2CPPFlexLexer::YYText() << "'" << std::endl; }
+%define ERROR_BODY { * yyout << BBPP2CPPFlexLexer::lineno() << ": parse error before '" << BBPP2CPPFlexLexer::YYText() << "'" << std::endl; }
 
 %define CONSTRUCTOR_INIT : indent(0)
 
@@ -135,8 +135,8 @@ start:                  statement_list
                                 value.s += "#include <iostream>\n";
                                 value.s += '\n';
                                 value.s += "using namespace std;\n";
+                                value.s += "using namespace bbpp;\n";
                                 value.s += "using namespace boost;\n";
-                                value.s += "using namespace bbpp2cpp;\n";
                                 value.s += '\n';
                                 value.s += '\n';
                                 
