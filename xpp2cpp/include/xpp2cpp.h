@@ -44,31 +44,31 @@ struct type
     virtual boost::node_ptr<type> & operator () (boost::node_ptr<type> &, boost::node_ptr<type> &) { throw std::runtime_error("wrong number of arguments"); }
     virtual boost::node_ptr<type> & operator () (boost::node_ptr<type> &, boost::node_ptr<type> &, boost::node_ptr<type> &) { throw std::runtime_error("wrong number of arguments"); }
     
-    virtual boost::node_ptr<type> & operator_add(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_sub(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_mul(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_div(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_mod(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_not(boost::node_ptr<type> & __result) const { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_or(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_xor(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_and(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_equal(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_less(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_greater(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_notequal(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_lessequal(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_greaterequal(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_leftshift(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_rightshift(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_pow(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_abs(boost::node_ptr<type> & __result) const { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_neg(boost::node_ptr<type> & __result) const { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_factorial(boost::node_ptr<type> & __result) const { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_postinc(boost::node_ptr<type> & __result) { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_postdec(boost::node_ptr<type> & __result) { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_preinc(boost::node_ptr<type> & __result) { throw std::runtime_error("undefined type"); }
-    virtual boost::node_ptr<type> & operator_predec(boost::node_ptr<type> & __result) { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_add(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_sub(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_mul(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_div(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_mod(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_not(boost::node_ptr<type> & __result) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_or(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_xor(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_and(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_equal(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_less(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_greater(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_notequal(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_lessequal(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_greaterequal(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_leftshift(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_rightshift(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_pow(boost::node_ptr<type> & __result, boost::node_ptr<type> const &) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_abs(boost::node_ptr<type> & __result) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_neg(boost::node_ptr<type> & __result) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_factorial(boost::node_ptr<type> & __result) const { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_postinc(boost::node_ptr<type> & __result) { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_postdec(boost::node_ptr<type> & __result) { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_preinc(boost::node_ptr<type> & __result) { throw std::runtime_error("undefined type"); }
+    virtual boost::node_ptr<type> operator_predec(boost::node_ptr<type> & __result) { throw std::runtime_error("undefined type"); }
     
     virtual std::ostream & flush(std::ostream & out) const { return out; }
     
@@ -86,34 +86,42 @@ template <typename T>
             {
             }
             
-        virtual boost::node_ptr<type> & operator_add(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p) const
+        virtual boost::node_ptr<type> operator_add(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p) const
         {
+            boost::node_proxy __x;
+            
             if (auto q = dynamic_cast<type_t<T> const *>(p.get()))
-                return __result = boost::make_node<type>(__result.proxy(), type_t<T>(t + q->t));
+                return __result = boost::make_node<type_t<T>>(__x, type_t<T>(t + q->t));
             
             throw std::runtime_error("invalid operand types");
         }
         
-        virtual boost::node_ptr<type> & operator_sub(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p) const
+        virtual boost::node_ptr<type> operator_sub(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p) const
         {
+            boost::node_proxy __x;
+            
             if (auto q = dynamic_cast<type_t<T> const *>(p.get()))
-                return __result = boost::make_node<type>(__result.proxy(), type_t<T>(t - q->t));
+                return __result = boost::make_node<type_t<T>>(__x, type_t<T>(t - q->t));
             
             throw std::runtime_error("invalid operand types");
         }
         
-        virtual boost::node_ptr<type> & operator_mul(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p) const
+        virtual boost::node_ptr<type> operator_mul(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p) const
         {
+            boost::node_proxy __x;
+            
             if (auto q = dynamic_cast<type_t<T> const *>(p.get()))
-                return __result = boost::make_node<type>(__result.proxy(), type_t<T>(t * q->t));
+                return __result = boost::make_node<type_t<T>>(__x, type_t<T>(t * q->t));
             
             throw std::runtime_error("invalid operand types");
         }
         
-        virtual boost::node_ptr<type> & operator_div(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p) const
+        virtual boost::node_ptr<type> operator_div(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p) const
         {
+            boost::node_proxy __x;
+            
             if (auto q = dynamic_cast<type_t<T> const *>(p.get()))
-                return __result = boost::make_node<type>(__result.proxy(), type_t<T>(t / q->t));
+                return __result = boost::make_node<type_t<T>>(__x, type_t<T>(t / q->t));
             
             throw std::runtime_error("invalid operand types");
         }
@@ -185,7 +193,7 @@ template <typename T>                                                           
         return function(p);                                                                                                                                     \
     }                                                                                                                                                           \
                                                                                                                                                                 \
-    inline boost::node_ptr<type> & operator_ ## name(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p)                                         \
+    inline boost::node_ptr<type> operator_ ## name(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p)                                         \
     {                                                                                                                                                           \
         return __result = p->operator_ ## name(__result);                                                                                                       \
     }
@@ -197,7 +205,7 @@ template <typename T>                                                           
         return symbol p;                                                                                                                                        \
     }                                                                                                                                                           \
                                                                                                                                                                 \
-    inline boost::node_ptr<type> & operator_ ## name(boost::node_ptr<type> & __result, boost::node_ptr<type> & p)                                               \
+    inline boost::node_ptr<type> operator_ ## name(boost::node_ptr<type> & __result, boost::node_ptr<type> & p)                                               \
     {                                                                                                                                                           \
         return __result = p->operator_ ## name(__result);                                                                                                       \
     }
@@ -209,7 +217,7 @@ template <typename T>                                                           
         return p symbol;                                                                                                                                        \
     }                                                                                                                                                           \
                                                                                                                                                                 \
-    inline boost::node_ptr<type> & operator_ ## name(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p)                                         \
+    inline boost::node_ptr<type> operator_ ## name(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p)                                         \
     {                                                                                                                                                           \
         return __result = p->operator_ ## name(__result);                                                                                                       \
     }
@@ -221,7 +229,7 @@ template <typename T, typename U>                                               
         return function(p, q);                                                                                                                                  \
     }                                                                                                                                                           \
                                                                                                                                                                 \
-    inline boost::node_ptr<type> & operator_ ## name(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p, boost::node_ptr<type> const & q)        \
+    inline boost::node_ptr<type> operator_ ## name(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p, boost::node_ptr<type> const & q)        \
     {                                                                                                                                                           \
         return __result = p->operator_ ## name(__result, q);                                                                                                    \
     }
@@ -233,7 +241,7 @@ template <typename T, typename U>                                               
         return p symbol q;                                                                                                                                      \
     }                                                                                                                                                           \
                                                                                                                                                                 \
-    inline boost::node_ptr<type> & operator_ ## name(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p, boost::node_ptr<type> const & q)        \
+    inline boost::node_ptr<type> operator_ ## name(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p, boost::node_ptr<type> const & q)        \
     {                                                                                                                                                           \
         return __result = p->operator_ ## name(__result, q);                                                                                                    \
     }
