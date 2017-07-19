@@ -15,4 +15,4 @@ $ g++-5 -DBOOST_DISABLE_THREADS -std=c++11 -O2 -I./include -I../include tmp.cpp 
 $ time ./tmp  
 $ time js tests/input1.js  
 
-XPP2CPP is 3 times faster than Node.JS and there is no lag.
+BBPP2CPP is 3 times faster than Node.JS and there is no lag.
