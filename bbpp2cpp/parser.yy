@@ -65,6 +65,9 @@ struct val
 %token          NEW
 %token          CONST
 %token          CLASS
+%token          VIRTUAL
+%token          STATIC
+%token          OPERATOR
 
 %token  <s>     ID
 %token  <s>     DOUBLE
@@ -91,11 +94,15 @@ struct val
 %type   <s>     statement
 %type   <s>     statement_list
 %type   <s>     number
+%type   <s>     operator
 %type   <s>     type
 %type   <s>     type_list
 %type   <s>     type_modifier
+%type   <s>     type_modifier_list
 %type   <s>     member
 %type   <s>     member_list
+%type   <s>     qualifier
+%type   <s>     qualifier_list
 %type   <s>     scope_list
 %type   <s>     terminal
 %type   <s>     expression
@@ -139,8 +146,6 @@ start:                  statement_list
                                 value.s += "using namespace boost;\n";
                                 value.s += '\n';
                                 value.s += '\n';
-                                
-                                value.s += "int main()\n";
                                 value.s += $1;
                                 value.s += '\n';
                                 
@@ -172,8 +177,7 @@ statement:              expression EOL
                         {
                                 $$ = "{";
 
-                                $$ += "node_proxy __x; ";
-                                $$ += "node_ptr<type> __temporary(__x); ";
+                                $$ += "root_ptr<type> __x; ";
                         
                                 $$ += $2;
                                 $$ += "}";
@@ -206,12 +210,22 @@ statement:              expression EOL
                         |
                         CLASS ID '{' member_list '}' EOL
                         {
-                                $$ = "struct " + $2 + " {" + $4 + "}; ";
+                                $$ = "struct " + $2 + " {" + "root_ptr<type> __x; " + $4 + "}; ";
                         }
                         |
                         CLASS ID ':' type_list '{' member_list '}' EOL
                         {
                                 $$ = "struct " + $2 + " : " + $4 + " {" + $6 + "}; ";
+                        }
+                        |
+                        type_modifier ID '(' type_modifier_list ')' statement
+                        {
+                                $$ = $1 + ' ' + $2 + '(' + $4 + ')' + $6;
+                        }
+                        |
+                        type_modifier operator '(' type_modifier_list ')' statement
+                        {
+                                $$ = $1 + ' ' + $2 + ' ' + '(' + $4 + ')' + $6;
                         }
                         ;
 
@@ -234,8 +248,91 @@ member:                 expression EOL
                         {
                                 $$ = $1 + "; ";
                         }
+                        |
+                        type_modifier ID '(' type_modifier_list ')' statement
+                        {
+                                $$ = $1 + $2 + '(' + $4 + ')' + $6;
+                        }
+                        |
+                        type_modifier ID '(' type_modifier_list ')' CONST statement
+                        {
+                                $$ = $1 + $2 + '(' + $4 + ')' + $7 + " const";
+                        }
+                        |
+                        type_modifier operator '(' type_modifier_list ')' statement
+                        {
+                                $$ = $1 + ' ' + $2 + ' ' + '(' + $4 + ')' + $6;
+                        }
+                        |
+                        type_modifier operator '(' type_modifier_list ')' CONST statement
+                        {
+                                $$ = $1 + ' ' + $2 + ' ' + '(' + $4 + ')' + " const" + $7;
+                        }
+                        |
+                        ID '(' type_modifier_list ')' statement
+                        {
+                                $$ = $1 + '(' + $3 + ')' + $5;
+                        }
+                        |
+                        '~' ID '(' ')' statement
+                        {
+                                $$ = '~' + $2 + '(' + ')' + $5;
+                        }
                         ;
                         
+operator:               OPERATOR '+'
+                        {
+                                $$ = "operator +";
+                        }
+                        |
+                        OPERATOR '-'
+                        {
+                                $$ = "operator -";
+                        }
+                        |
+                        OPERATOR '*'
+                        {
+                                $$ = "operator *";
+                        }
+                        |
+                        OPERATOR '/'
+                        {
+                                $$ = "operator /";
+                        }
+                        |
+                        OPERATOR FUNCTION2ndLEFTSHIFT
+                        {
+                                $$ = "operator <<";
+                        }
+                        |
+                        OPERATOR FUNCTION2ndRIGHTSHIFT
+                        {
+                                $$ = "operator >>";
+                        }
+                        ;
+                        
+qualifier_list:         qualifier_list qualifier
+                        {
+                                $$ = $1 + " " + $2;
+                        }
+                        |
+                        qualifier
+                        {
+                                $$ = $1;
+                        }
+                        ;
+                        
+qualifier:              STATIC
+                        {
+                                $$ = "static";
+                        }
+                        |
+                        VIRTUAL
+                        {
+                                $$ = "virtual";
+                        }
+                        ;
+
 expression:             {
                                 $$ = "";
                         }
@@ -253,7 +350,7 @@ expression_binary:      expression_add
                         |
                         FUNCTION1stNOT expression_binary
                         {
-                                $$ = "operator_not(__temporary, " + $2 + ")";
+                                $$ = "operator_not(__x, " + $2 + ")";
                         }
                         |
                         expression_binary '=' expression_binary
@@ -263,47 +360,47 @@ expression_binary:      expression_add
                         |
                         expression_binary FUNCTION2ndOR expression_binary
                         {
-                                $$ = "operator_or(__temporary, " + $1 + ", " + $3 + ")";
+                                $$ = "operator_or(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndXOR expression_binary
                         {
-                                $$ = "operator_xor(__temporary, " + $1 + ", " + $3 + ")";
+                                $$ = "operator_xor(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndAND expression_binary
                         {
-                                $$ = "operator_and(__temporary, " + $1 + ", " + $3 + ")";
+                                $$ = "operator_and(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndEQUAL expression_binary
                         {
-                                $$ = "operator_equal(__temporary, " + $1 + ", " + $3 + ")";
+                                $$ = "operator_equal(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndLESS expression_binary
                         {
-                                $$ = "operator_less(__temporary, " + $1 + ", " + $3 + ")";
+                                $$ = "operator_less(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndGREATER expression_binary
                         {
-                                $$ = "operator_greater(__temporary, " + $1 + ", " + $3 + ")";
+                                $$ = "operator_greater(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndNOTEQUAL expression_binary
                         {
-                                $$ = "operator_notequal(__temporary, " + $1 + ", " + $3 + ")";
+                                $$ = "operator_notequal(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndLESSEQUAL expression_binary
                         {
-                                $$ = "operator_lessequal(__temporary, " + $1 + ", " + $3 + ")";
+                                $$ = "operator_lessequal(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndGREATEREQUAL expression_binary
                         {
-                                $$ = "operator_greaterequal(__temporary, " + $1 + ", " + $3 + ")";
+                                $$ = "operator_greaterequal(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndLEFTSHIFT expression_binary
@@ -324,12 +421,12 @@ expression_add:         expression_mul
                         |
                         expression_add '+' expression_add
                         {
-                                $$ = "operator_add(__temporary, " + $1 + ", " + $3 + ")";
+                                $$ = "operator_add(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_add '-' expression_add
                         {
-                                $$ = "operator_sub(__temporary, " + $1 + ", " + $3 + ")";
+                                $$ = "operator_sub(__x, " + $1 + ", " + $3 + ")";
                         }
                         ;
 
@@ -340,17 +437,17 @@ expression_mul:         expression_signed
                         |
                         expression_mul '*' expression_mul
                         {
-                                $$ = "operator_mul(__temporary, " + $1 + ", " + $3 + ")";
+                                $$ = "operator_mul(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_mul '/' expression_mul
                         {
-                                $$ = "operator_div(__temporary, " + $1 + ", " + $3 + ")";
+                                $$ = "operator_div(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_mul '%' expression_mul
                         {
-                                $$ = "operator_mod(__temporary, " + $1 + ", " + $3 + ")";
+                                $$ = "operator_mod(__x, " + $1 + ", " + $3 + ")";
                         }
                         ;
 
@@ -361,7 +458,7 @@ expression_signed:      expression_unary
                         |
                         expression_unary '^' expression_signed
                         {
-                                $$ = "operator_pow(__temporary, " + $1 + ", " + $3 + ")";
+                                $$ = "operator_pow(__x, " + $1 + ", " + $3 + ")";
                         }
                         ;
 
@@ -372,7 +469,7 @@ expression_unary:       expression_factorial
                         |
                         '|' expression '|'
                         {
-                                $$ = "operator_abs(__temporary, " + $2 + ")";
+                                $$ = "operator_abs(__x, " + $2 + ")";
                         }
                         |
                         '+' expression_unary
@@ -382,33 +479,33 @@ expression_unary:       expression_factorial
                         |
                         '-' expression_unary
                         {
-                                $$ = "operator_neg(__temporary, " + $2 + ")";
+                                $$ = "operator_neg(__x, " + $2 + ")";
                         }
                         ;
 
 expression_factorial:   expression_factorial '!'
                         {
-                                $$ = "operator_factorial(__temporary, " + $1 + ")";
+                                $$ = "operator_factorial(__x, " + $1 + ")";
                         }
                         |
                         expression FUNCTION2ndINCREMENT
                         {
-                                $$ = "operator_postinc(__temporary, " + $1 + ")";
+                                $$ = "operator_postinc(__x, " + $1 + ")";
                         }
                         |
                         expression FUNCTION2ndDECREMENT
                         {
-                                $$ = "operator_postdec(__temporary, " + $1 + ")";
+                                $$ = "operator_postdec(__x, " + $1 + ")";
                         }
                         |
                         FUNCTION2ndINCREMENT expression
                         {
-                                $$ = "operator_preinc(__temporary, " + $2 + ")";
+                                $$ = "operator_preinc(__x, " + $2 + ")";
                         }
                         |
                         FUNCTION2ndDECREMENT expression
                         {
-                                $$ = "operator_predec(__temporary, " + $2 + ")";
+                                $$ = "operator_predec(__x, " + $2 + ")";
                         }
                         |
                         '(' expression ')'
@@ -428,12 +525,12 @@ expression_factorial:   expression_factorial '!'
                         |
                         expression '(' ')'
                         {
-                                $$ = "(* " + $1 + ")(__temporary)";
+                                $$ = "(* " + $1 + ")(__x)";
                         }
                         |
                         expression '(' expression_list ')'
                         {
-                                $$ = "(* " + $1 + ")(__temporary, " + $3 + ")";
+                                $$ = "(* " + $1 + ")(__x, " + $3 + ")";
                         }
                         |
                         FUNCTION '(' ')' statement
@@ -478,12 +575,32 @@ number:                 INTEGER
                                 $$ = $1;
                         }
                         |
+                        NEW ID '(' ')'
+                        {
+                                $$ = "make_fastnode<type_t<" + $2 + ">>(__x)";
+                        }
+                        |
                         NEW ID '(' expression ')'
                         {
-                                $$ = "make_fastnode<type_t<" + $2 + ">>(__x, type_t<" + $2 + ">(" + $4 + "))";
+                                $$ = "make_fastnode<type_t<" + $2 + ">>(__x, " + $4 + ")";
                         }
                         ;
                         
+type_modifier_list:     type_modifier_list ',' type_modifier
+                        {
+                                $$ = $1 + ", " + $3;
+                        }
+                        |
+                        type_modifier
+                        {
+                                $$ = $1;
+                        }
+                        |
+                        {
+                                $$ = "";
+                        }
+                        ;
+
 type_modifier:          type
                         {
                                 $$ = $1;
@@ -518,7 +635,7 @@ type:                   ID
 
 type_list:              type_list ',' type
                         {
-                                $$ = $1 + ", " + $3;
+                                $$ = "virtual " + $1 + ", virtual " + $3;
                         }
                         |
                         type

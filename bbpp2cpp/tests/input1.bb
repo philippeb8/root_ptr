@@ -1,3 +1,4 @@
+int main()
 {
     var temporary = new int(1);
     

@@ -116,6 +116,18 @@ using namespace std;
 [ \t]+                                  {
                                         }
 
+"operator"                              {
+                                                return BBPP2CPPParser::OPERATOR;
+                                        }
+
+"static"                                {
+                                                return BBPP2CPPParser::STATIC;
+                                        }
+
+"virtual"                               {
+                                                return BBPP2CPPParser::VIRTUAL;
+                                        }
+
 "class"                                 {
                                                 return BBPP2CPPParser::CLASS;
                                         }

@@ -176,39 +176,6 @@ private:
 };
 
 
-#define TEMPLATE_DECL(z, n, text) BOOST_PP_COMMA_IF(n) typename T ## n
-#define ARGUMENT_DECL(z, n, text) BOOST_PP_COMMA_IF(n) T ## n const & t ## n
-#define PARAMETER_DECL(z, n, text) BOOST_PP_COMMA_IF(n) t ## n
-
-#define CONSTRUCT_MAKE_ROOT1(z, n, text)                                                                                \
-    template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename PoolAllocator = pool_allocator<V> >            \
-        root_ptr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                          \
-        {                                                                                                               \
-            return root_ptr<V>(new node<V, PoolAllocator>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                      \
-        }
-
-#define CONSTRUCT_MAKE_NODE2(z, n, text)                                                                                \
-    template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename PoolAllocator = pool_allocator<V> >            \
-        node_ptr<V> text(node_proxy const & x, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                    \
-        {                                                                                                               \
-            return node_ptr<V>(x, new node<V, PoolAllocator>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                   \
-        }
-
-#define CONSTRUCT_MAKE_ROOT3(z, n, text)                                                                                \
-    template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename PoolAllocator = pool_allocator<V> >            \
-        root_ptr<V> text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                                          \
-        {                                                                                                               \
-            return root_ptr<V>(new fastnode<V>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                                 \
-        }
-
-#define CONSTRUCT_MAKE_NODE4(z, n, text)                                                                                \
-    template <typename V, BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0), typename PoolAllocator = pool_allocator<V> >            \
-        node_ptr<V> text(node_proxy const & x, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0))                                    \
-        {                                                                                                               \
-            return node_ptr<V>(x, new fastnode<V>(BOOST_PP_REPEAT(n, PARAMETER_DECL, 0)));                              \
-        }
-
-
 template <typename T>
     struct info_t
     {
@@ -627,10 +594,10 @@ template <typename T>
     Instanciates a new @c root_ptr<> .
 */
 
-template <typename V, typename PoolAllocator = pool_allocator<V> >
-    root_ptr<V> make_root()
+template <typename V, typename... Args, typename PoolAllocator = pool_allocator<V> >
+    root_ptr<V> make_root(Args... args)
     {
-        return root_ptr<V>(new node<V, PoolAllocator>());
+        return root_ptr<V>(new node<V, PoolAllocator>(args...));
     }
 
 
@@ -640,10 +607,10 @@ template <typename V, typename PoolAllocator = pool_allocator<V> >
     @param  x   Reference to a @c node_proxy the pointer belongs to.
 */
 
-template <typename V, typename PoolAllocator = pool_allocator<V> >
-    node_ptr<V> make_node(node_proxy const & x)
+template <typename V, typename... Args, typename PoolAllocator = pool_allocator<V> >
+    node_ptr<V> make_node(node_proxy const & x, Args... args)
     {
-        return node_ptr<V>(x, new node<V, PoolAllocator>());
+        return node_ptr<V>(x, new node<V, PoolAllocator>(args...));
     }
 
 
@@ -653,10 +620,10 @@ template <typename V, typename PoolAllocator = pool_allocator<V> >
     @note Uses @c fast_pool_allocator to instanciate the pointee object.
 */
 
-template <typename V, typename PoolAllocator = pool_allocator<V> >
-    root_ptr<V> make_fastroot()
+template <typename V, typename... Args, typename PoolAllocator = pool_allocator<V> >
+    root_ptr<V> make_fastroot(Args... args)
     {
-        return root_ptr<V>(new fastnode<V>());
+        return root_ptr<V>(new fastnode<V>(args...));
     }
 
 
@@ -668,13 +635,13 @@ template <typename V, typename PoolAllocator = pool_allocator<V> >
     @note Uses @c fast_pool_allocator to instanciate the pointee object.
 */
 
-template <typename V, typename PoolAllocator = pool_allocator<V> >
-    node_ptr<V> make_fastnode(node_proxy const & x)
+template <typename V, typename... Args, typename PoolAllocator = pool_allocator<V> >
+    node_ptr<V> make_fastnode(node_proxy const & x, Args... args)
     {
-        return node_ptr<V>(x, new fastnode<V>());
+        return node_ptr<V>(x, new fastnode<V>(args...));
     }
 
-
+    
 /**
     Comparison operator.
 
@@ -701,12 +668,6 @@ template <typename T>
     {
         return a1.get() != a2.get();
     }
-
-
-BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_ROOT1, make_root)
-BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_NODE2, make_node)
-BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_ROOT3, make_fastroot)
-BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_MAKE_NODE4, make_fastnode)
 
 
 } // namespace boost
