@@ -1,4 +1,4 @@
-Backbone++ Programming Language
+BB++ Programming Language
 
 
 Dependencies:
@@ -10,9 +10,9 @@ Comparison with Node.JS:
 
 $ qmake  
 $ make  
-$ ./bbpp2cpp < tests/input1.bb > tmp.cpp  
-$ g++-5 -DBOOST_DISABLE_THREADS -std=c++11 -O2 -I./include -I../include tmp.cpp -otmp -lboost_system  
+$ ./bbpp2cpp < tests/input3.bb > tmp.cpp  
+$ g++-5 -DBOOST_DISABLE_THREADS -std=c++14 -I./include -I../include tmp.cpp -otmp -lboost_system -O3  
 $ time ./tmp  
-$ time js tests/input1.js  
+$ time js tests/input3.js  
 
-BBPP2CPP is 3 times faster than Node.JS and there is no lag.
+BBPP2CPP is 3.5 times faster than Node.JS, there is no lag and the errors are reported at compile-time.
