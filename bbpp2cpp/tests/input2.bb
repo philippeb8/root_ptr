@@ -1,37 +1,30 @@
 class Document
 {
-    var head = new int(0);
-    var tail = new int(0);
+    auto head = new int(0);
+    auto tail = new int(0);
 
     Document() 
     {
         // cycle
-        head = tail; 
-        tail = head; 
+        //head = tail; 
+        //tail = head; 
         cout << __PRETTY_FUNCTION__ << endl; 
     }
     ~Document() { cout << __PRETTY_FUNCTION__ << endl; }
     
-    var foo = function (argument) { cout << __PRETTY_FUNCTION__ << endl; return argument; };
-    
-    Document operator + (Document const &) const {} // dummy
-    Document operator - (Document const &) const {} // dummy
-    Document operator * (Document const &) const {} // dummy
-    Document operator / (Document const &) const {} // dummy
+    auto foo = new function (int argument) { cout << __PRETTY_FUNCTION__ << endl; return argument; };
 };
-
-ostream & operator << (ostream &, Document const &) {} // dummy
 
 int main()
 {
-    var temporary = new int(1);
+    auto temporary = 1;
     
-    Document document;
+    auto document = new Document(__x);
     document.foo(temporary);
     
-    var bar = function ()
+    auto bar = new function ()
     {
-        var document = new Document();
+        //auto document = new Document(__x);
         
         return new int(2);
     };

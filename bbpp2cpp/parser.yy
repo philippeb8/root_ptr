@@ -53,7 +53,7 @@ struct val
 
 %define ERROR_BODY { * yyout << BBPP2CPPFlexLexer::lineno() << ": parse error before '" << BBPP2CPPFlexLexer::YYText() << "'" << std::endl; }
 
-%define MEMBERS val value; int indent = 0; int counter = 0; std::string global;
+%define MEMBERS val value; int indent = 0, counter = 0; std::string header, footer;
 
 
 %token          EOL
@@ -70,6 +70,7 @@ struct val
 %token          STATIC
 %token          OPERATOR
 %token          ARROW
+%token          AUTO
 
 %token  <s>     ID
 %token  <s>     DOUBLE
@@ -149,10 +150,13 @@ start:                  statement_list
                                 value.s += "using namespace boost;\n";
                                 value.s += '\n';
                                 value.s += '\n';
-                                value.s += global;
+                                value.s += header;
                                 value.s += '\n';
                                 value.s += '\n';
                                 value.s += $1;
+                                value.s += '\n';
+                                value.s += '\n';
+                                value.s += footer;
                                 value.s += '\n';
                                 
                                 YYACCEPT;
@@ -214,23 +218,36 @@ statement:              expression EOL
                                 $$ = "return proxy(__y, " + $2 + "); ";
                         }
                         |
+                        CLASS ID EOL
+                        {
+                                $$ = "struct " + $2 + "; ";
+                        }
+                        |
                         CLASS ID '{' member_list '}' EOL
                         {
-                                $$ = "struct " + $2 + " {" + "node_proxy & __z = __x; " + $4 + "}; ";
+                                header += "struct " + $2 + "; ";
+
+                                $$ = "struct " + $2 + " {node_proxy const & __x; " + $4 + "}; ";
                         }
                         |
                         CLASS ID ':' type_list '{' member_list '}' EOL
                         {
+                                header += "struct " + $2 + "; ";
+
                                 $$ = "struct " + $2 + " : " + $4 + " {" + $6 + "}; ";
                         }
                         |
                         type_modifier ID '(' type_modifier_list ')' statement
                         {
+                                header += $1 + ' ' + $2 + '(' + $4 + ')' + ';';
+
                                 $$ = $1 + ' ' + $2 + '(' + $4 + ')' + $6;
                         }
                         |
                         type_modifier operator '(' type_modifier_list ')' statement
                         {
+                                header += $1 + ' ' + $2 + ' ' + '(' + $4 + ')' + ';';
+
                                 $$ = $1 + ' ' + $2 + ' ' + '(' + $4 + ')' + $6;
                         }
                         ;
@@ -275,9 +292,14 @@ member:                 expression EOL
                                 $$ = $1 + ' ' + $2 + ' ' + '(' + $4 + ')' + " const" + $7;
                         }
                         |
+                        ID '(' ')' statement
+                        {
+                                $$ = $1 + "(node_proxy const & __y): __x(__y) " + $4;
+                        }
+                        |
                         ID '(' parameter_list ')' statement
                         {
-                                $$ = $1 + '(' + $3 + ')' + $5;
+                                $$ = $1 + "(node_proxy const & __y, " + $3 + "): __x(__y) " + $5;
                         }
                         |
                         '~' ID '(' ')' statement
@@ -595,8 +617,8 @@ number:                 INTEGER
                         {
                                 std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
                                 
-                                global += "auto " + name + "(node_proxy & __y) " + $5;
-                                global += "typedef decltype(" + name + ") * " + name + "_p_t; ";
+                                header += "auto " + name + "(node_proxy & __y) " + $5;
+                                header += "typedef decltype(" + name + ") * " + name + "_p_t; ";
                                 
                                 $$ = "make_fastnode<" + name + "_p_t>(__x, &" + name + ")";
                         }
@@ -605,10 +627,15 @@ number:                 INTEGER
                         {
                                 std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
                                 
-                                global += "auto " + name + "(node_proxy & __y, " + $4 + ") " + $6;
-                                global += "typedef decltype(" + name + ") * " + name + "_p_t; ";
+                                header += "auto " + name + "(node_proxy & __y, " + $4 + ") " + $6;
+                                header += "typedef decltype(" + name + ") * " + name + "_p_t; ";
                                 
                                 $$ = "make_fastnode<" + name + "_p_t>(__x, &" + name + ")";
+                        }
+                        |
+                        AUTO ID '=' expression
+                        {
+                                $$ = "decltype(" + $4 + ") " + $2 + " = " + $4;
                         }
                         ;
                         
@@ -620,10 +647,6 @@ parameter_list:         parameter_list ',' type_modifier ID
                         type_modifier ID
                         {
                                 $$ = $1 + " " +  $2;
-                        }
-                        |
-                        {
-                                $$ = "";
                         }
                         ;
 

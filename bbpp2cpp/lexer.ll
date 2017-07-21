@@ -120,6 +120,10 @@ using namespace std;
 [ \t]+                                  {
                                         }
 
+"auto"                                  {
+                                                return BBPP2CPPParser::AUTO;
+                                        }
+
 "operator"                              {
                                                 return BBPP2CPPParser::OPERATOR;
                                         }
