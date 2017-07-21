@@ -563,12 +563,22 @@ expression_factorial:   expression_factorial '!'
                         |
                         FUNCTION '(' ')' statement
                         {
-                                $$ = "[] (node_proxy & __y) -> auto " + $4;
+                                std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
+                                
+                                header += "auto " + name + "(node_proxy & __y) " + $4;
+                                header += "typedef decltype(" + name + ") * " + name + "_p_t; ";
+                                
+                                $$ = "(& " + name + ")";
                         }
                         |
                         FUNCTION '(' parameter_list ')' statement
                         {
-                                $$ = "[] (node_proxy & __y, " + $3 + ") -> auto " + $5;
+                                std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
+                                
+                                header += "auto " + name + "(node_proxy & __y, " + $3 + ") " + $5;
+                                header += "typedef decltype(" + name + ") * " + name + "_p_t; ";
+                                
+                                $$ = "(& " + name + ")";
                         }
                         ;
 
