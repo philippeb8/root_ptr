@@ -29,6 +29,9 @@
 #endif
 
 #include <string>
+#include <functional>
+
+#include <boost/lexical_cast.hpp>
 
 
 struct val
@@ -50,9 +53,9 @@ struct val
 
 %define ERROR_BODY { * yyout << BBPP2CPPFlexLexer::lineno() << ": parse error before '" << BBPP2CPPFlexLexer::YYText() << "'" << std::endl; }
 
-%define CONSTRUCTOR_INIT : indent(0)
+%define MEMBERS val value; int indent; std::string global; int counter; 
 
-%define MEMBERS val value; int indent;
+%define CONSTRUCTOR_INIT : indent(0), counter(0)
 
 
 %token          EOL
@@ -68,6 +71,7 @@ struct val
 %token          VIRTUAL
 %token          STATIC
 %token          OPERATOR
+%token          ARROW
 
 %token  <s>     ID
 %token  <s>     DOUBLE
@@ -99,6 +103,7 @@ struct val
 %type   <s>     type_list
 %type   <s>     type_modifier
 %type   <s>     type_modifier_list
+%type   <s>     parameter_list
 %type   <s>     member
 %type   <s>     member_list
 %type   <s>     qualifier
@@ -146,6 +151,9 @@ start:                  statement_list
                                 value.s += "using namespace boost;\n";
                                 value.s += '\n';
                                 value.s += '\n';
+                                value.s += global;
+                                value.s += '\n';
+                                value.s += '\n';
                                 value.s += $1;
                                 value.s += '\n';
                                 
@@ -177,7 +185,7 @@ statement:              expression EOL
                         {
                                 $$ = "{";
 
-                                $$ += "root_ptr<type> __x; ";
+                                $$ += "node_proxy __x; ";
                         
                                 $$ += $2;
                                 $$ += "}";
@@ -205,12 +213,12 @@ statement:              expression EOL
                         |
                         RETURN expression EOL
                         {
-                                $$ = "return __result = " + $2 + "; ";
+                                $$ = "return proxy(__y, " + $2 + "); ";
                         }
                         |
                         CLASS ID '{' member_list '}' EOL
                         {
-                                $$ = "struct " + $2 + " {" + "root_ptr<type> __x; " + $4 + "}; ";
+                                $$ = "struct " + $2 + " {" + "node_proxy & __z = __x; " + $4 + "}; ";
                         }
                         |
                         CLASS ID ':' type_list '{' member_list '}' EOL
@@ -269,7 +277,7 @@ member:                 expression EOL
                                 $$ = $1 + ' ' + $2 + ' ' + '(' + $4 + ')' + " const" + $7;
                         }
                         |
-                        ID '(' type_modifier_list ')' statement
+                        ID '(' parameter_list ')' statement
                         {
                                 $$ = $1 + '(' + $3 + ')' + $5;
                         }
@@ -525,22 +533,33 @@ expression_factorial:   expression_factorial '!'
                         |
                         expression '(' ')'
                         {
-                                $$ = "(* " + $1 + ")(__x)";
+                                $$ = "dereference(" + $1 + ")(__x)";
                         }
                         |
                         expression '(' expression_list ')'
                         {
-                                $$ = "(* " + $1 + ")(__x, " + $3 + ")";
+                                $$ = "dereference(" + $1 + ")(__x, " + $3 + ")";
                         }
                         |
                         FUNCTION '(' ')' statement
                         {
-                                $$ = "make_fastnode<function1_t<node_ptr<type> (node_ptr<type> &)>>(__x, function1_t<node_ptr<type> (node_ptr<type> &)>([] (node_ptr<type> & __result) -> node_ptr<type> " + $4 + "))";
+                                std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
+                                
+                                global += "auto " + name + "(node_proxy & __y) " + $4;
+                                global += "typedef decltype(" + name + ") * " + name + "_p_t; ";
+                                
+                                $$ = "&" + name;
                         }
                         |
-                        FUNCTION '(' ID ')' statement
+                        FUNCTION '(' parameter_list ')' statement
                         {
-                                $$ = "make_fastnode<function2_t<node_ptr<type> (node_ptr<type> &, node_ptr<type> &)>>(__x, function2_t<node_ptr<type> (node_ptr<type> &, node_ptr<type> &)>([] (node_ptr<type> & __result, node_ptr<type> & " + $3 + ") -> node_ptr<type> " + $5 + "))";
+                                std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
+                                
+                                global += "auto " + name + "(node_proxy & __y, " + $3 + ") " + $5;
+                                global += "typedef decltype(" + name + ") * " + name + "_p_t; ";
+                                
+                                $$ = "&" + name;
+                                //$$ = "make_fastnode<" + name + "_p_t (*)(node_proxy &, " + $3 + ")>(__x, (" + name + "_p_t (*)(node_proxy &, " + $3 + ")) &" + name + ")";
                         }
                         ;
 
@@ -577,15 +596,30 @@ number:                 INTEGER
                         |
                         NEW ID '(' ')'
                         {
-                                $$ = "make_fastnode<type_t<" + $2 + ">>(__x)";
+                                $$ = "make_fastnode<" + $2 + ">(__x)";
                         }
                         |
                         NEW ID '(' expression ')'
                         {
-                                $$ = "make_fastnode<type_t<" + $2 + ">>(__x, " + $4 + ")";
+                                $$ = "make_fastnode<" + $2 + ">(__x, " + $4 + ")";
                         }
                         ;
                         
+parameter_list:         parameter_list ',' type_modifier ID
+                        {
+                                $$ = $1 + ", " + $3 + " " + $4;
+                        }
+                        |
+                        type_modifier ID
+                        {
+                                $$ = $1 + " " +  $2;
+                        }
+                        |
+                        {
+                                $$ = "";
+                        }
+                        ;
+
 type_modifier_list:     type_modifier_list ',' type_modifier
                         {
                                 $$ = $1 + ", " + $3;
@@ -626,16 +660,11 @@ type:                   ID
                         {
                                 $$ = $1;
                         }
-                        |
-                        VAR
-                        {
-                                $$ = "node_ptr<type>";
-                        }
                         ;
 
 type_list:              type_list ',' type
                         {
-                                $$ = "virtual " + $1 + ", virtual " + $3;
+                                $$ = $1 + ",  " + $3;
                         }
                         |
                         type
@@ -646,7 +675,7 @@ type_list:              type_list ',' type
 
 scope_list:             scope_list '.' ID
                         {
-                                $$ = $1 + "." + $3;
+                                $$ = "dereference(" + $1 +")." + $3;
                         }
                         |
                         ID

@@ -91,6 +91,10 @@ using namespace std;
                                                 return BBPP2CPPParser::FUNCTION2ndDECREMENT;
                                         }
 
+"->"                                    {
+                                                return BBPP2CPPParser::ARROW;
+                                        }
+
 [0-9]+                                  {
                                                 static_cast<BBPP2CPPParser *>(this)->parserlval.s = yytext;
                                                 return BBPP2CPPParser::INTEGER;
