@@ -53,9 +53,7 @@ struct val
 
 %define ERROR_BODY { * yyout << BBPP2CPPFlexLexer::lineno() << ": parse error before '" << BBPP2CPPFlexLexer::YYText() << "'" << std::endl; }
 
-%define MEMBERS val value; int indent; std::string global; int counter; 
-
-%define CONSTRUCTOR_INIT : indent(0), counter(0)
+%define MEMBERS val value; int indent = 0; int counter = 0; std::string global;
 
 
 %token          EOL
@@ -543,23 +541,12 @@ expression_factorial:   expression_factorial '!'
                         |
                         FUNCTION '(' ')' statement
                         {
-                                std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
-                                
-                                global += "auto " + name + "(node_proxy & __y) " + $4;
-                                global += "typedef decltype(" + name + ") * " + name + "_p_t; ";
-                                
-                                $$ = "&" + name;
+                                $$ = "[] (node_proxy & __y) -> auto " + $4;
                         }
                         |
                         FUNCTION '(' parameter_list ')' statement
                         {
-                                std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
-                                
-                                global += "auto " + name + "(node_proxy & __y, " + $3 + ") " + $5;
-                                global += "typedef decltype(" + name + ") * " + name + "_p_t; ";
-                                
-                                $$ = "&" + name;
-                                //$$ = "make_fastnode<" + name + "_p_t (*)(node_proxy &, " + $3 + ")>(__x, (" + name + "_p_t (*)(node_proxy &, " + $3 + ")) &" + name + ")";
+                                $$ = "[] (node_proxy & __y, " + $3 + ") -> auto " + $5;
                         }
                         ;
 
@@ -594,14 +581,34 @@ number:                 INTEGER
                                 $$ = $1;
                         }
                         |
-                        NEW ID '(' ')'
+                        NEW type '(' ')'
                         {
                                 $$ = "make_fastnode<" + $2 + ">(__x)";
                         }
                         |
-                        NEW ID '(' expression ')'
+                        NEW type '(' expression_list ')'
                         {
                                 $$ = "make_fastnode<" + $2 + ">(__x, " + $4 + ")";
+                        }
+                        |
+                        NEW FUNCTION '(' ')' statement
+                        {
+                                std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
+                                
+                                global += "auto " + name + "(node_proxy & __y) " + $5;
+                                global += "typedef decltype(" + name + ") * " + name + "_p_t; ";
+                                
+                                $$ = "make_fastnode<" + name + "_p_t>(__x, &" + name + ")";
+                        }
+                        |
+                        NEW FUNCTION '(' parameter_list ')' statement
+                        {
+                                std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
+                                
+                                global += "auto " + name + "(node_proxy & __y, " + $4 + ") " + $6;
+                                global += "typedef decltype(" + name + ") * " + name + "_p_t; ";
+                                
+                                $$ = "make_fastnode<" + name + "_p_t>(__x, &" + name + ")";
                         }
                         ;
                         
