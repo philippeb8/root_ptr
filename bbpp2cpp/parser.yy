@@ -568,7 +568,7 @@ expression_factorial:   expression_factorial '!'
                                 header += "auto " + name + "(node_proxy & __y) " + $4;
                                 header += "typedef decltype(" + name + ") * " + name + "_p_t; ";
                                 
-                                $$ = "(& " + name + ")";
+                                $$ = "& " + name;
                         }
                         |
                         FUNCTION '(' parameter_list ')' statement
@@ -578,7 +578,7 @@ expression_factorial:   expression_factorial '!'
                                 header += "auto " + name + "(node_proxy & __y, " + $3 + ") " + $5;
                                 header += "typedef decltype(" + name + ") * " + name + "_p_t; ";
                                 
-                                $$ = "(& " + name + ")";
+                                $$ = "& " + name;
                         }
                         ;
 
