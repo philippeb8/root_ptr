@@ -19,8 +19,8 @@ int main()
 {
     auto temporary = 1;
     
-    auto document = new Document(__x);
-    document.foo(temporary);
+    //auto document = new Document(__x);
+    //document.foo(temporary);
     
     auto bar = new function ()
     {
