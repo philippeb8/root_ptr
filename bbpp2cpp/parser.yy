@@ -221,6 +221,8 @@ statement:              expression EOL
                         |
                         CLASS ID EOL
                         {
+                                type.insert($2);
+                                
                                 $$ = "struct " + $2 + "; ";
                         }
                         |
@@ -233,11 +235,9 @@ statement:              expression EOL
                                 $$ = "";
                         }
                         |
-                        CLASS ID '{' member_list '}' EOL
+                        CLASS ID '{' {type.insert($2);} member_list '}' EOL
                         {
-                                type.insert($2);
-                                
-                                header += "struct " + $2 + " {node_proxy const & __x; " + $4 + "}; ";
+                                header += "struct " + $2 + " {node_proxy const & __x; " + $5 + "}; ";
 
                                 $$ = "";
                         }
@@ -251,11 +251,9 @@ statement:              expression EOL
                                 $$ = "";
                         }
                         |
-                        CLASS ID ':' type_list '{' member_list '}' EOL
+                        CLASS ID ':' type_list '{' {type.insert($2);} member_list '}' EOL
                         {
-                                type.insert($2);
-                                
-                                header += "struct " + $2 + " : " + $4 + " {" + $6 + "}; ";
+                                header += "struct " + $2 + " : " + $4 + " {" + $7 + "}; ";
 
                                 $$ = "";
                         }
