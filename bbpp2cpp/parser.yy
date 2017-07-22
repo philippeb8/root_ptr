@@ -125,7 +125,7 @@ struct val
 start:                  statement_list
                         {
                                 value.s = "/*\n";
-                                value.s += "    XPP2CPP - Generated Code.\n";
+                                value.s += "    BBPP2CPP - Generated Code.\n";
                                 value.s += '\n';
                                 value.s += "    Copyright (C) 2017  Phil Bouchard <pbouchard8@gmail.com>\n";
                                 value.s += '\n';
