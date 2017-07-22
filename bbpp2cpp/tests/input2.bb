@@ -19,12 +19,12 @@ int main()
 {
     auto temporary = 1;
     
-    auto document = Document();
+    auto document = new Document();
     document.foo(temporary);
     
     auto bar = function ()
     {
-        auto document = Document();
+        auto document = new Document();
         
         return 2;
     };

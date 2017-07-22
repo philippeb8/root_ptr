@@ -675,12 +675,18 @@ number:                 INTEGER
                         |
                         NEW type '(' ')'
                         {
-                                $$ = "make_fastnode<" + $2 + ">(__x)";
+                                if (type.find($2) != type.end())
+                                    $$ = "make_fastnode<" + $2 + ">(__x, __x)";
+                                else
+                                    $$ = "make_fastnode<" + $2 + ">(__x)";
                         }
                         |
                         NEW type '(' expression_list ')'
                         {
-                                $$ = "make_fastnode<" + $2 + ">(__x, " + $4 + ")";
+                                if (type.find($2) != type.end())
+                                    $$ = "make_fastnode<" + $2 + ">(__x, __x, " + $4 + ")";
+                                else
+                                    $$ = "make_fastnode<" + $2 + ">(__x, " + $4 + ")";
                         }
                         |
                         NEW FUNCTION '(' ')' statement
