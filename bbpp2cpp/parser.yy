@@ -709,28 +709,28 @@ number:                 INTEGER
                                 $$ = "make_fastnode<" + name + "_p_t>(__x, &" + name + ")";
                         }
                         |
-                        type_modifier ID
+                        type_modifier type
                         {
                                 $$ = $1 + " " + $2;
                         }
                         |
-                        type_modifier ID '=' expression
+                        type_modifier type '=' expression
                         {
                                 $$ = $1 + ' ' + $2 + " = " + $4;
                         }
                         |
-                        AUTO ID '=' expression
+                        AUTO type '=' expression
                         {
                                 $$ = "decltype(" + $4 + ") " + $2 + " = " + $4;
                         }
                         ;
                         
-parameter_list:         parameter_list ',' type_modifier ID
+parameter_list:         parameter_list ',' type_modifier type
                         {
                                 $$ = $1 + ", " + $3 + " " + $4;
                         }
                         |
-                        type_modifier ID
+                        type_modifier type
                         {
                                 $$ = $1 + " " +  $2;
                         }
@@ -772,6 +772,16 @@ type:                   ID
                         {
                                 $$ = $1;
                         }
+                        |
+                        ID FUNCTION2ndLESS FUNCTION2ndGREATER
+                        {
+                                $$ = $1 + "<>";
+                        }
+                        |
+                        ID FUNCTION2ndLESS type_list FUNCTION2ndGREATER
+                        {
+                                $$ = $1 + '<' + $3 + '>';
+                        }
                         ;
 
 type_list:              type_list ',' type
@@ -785,12 +795,12 @@ type_list:              type_list ',' type
                         }
                         ;
 
-scope_list:             scope_list '.' ID
+scope_list:             scope_list '.' type
                         {
                                 $$ = "dereference(" + $1 +")." + $3;
                         }
                         |
-                        ID
+                        type
                         {
                                 $$ = $1;
                         }
