@@ -120,6 +120,10 @@ using namespace std;
 [ \t]+                                  {
                                         }
 
+"nullptr"                               {
+                                                return BBPP2CPPParser::NULLPTR;
+                                        }
+
 "auto"                                  {
                                                 return BBPP2CPPParser::AUTO;
                                         }

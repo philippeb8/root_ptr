@@ -72,6 +72,7 @@ struct val
 %token          OPERATOR
 %token          ARROW
 %token          AUTO
+%token          NULLPTR
 
 %token  <s>     ID
 %token  <s>     DOUBLE
@@ -669,6 +670,11 @@ number:                 INTEGER
                         DOUBLE
                         {
                                 $$ = $1;
+                        }
+                        |
+                        NULLPTR FUNCTION2ndLESS type FUNCTION2ndGREATER '(' ')'
+                        {
+                                $$ = "node_ptr<" + $3 + ">(__x)";
                         }
                         |
                         NEW type '(' ')'

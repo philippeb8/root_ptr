@@ -1,13 +1,13 @@
 class Document
 {
-    //auto head = new int(0);
-    //auto tail = new int(0);
+    auto head = nullptr<Document>();
+    auto tail = nullptr<Document>();
 
     Document() 
     {
         // cycle
-        //head = tail; 
-        //tail = head; 
+        head = tail; 
+        tail = head; 
         cout << __PRETTY_FUNCTION__ << endl; 
     }
     ~Document() { cout << __PRETTY_FUNCTION__ << endl; }
