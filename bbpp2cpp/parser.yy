@@ -223,11 +223,25 @@ statement:              expression EOL
                                 $$ = "struct " + $2 + "; ";
                         }
                         |
+                        CLASS ID '{' '}' EOL
+                        {
+                                header += "struct " + $2 + "; ";
+
+                                $$ = "struct " + $2 + " {node_proxy const & __x;}; ";
+                        }
+                        |
                         CLASS ID '{' member_list '}' EOL
                         {
                                 header += "struct " + $2 + "; ";
 
                                 $$ = "struct " + $2 + " {node_proxy const & __x; " + $4 + "}; ";
+                        }
+                        |
+                        CLASS ID ':' type_list '{' '}' EOL
+                        {
+                                header += "struct " + $2 + "; ";
+
+                                $$ = "struct " + $2 + " : " + $4 + " {}; ";
                         }
                         |
                         CLASS ID ':' type_list '{' member_list '}' EOL
@@ -237,11 +251,25 @@ statement:              expression EOL
                                 $$ = "struct " + $2 + " : " + $4 + " {" + $6 + "}; ";
                         }
                         |
+                        type_modifier ID '(' ')' statement
+                        {
+                                header += $1 + ' ' + $2 + '(' + ')' + ';';
+
+                                $$ = $1 + ' ' + $2 + '(' + ')' + $5;
+                        }
+                        |
                         type_modifier ID '(' type_modifier_list ')' statement
                         {
                                 header += $1 + ' ' + $2 + '(' + $4 + ')' + ';';
 
                                 $$ = $1 + ' ' + $2 + '(' + $4 + ')' + $6;
+                        }
+                        |
+                        type_modifier operator '(' ')' statement
+                        {
+                                header += $1 + ' ' + $2 + ' ' + '(' + ')' + ';';
+
+                                $$ = $1 + ' ' + $2 + ' ' + '(' + ')' + $5;
                         }
                         |
                         type_modifier operator '(' type_modifier_list ')' statement
@@ -261,10 +289,6 @@ member_list:            member_list member
                         {
                                 $$ = $1;
                         }
-                        |
-                        {
-                                $$ = "";
-                        }
                         ;
 
 member:                 expression EOL
@@ -272,14 +296,29 @@ member:                 expression EOL
                                 $$ = $1 + "; ";
                         }
                         |
+                        type_modifier ID '(' ')' statement
+                        {
+                                $$ = $1 + $2 + '(' + ')' + $5;
+                        }
+                        |
                         type_modifier ID '(' type_modifier_list ')' statement
                         {
                                 $$ = $1 + $2 + '(' + $4 + ')' + $6;
                         }
                         |
+                        type_modifier ID '(' ')' CONST statement
+                        {
+                                $$ = $1 + $2 + '(' + ')' + " const " + $6;
+                        }
+                        |
                         type_modifier ID '(' type_modifier_list ')' CONST statement
                         {
-                                $$ = $1 + $2 + '(' + $4 + ')' + $7 + " const";
+                                $$ = $1 + $2 + '(' + $4 + ')' + " const " + $7;
+                        }
+                        |
+                        type_modifier operator '(' ')' statement
+                        {
+                                $$ = $1 + ' ' + $2 + ' ' + '(' + ')' + $5;
                         }
                         |
                         type_modifier operator '(' type_modifier_list ')' statement
@@ -287,9 +326,14 @@ member:                 expression EOL
                                 $$ = $1 + ' ' + $2 + ' ' + '(' + $4 + ')' + $6;
                         }
                         |
+                        type_modifier operator '(' ')' CONST statement
+                        {
+                                $$ = $1 + ' ' + $2 + ' ' + '(' + ')' + " const " + $6;
+                        }
+                        |
                         type_modifier operator '(' type_modifier_list ')' CONST statement
                         {
-                                $$ = $1 + ' ' + $2 + ' ' + '(' + $4 + ')' + " const" + $7;
+                                $$ = $1 + ' ' + $2 + ' ' + '(' + $4 + ')' + " const " + $7;
                         }
                         |
                         ID '(' ')' statement
@@ -361,11 +405,7 @@ qualifier:              STATIC
                         }
                         ;
 
-expression:             {
-                                $$ = "";
-                        }
-                        |
-                        expression_binary
+expression:             expression_binary
                         {
                                 $$ = $1;
                         }
@@ -536,9 +576,19 @@ expression_factorial:   expression_factorial '!'
                                 $$ = "operator_predec(__x, " + $2 + ")";
                         }
                         |
+                        '(' ')'
+                        {
+                                $$ = "()";
+                        }
+                        |
                         '(' expression ')'
                         {
                                 $$ = "(" + $2 + ")";
+                        }
+                        |
+                        '[' ']'
+                        {
+                                $$ = "[]";
                         }
                         |
                         '[' expression_list ']'
@@ -643,6 +693,11 @@ number:                 INTEGER
                                 $$ = "make_fastnode<" + name + "_p_t>(__x, &" + name + ")";
                         }
                         |
+                        type ID '=' expression
+                        {
+                                $$ = $1 + ' ' + $2 + " = " + $4;
+                        }
+                        |
                         AUTO ID '=' expression
                         {
                                 $$ = "decltype(" + $4 + ") " + $2 + " = " + $4;
@@ -668,10 +723,6 @@ type_modifier_list:     type_modifier_list ',' type_modifier
                         type_modifier
                         {
                                 $$ = $1;
-                        }
-                        |
-                        {
-                                $$ = "";
                         }
                         ;
 
