@@ -28,6 +28,7 @@
 #include <FlexLexer.h>
 #endif
 
+#include <set>
 #include <string>
 #include <functional>
 
@@ -53,7 +54,7 @@ struct val
 
 %define ERROR_BODY { * yyout << BBPP2CPPFlexLexer::lineno() << ": parse error before '" << BBPP2CPPFlexLexer::YYText() << "'" << std::endl; }
 
-%define MEMBERS val value; int indent = 0, counter = 0; std::string header, footer;
+%define MEMBERS val value; int indent = 0, counter = 0; std::string header, footer; std::set<std::string> type;
 
 
 %token          EOL
@@ -225,6 +226,8 @@ statement:              expression EOL
                         |
                         CLASS ID '{' '}' EOL
                         {
+                                type.insert($2);
+                                
                                 header += "struct " + $2 + "; ";
 
                                 $$ = "struct " + $2 + " {node_proxy const & __x;}; ";
@@ -232,6 +235,8 @@ statement:              expression EOL
                         |
                         CLASS ID '{' member_list '}' EOL
                         {
+                                type.insert($2);
+                                
                                 header += "struct " + $2 + "; ";
 
                                 $$ = "struct " + $2 + " {node_proxy const & __x; " + $4 + "}; ";
@@ -239,6 +244,8 @@ statement:              expression EOL
                         |
                         CLASS ID ':' type_list '{' '}' EOL
                         {
+                                type.insert($2);
+                                
                                 header += "struct " + $2 + "; ";
 
                                 $$ = "struct " + $2 + " : " + $4 + " {}; ";
@@ -246,6 +253,8 @@ statement:              expression EOL
                         |
                         CLASS ID ':' type_list '{' member_list '}' EOL
                         {
+                                type.insert($2);
+                                
                                 header += "struct " + $2 + "; ";
 
                                 $$ = "struct " + $2 + " : " + $4 + " {" + $6 + "}; ";
@@ -603,12 +612,18 @@ expression_factorial:   expression_factorial '!'
                         |
                         expression '(' ')'
                         {
-                                $$ = "dereference(" + $1 + ")(__x)";
+                                if (type.find($1) != type.end())
+                                    $$ = $1 + "(__x)";
+                                else
+                                    $$ = "dereference(" + $1 + ")(__x)";
                         }
                         |
                         expression '(' expression_list ')'
                         {
-                                $$ = "dereference(" + $1 + ")(__x, " + $3 + ")";
+                                if (type.find($1) != type.end())
+                                    $$ = $1 + "(__x)";
+                                else
+                                    $$ = "dereference(" + $1 + ")(__x, " + $3 + ")";
                         }
                         |
                         FUNCTION '(' ')' statement
@@ -645,11 +660,6 @@ terminal:               number
                         scope_list
                         {
                                 $$ = $1;
-                        }
-                        |
-                        type_modifier ID
-                        {
-                                $$ = $1 + " " + $2;
                         }
                         ;
 
@@ -693,7 +703,12 @@ number:                 INTEGER
                                 $$ = "make_fastnode<" + name + "_p_t>(__x, &" + name + ")";
                         }
                         |
-                        type ID '=' expression
+                        type_modifier ID
+                        {
+                                $$ = $1 + " " + $2;
+                        }
+                        |
+                        type_modifier ID '=' expression
                         {
                                 $$ = $1 + ' ' + $2 + " = " + $4;
                         }
