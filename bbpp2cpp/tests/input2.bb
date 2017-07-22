@@ -3,13 +3,7 @@ class Document
     auto head = nullptr<Document>();
     auto tail = nullptr<Document>();
 
-    Document() 
-    {
-        // cycle
-        head = tail; 
-        tail = head; 
-        cout << __PRETTY_FUNCTION__ << endl; 
-    }
+    Document() { cout << __PRETTY_FUNCTION__ << endl; }
     ~Document() { cout << __PRETTY_FUNCTION__ << endl; }
     
     auto foo = function (int argument) { cout << __PRETTY_FUNCTION__ << endl; return argument; };
@@ -25,6 +19,9 @@ int main()
     auto bar = function ()
     {
         auto document = new Document();
+        
+        // cycle
+        document.head = document;
         
         return 2;
     };
