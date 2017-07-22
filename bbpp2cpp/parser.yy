@@ -776,16 +776,6 @@ type:                   ID
                         {
                                 $$ = $1;
                         }
-                        |
-                        ID FUNCTION2ndLESS FUNCTION2ndGREATER
-                        {
-                                $$ = $1 + "<>";
-                        }
-                        |
-                        ID FUNCTION2ndLESS type_list FUNCTION2ndGREATER
-                        {
-                                $$ = $1 + '<' + $3 + '>';
-                        }
                         ;
 
 type_list:              type_list ',' type
