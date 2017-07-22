@@ -228,36 +228,36 @@ statement:              expression EOL
                         {
                                 type.insert($2);
                                 
-                                header += "struct " + $2 + "; ";
+                                header += "struct " + $2 + " {node_proxy const & __x;}; ";
 
-                                $$ = "struct " + $2 + " {node_proxy const & __x;}; ";
+                                $$ = "";
                         }
                         |
                         CLASS ID '{' member_list '}' EOL
                         {
                                 type.insert($2);
                                 
-                                header += "struct " + $2 + "; ";
+                                header += "struct " + $2 + " {node_proxy const & __x; " + $4 + "}; ";
 
-                                $$ = "struct " + $2 + " {node_proxy const & __x; " + $4 + "}; ";
+                                $$ = "";
                         }
                         |
                         CLASS ID ':' type_list '{' '}' EOL
                         {
                                 type.insert($2);
                                 
-                                header += "struct " + $2 + "; ";
+                                header += "struct " + $2 + " : " + $4 + " {}; ";
 
-                                $$ = "struct " + $2 + " : " + $4 + " {}; ";
+                                $$ = "";
                         }
                         |
                         CLASS ID ':' type_list '{' member_list '}' EOL
                         {
                                 type.insert($2);
                                 
-                                header += "struct " + $2 + "; ";
+                                header += "struct " + $2 + " : " + $4 + " {" + $6 + "}; ";
 
-                                $$ = "struct " + $2 + " : " + $4 + " {" + $6 + "}; ";
+                                $$ = "";
                         }
                         |
                         type_modifier ID '(' ')' statement
