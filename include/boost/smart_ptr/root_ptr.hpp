@@ -595,7 +595,7 @@ template <typename T>
 */
 
 template <typename V, typename... Args, typename PoolAllocator = pool_allocator<V> >
-    root_ptr<V> make_root(Args... args)
+    inline root_ptr<V> make_root(Args... args)
     {
         return root_ptr<V>(new node<V, PoolAllocator>(args...));
     }
@@ -608,7 +608,7 @@ template <typename V, typename... Args, typename PoolAllocator = pool_allocator<
 */
 
 template <typename V, typename... Args, typename PoolAllocator = pool_allocator<V> >
-    node_ptr<V> make_node(node_proxy const & x, Args... args)
+    inline node_ptr<V> make_node(node_proxy const & x, Args... args)
     {
         return node_ptr<V>(x, new node<V, PoolAllocator>(args...));
     }
@@ -621,7 +621,7 @@ template <typename V, typename... Args, typename PoolAllocator = pool_allocator<
 */
 
 template <typename V, typename... Args, typename PoolAllocator = pool_allocator<V> >
-    root_ptr<V> make_fastroot(Args... args)
+    inline root_ptr<V> make_fastroot(Args... args)
     {
         return root_ptr<V>(new fastnode<V>(args...));
     }
@@ -636,7 +636,7 @@ template <typename V, typename... Args, typename PoolAllocator = pool_allocator<
 */
 
 template <typename V, typename... Args, typename PoolAllocator = pool_allocator<V> >
-    node_ptr<V> make_fastnode(node_proxy const & x, Args... args)
+    inline node_ptr<V> make_fastnode(node_proxy const & x, Args... args)
     {
         return node_ptr<V>(x, new fastnode<V>(args...));
     }
@@ -650,7 +650,7 @@ template <typename V, typename... Args, typename PoolAllocator = pool_allocator<
 */
 
 template <typename T>
-    bool operator == (node_ptr<T> const &a1, node_ptr<T> const &a2)
+    inline bool operator == (node_ptr<T> const &a1, node_ptr<T> const &a2)
     {
         return a1.get() == a2.get();
     }
@@ -664,7 +664,7 @@ template <typename T>
 */
 
 template <typename T>
-    bool operator != (node_ptr<T> const &a1, node_ptr<T> const &a2)
+    inline bool operator != (node_ptr<T> const &a1, node_ptr<T> const &a2)
     {
         return a1.get() != a2.get();
     }
