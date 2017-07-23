@@ -177,12 +177,9 @@ private:
 
 
 template <typename T>
-    struct info_t
+    inline void proxy(T const & po, node_proxy const & px)
     {
-        static void proxy(T const & po, node_proxy const & px)
-        {
-        }
-    };
+    }
 
 
 /**
@@ -438,7 +435,7 @@ template <typename T>
                     if (p.po_)
                     {
                         p.header()->node_tag_.erase();
-                        info_t<V>::proxy(* p.po_, * px_);
+                        boost::proxy(* p.po_, * px_);
                         px_->init(p.header());
                     }
             }

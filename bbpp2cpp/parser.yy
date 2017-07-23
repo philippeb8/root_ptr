@@ -240,20 +240,17 @@ statement:              expression EOL
                         {
                                 header += "struct " + $2 + " {boost::node_proxy const & __x; " + $5 + "}; ";
                                 
-                                header += "namespace boost";
-                                header += "{";
-                                header += "template <>";
-                                header += "    struct info_t<" + $2 + ">";
-                                header += "    {";
-                                header += "        static void proxy(" + $2 + " const & o, boost::node_proxy const & x)";
-                                header += "        {";
+                                header += "namespace boost ";
+                                header += "{ ";
+                                header += "template <> ";
+                                header += "    inline void proxy(" + $2 + " const & o, boost::node_proxy const & x) ";
+                                header += "    { ";
                                 
                                 for (auto i = member.at(mode.top()).begin(); i != member.at(mode.top()).end(); ++ i)
-                                    header += "            bbpp::proxy(x, o." + * i + ");";
+                                    header += "        bbpp::proxy(x, o." + * i + "); ";
                                 
-                                header += "        }";
-                                header += "    };";
-                                header += "}";
+                                header += "    } ";
+                                header += "} ";
 
                                 $$ = "";
                                 
