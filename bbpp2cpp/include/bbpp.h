@@ -130,17 +130,17 @@ template <typename T>
     }
 
 template <typename T>
-    inline T & dereference(T & t)
-    {
-        return t;
-    }
-    
-template <typename T>
     inline T const & dereference(boost::node_ptr<T> const & t)
     {
         return * t;
     }
 
+template <typename T>
+    inline T & dereference(T & t)
+    {
+        return t;
+    }
+    
 template <typename T>
     inline T const & dereference(T const & t)
     {
@@ -148,25 +148,25 @@ template <typename T>
     }
     
 template <typename T>
-    inline T & proxy(boost::node_proxy & x, boost::node_ptr<T> & t)
+    inline T & proxy(boost::node_proxy const & x, boost::node_ptr<T> & t)
     {
         return t.proxy(x);
     }
 
 template <typename T>
-    inline T & proxy(boost::node_proxy & x, T & t)
-    {
-        return t;
-    }    
-
-template <typename T>
-    inline boost::node_ptr<T> const & proxy(boost::node_proxy & x, boost::node_ptr<T> const & t)
+    inline boost::node_ptr<T> const & proxy(boost::node_proxy const & x, boost::node_ptr<T> const & t)
     {
         return t.proxy(x), t;
     }
 
 template <typename T>
-    inline T const & proxy(boost::node_proxy & x, T const & t)
+    inline T & proxy(boost::node_proxy const & x, T & t)
+    {
+        return t;
+    }    
+
+template <typename T>
+    inline T const & proxy(boost::node_proxy const & x, T const & t)
     {
         return t;
     }        

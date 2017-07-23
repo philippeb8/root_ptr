@@ -28,7 +28,9 @@
 #include <FlexLexer.h>
 #endif
 
-#include <set>
+#include <map>
+#include <list>
+#include <stack>
 #include <string>
 #include <functional>
 
@@ -54,7 +56,7 @@ struct val
 
 %define ERROR_BODY { * yyout << BBPP2CPPFlexLexer::lineno() << ": parse error before '" << BBPP2CPPFlexLexer::YYText() << "'" << std::endl; }
 
-%define MEMBERS val value; int indent = 0, counter = 0; std::string header, footer; std::set<std::string> type;
+%define MEMBERS val value; int indent = 0, counter = 0; std::string header, footer; std::stack<std::string> mode; std::map<std::string, std::list<std::string>> member; 
 
 
 %token          EOL
@@ -222,69 +224,88 @@ statement:              expression EOL
                         |
                         CLASS ID EOL
                         {
-                                type.insert($2);
+                                member.insert(make_pair($2, std::list<std::string>()));
                                 
                                 $$ = "struct " + $2 + "; ";
                         }
                         |
                         CLASS ID '{' '}' EOL
                         {
-                                type.insert($2);
+                                member.insert(make_pair($2, std::list<std::string>()));
                                 
                                 header += "struct " + $2 + " {node_proxy const & __x;}; ";
 
                                 $$ = "";
                         }
                         |
-                        CLASS ID '{' {type.insert($2);} member_list '}' EOL
+                        CLASS ID '{' { mode.push($2); member.insert(make_pair($2, std::list<std::string>())); } member_list '}' EOL
                         {
                                 header += "struct " + $2 + " {node_proxy const & __x; " + $5 + "}; ";
+                                
+                                header += "namespace boost";
+                                header += "{";
+                                header += "template <>";
+                                header += "    struct info_t<" + $2 + ">";
+                                header += "    {";
+                                header += "        static void proxy(" + $2 + " const & o, node_proxy const & x)";
+                                header += "        {";
+                                
+                                for (auto i = member.at(mode.top()).begin(); i != member.at(mode.top()).end(); ++ i)
+                                    header += "            bbpp::proxy(x, o." + * i + ");";
+                                
+                                header += "        }";
+                                header += "    };";
+                                header += "}";
 
                                 $$ = "";
+                                
+                                mode.pop();
                         }
                         |
                         CLASS ID ':' type_list '{' '}' EOL
                         {
-                                type.insert($2);
+                                member.insert(make_pair($2, std::list<std::string>()));
                                 
                                 header += "struct " + $2 + " : " + $4 + " {}; ";
 
                                 $$ = "";
                         }
                         |
-                        CLASS ID ':' type_list '{' {type.insert($2);} member_list '}' EOL
+                        CLASS ID ':' type_list '{' { mode.push($2); member.insert(make_pair($2, std::list<std::string>())); } member_list '}' EOL
                         {
                                 header += "struct " + $2 + " : " + $4 + " {" + $7 + "}; ";
 
                                 $$ = "";
+
+                                mode.pop();
                         }
                         |
-                        type_modifier ID '(' ')' statement
+                        type_modifier ID '(' ')' { mode.push(""); } statement { mode.pop(); } 
                         {
                                 header += $1 + ' ' + $2 + '(' + ')' + ';';
 
-                                $$ = $1 + ' ' + $2 + '(' + ')' + $5;
+                                $$ = $1 + ' ' + $2 + '(' + ')' + $6;
                         }
                         |
-                        type_modifier ID '(' type_modifier_list ')' statement
+                        type_modifier ID '(' type_modifier_list ')' { mode.push(""); } statement { mode.pop(); } 
                         {
                                 header += $1 + ' ' + $2 + '(' + $4 + ')' + ';';
 
-                                $$ = $1 + ' ' + $2 + '(' + $4 + ')' + $6;
+                                $$ = $1 + ' ' + $2 + '(' + $4 + ')' + $7;
                         }
                         |
-                        type_modifier operator '(' ')' statement
+                        type_modifier operator '(' ')' { mode.push(""); } statement { mode.pop(); } 
                         {
                                 header += $1 + ' ' + $2 + ' ' + '(' + ')' + ';';
 
-                                $$ = $1 + ' ' + $2 + ' ' + '(' + ')' + $5;
+                                $$ = $1 + ' ' + $2 + ' ' + '(' + ')' + $6;
                         }
                         |
-                        type_modifier operator '(' type_modifier_list ')' statement
+                        type_modifier operator '(' type_modifier_list ')' { mode.push(""); } statement { mode.pop(); } 
                         {
                                 header += $1 + ' ' + $2 + ' ' + '(' + $4 + ')' + ';';
 
-                                $$ = $1 + ' ' + $2 + ' ' + '(' + $4 + ')' + $6;
+                                $$ = $1 + ' ' + $2 + ' ' + '(' + $4 + ')' + $7;
                         }
                         ;
 
@@ -611,7 +632,7 @@ expression_factorial:   expression_factorial '!'
                         |
                         expression '(' ')'
                         {
-                                if (type.find($1) != type.end())
+                                if (member.find($1) != member.end())
                                     $$ = $1 + "(__x)";
                                 else
                                     $$ = "dereference(" + $1 + ")(__x)";
@@ -619,7 +640,7 @@ expression_factorial:   expression_factorial '!'
                         |
                         expression '(' expression_list ')'
                         {
-                                if (type.find($1) != type.end())
+                                if (member.find($1) != member.end())
                                     $$ = $1 + "(__x)";
                                 else
                                     $$ = "dereference(" + $1 + ")(__x, " + $3 + ")";
@@ -677,7 +698,7 @@ number:                 INTEGER
                         |
                         NEW type '(' ')'
                         {
-                                if (type.find($2) != type.end())
+                                if (member.find($2) != member.end())
                                     $$ = "make_fastnode<" + $2 + ">(__x, __x)";
                                 else
                                     $$ = "make_fastnode<" + $2 + ">(__x)";
@@ -685,7 +706,7 @@ number:                 INTEGER
                         |
                         NEW type '(' expression_list ')'
                         {
-                                if (type.find($2) != type.end())
+                                if (member.find($2) != member.end())
                                     $$ = "make_fastnode<" + $2 + ">(__x, __x, " + $4 + ")";
                                 else
                                     $$ = "make_fastnode<" + $2 + ">(__x, " + $4 + ")";
@@ -721,6 +742,9 @@ number:                 INTEGER
                         |
                         AUTO type '=' expression
                         {
+                                if (mode.top() != "")
+                                    member.at(mode.top()).push_back($2);
+                                    
                                 $$ = "decltype(" + $4 + ") " + $2 + " = " + $4;
                         }
                         ;
