@@ -630,7 +630,6 @@ expression_factorial:   expression_factorial '!'
                                 std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
                                 
                                 header += "auto " + name + "(node_proxy & __y) " + $4;
-                                header += "typedef decltype(& " + name + ") " + name + "_p_t; ";
                                 
                                 $$ = "& " + name;
                         }
@@ -640,7 +639,6 @@ expression_factorial:   expression_factorial '!'
                                 std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
                                 
                                 header += "auto " + name + "(node_proxy & __y, " + $3 + ") " + $5;
-                                header += "typedef decltype(& " + name + ") " + name + "_p_t; ";
                                 
                                 $$ = "& " + name;
                         }
@@ -698,7 +696,6 @@ number:                 INTEGER
                                 std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
                                 
                                 header += "auto " + name + "(node_proxy & __y) " + $5;
-                                header += "typedef decltype(& " + name + ") " + name + "_p_t; ";
                                 
                                 $$ = "make_fastnode<" + name + "_p_t>(__x, &" + name + ")";
                         }
@@ -708,7 +705,6 @@ number:                 INTEGER
                                 std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
                                 
                                 header += "auto " + name + "(node_proxy & __y, " + $4 + ") " + $6;
-                                header += "typedef decltype(& " + name + ") " + name + "_p_t; ";
                                 
                                 $$ = "make_fastnode<" + name + "_p_t>(__x, &" + name + ")";
                         }
