@@ -217,7 +217,7 @@ statement:              expression EOL
                         |
                         RETURN expression EOL
                         {
-                                $$ = "return bbpp::proxy(" + $2 + ", __y); ";
+                                $$ = "return bbpp::proxy(__y, " + $2 + "); ";
                         }
                         |
                         CLASS ID EOL
@@ -242,11 +242,11 @@ statement:              expression EOL
                                 
                                 header += "namespace boost ";
                                 header += "{ ";
-                                header += "    inline void proxy(" + $2 + " const & o, boost::node_proxy const & __y) ";
+                                header += "    inline void proxy(boost::node_proxy const & __y, " + $2 + " const & o) ";
                                 header += "    { ";
                                 
                                 for (auto i = member.at(mode.top()).begin(); i != member.at(mode.top()).end(); ++ i)
-                                    header += "        bbpp::proxy(o." + * i + ", __y); ";
+                                    header += "        bbpp::proxy(__y, o." + * i + "); ";
                                 
                                 header += "    } ";
                                 header += "} ";
