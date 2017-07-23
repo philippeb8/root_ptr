@@ -242,7 +242,6 @@ statement:              expression EOL
                                 
                                 header += "namespace boost ";
                                 header += "{ ";
-                                header += "template <> ";
                                 header += "    inline void proxy(" + $2 + " const & o, boost::node_proxy const & __y) ";
                                 header += "    { ";
                                 
