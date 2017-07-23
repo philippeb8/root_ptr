@@ -23,7 +23,7 @@ int main()
         // cycle
         document.head = document;
         
-        return 2;
+        return document;
     };
     
     cout << 1 << endl;

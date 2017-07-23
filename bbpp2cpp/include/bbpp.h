@@ -148,9 +148,9 @@ template <typename T>
     }
     
 template <typename T>
-    inline T & proxy(boost::node_proxy const & x, boost::node_ptr<T> & t)
+    inline boost::node_ptr<T> & proxy(boost::node_proxy const & x, boost::node_ptr<T> & t)
     {
-        return t.proxy(x);
+        return t.proxy(x), t;
     }
 
 template <typename T>
