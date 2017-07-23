@@ -150,8 +150,6 @@ start:                  statement_list
                                 value.s += "#include <iostream>\n";
                                 value.s += '\n';
                                 value.s += "using namespace std;\n";
-                                value.s += "using namespace bbpp;\n";
-                                value.s += "using namespace boost;\n";
                                 value.s += '\n';
                                 value.s += '\n';
                                 value.s += header;
@@ -191,7 +189,7 @@ statement:              expression EOL
                         {
                                 $$ = "{";
 
-                                $$ += "node_proxy __x; ";
+                                $$ += "boost::node_proxy __x; ";
                         
                                 $$ += $2;
                                 $$ += "}";
@@ -219,7 +217,7 @@ statement:              expression EOL
                         |
                         RETURN expression EOL
                         {
-                                $$ = "return proxy(__y, " + $2 + "); ";
+                                $$ = "return bbpp::proxy(__y, " + $2 + "); ";
                         }
                         |
                         CLASS ID EOL
@@ -233,21 +231,21 @@ statement:              expression EOL
                         {
                                 member.insert(make_pair($2, std::list<std::string>()));
                                 
-                                header += "struct " + $2 + " {node_proxy const & __x;}; ";
+                                header += "struct " + $2 + " {boost::node_proxy const & __x;}; ";
 
                                 $$ = "";
                         }
                         |
                         CLASS ID '{' { mode.push($2); member.insert(make_pair($2, std::list<std::string>())); } member_list '}' EOL
                         {
-                                header += "struct " + $2 + " {node_proxy const & __x; " + $5 + "}; ";
+                                header += "struct " + $2 + " {boost::node_proxy const & __x; " + $5 + "}; ";
                                 
                                 header += "namespace boost";
                                 header += "{";
                                 header += "template <>";
                                 header += "    struct info_t<" + $2 + ">";
                                 header += "    {";
-                                header += "        static void proxy(" + $2 + " const & o, node_proxy const & x)";
+                                header += "        static void proxy(" + $2 + " const & o, boost::node_proxy const & x)";
                                 header += "        {";
                                 
                                 for (auto i = member.at(mode.top()).begin(); i != member.at(mode.top()).end(); ++ i)
@@ -367,12 +365,12 @@ member:                 expression EOL
                         |
                         ID '(' ')' statement
                         {
-                                $$ = $1 + "(node_proxy const & __y): __x(__y) " + $4;
+                                $$ = $1 + "(boost::node_proxy const & __y): __x(__y) " + $4;
                         }
                         |
                         ID '(' parameter_list ')' statement
                         {
-                                $$ = $1 + "(node_proxy const & __y, " + $3 + "): __x(__y) " + $5;
+                                $$ = $1 + "(boost::node_proxy const & __y, " + $3 + "): __x(__y) " + $5;
                         }
                         |
                         '~' ID '(' ')' statement
@@ -447,7 +445,7 @@ expression_binary:      expression_add
                         |
                         FUNCTION1stNOT expression_binary
                         {
-                                $$ = "operator_not(__x, " + $2 + ")";
+                                $$ = "bbpp::operator_not(__x, " + $2 + ")";
                         }
                         |
                         expression_binary '=' expression_binary
@@ -457,47 +455,47 @@ expression_binary:      expression_add
                         |
                         expression_binary FUNCTION2ndOR expression_binary
                         {
-                                $$ = "operator_or(__x, " + $1 + ", " + $3 + ")";
+                                $$ = "bbpp::operator_or(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndXOR expression_binary
                         {
-                                $$ = "operator_xor(__x, " + $1 + ", " + $3 + ")";
+                                $$ = "bbpp::operator_xor(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndAND expression_binary
                         {
-                                $$ = "operator_and(__x, " + $1 + ", " + $3 + ")";
+                                $$ = "bbpp::operator_and(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndEQUAL expression_binary
                         {
-                                $$ = "operator_equal(__x, " + $1 + ", " + $3 + ")";
+                                $$ = "bbpp::operator_equal(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndLESS expression_binary
                         {
-                                $$ = "operator_less(__x, " + $1 + ", " + $3 + ")";
+                                $$ = "bbpp::operator_less(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndGREATER expression_binary
                         {
-                                $$ = "operator_greater(__x, " + $1 + ", " + $3 + ")";
+                                $$ = "bbpp::operator_greater(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndNOTEQUAL expression_binary
                         {
-                                $$ = "operator_notequal(__x, " + $1 + ", " + $3 + ")";
+                                $$ = "bbpp::operator_notequal(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndLESSEQUAL expression_binary
                         {
-                                $$ = "operator_lessequal(__x, " + $1 + ", " + $3 + ")";
+                                $$ = "bbpp::operator_lessequal(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndGREATEREQUAL expression_binary
                         {
-                                $$ = "operator_greaterequal(__x, " + $1 + ", " + $3 + ")";
+                                $$ = "bbpp::operator_greaterequal(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_binary FUNCTION2ndLEFTSHIFT expression_binary
@@ -518,12 +516,12 @@ expression_add:         expression_mul
                         |
                         expression_add '+' expression_add
                         {
-                                $$ = "operator_add(__x, " + $1 + ", " + $3 + ")";
+                                $$ = "bbpp::operator_add(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_add '-' expression_add
                         {
-                                $$ = "operator_sub(__x, " + $1 + ", " + $3 + ")";
+                                $$ = "bbpp::operator_sub(__x, " + $1 + ", " + $3 + ")";
                         }
                         ;
 
@@ -534,17 +532,17 @@ expression_mul:         expression_signed
                         |
                         expression_mul '*' expression_mul
                         {
-                                $$ = "operator_mul(__x, " + $1 + ", " + $3 + ")";
+                                $$ = "bbpp::operator_mul(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_mul '/' expression_mul
                         {
-                                $$ = "operator_div(__x, " + $1 + ", " + $3 + ")";
+                                $$ = "bbpp::operator_div(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
                         expression_mul '%' expression_mul
                         {
-                                $$ = "operator_mod(__x, " + $1 + ", " + $3 + ")";
+                                $$ = "bbpp::operator_mod(__x, " + $1 + ", " + $3 + ")";
                         }
                         ;
 
@@ -555,7 +553,7 @@ expression_signed:      expression_unary
                         |
                         expression_unary '^' expression_signed
                         {
-                                $$ = "operator_pow(__x, " + $1 + ", " + $3 + ")";
+                                $$ = "bbpp::operator_pow(__x, " + $1 + ", " + $3 + ")";
                         }
                         ;
 
@@ -566,7 +564,7 @@ expression_unary:       expression_factorial
                         |
                         '|' expression '|'
                         {
-                                $$ = "operator_abs(__x, " + $2 + ")";
+                                $$ = "bbpp::operator_abs(__x, " + $2 + ")";
                         }
                         |
                         '+' expression_unary
@@ -576,33 +574,33 @@ expression_unary:       expression_factorial
                         |
                         '-' expression_unary
                         {
-                                $$ = "operator_neg(__x, " + $2 + ")";
+                                $$ = "bbpp::operator_neg(__x, " + $2 + ")";
                         }
                         ;
 
 expression_factorial:   expression_factorial '!'
                         {
-                                $$ = "operator_factorial(__x, " + $1 + ")";
+                                $$ = "bbpp::operator_factorial(__x, " + $1 + ")";
                         }
                         |
                         expression FUNCTION2ndINCREMENT
                         {
-                                $$ = "operator_postinc(__x, " + $1 + ")";
+                                $$ = "bbpp::operator_postinc(__x, " + $1 + ")";
                         }
                         |
                         expression FUNCTION2ndDECREMENT
                         {
-                                $$ = "operator_postdec(__x, " + $1 + ")";
+                                $$ = "bbpp::operator_postdec(__x, " + $1 + ")";
                         }
                         |
                         FUNCTION2ndINCREMENT expression
                         {
-                                $$ = "operator_preinc(__x, " + $2 + ")";
+                                $$ = "bbpp::operator_preinc(__x, " + $2 + ")";
                         }
                         |
                         FUNCTION2ndDECREMENT expression
                         {
-                                $$ = "operator_predec(__x, " + $2 + ")";
+                                $$ = "bbpp::operator_predec(__x, " + $2 + ")";
                         }
                         |
                         '(' ')'
@@ -635,7 +633,7 @@ expression_factorial:   expression_factorial '!'
                                 if (member.find($1) != member.end())
                                     $$ = $1 + "(__x)";
                                 else
-                                    $$ = "dereference(" + $1 + ")(__x)";
+                                    $$ = "bbpp::dereference(" + $1 + ")(__x)";
                         }
                         |
                         expression '(' expression_list ')'
@@ -643,14 +641,14 @@ expression_factorial:   expression_factorial '!'
                                 if (member.find($1) != member.end())
                                     $$ = $1 + "(__x)";
                                 else
-                                    $$ = "dereference(" + $1 + ")(__x, " + $3 + ")";
+                                    $$ = "bbpp::dereference(" + $1 + ")(__x, " + $3 + ")";
                         }
                         |
                         FUNCTION '(' ')' statement
                         {
                                 std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
                                 
-                                header += "auto " + name + "(node_proxy & __y) " + $4;
+                                header += "auto " + name + "(boost::node_proxy & __y) " + $4;
                                 
                                 $$ = "& " + name;
                         }
@@ -659,7 +657,7 @@ expression_factorial:   expression_factorial '!'
                         {
                                 std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
                                 
-                                header += "auto " + name + "(node_proxy & __y, " + $3 + ") " + $5;
+                                header += "auto " + name + "(boost::node_proxy & __y, " + $3 + ") " + $5;
                                 
                                 $$ = "& " + name;
                         }
@@ -693,41 +691,41 @@ number:                 INTEGER
                         |
                         NULLPTR FUNCTION2ndLESS type FUNCTION2ndGREATER '(' ')'
                         {
-                                $$ = "node_ptr<" + $3 + ">(__x)";
+                                $$ = "boost::node_ptr<" + $3 + ">(__x)";
                         }
                         |
                         NEW type '(' ')'
                         {
                                 if (member.find($2) != member.end())
-                                    $$ = "make_fastnode<" + $2 + ">(__x, __x)";
+                                    $$ = "boost::make_fastnode<" + $2 + ">(__x, __x)";
                                 else
-                                    $$ = "make_fastnode<" + $2 + ">(__x)";
+                                    $$ = "boost::make_fastnode<" + $2 + ">(__x)";
                         }
                         |
                         NEW type '(' expression_list ')'
                         {
                                 if (member.find($2) != member.end())
-                                    $$ = "make_fastnode<" + $2 + ">(__x, __x, " + $4 + ")";
+                                    $$ = "boost::make_fastnode<" + $2 + ">(__x, __x, " + $4 + ")";
                                 else
-                                    $$ = "make_fastnode<" + $2 + ">(__x, " + $4 + ")";
+                                    $$ = "boost::make_fastnode<" + $2 + ">(__x, " + $4 + ")";
                         }
                         |
                         NEW FUNCTION '(' ')' statement
                         {
                                 std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
                                 
-                                header += "auto " + name + "(node_proxy & __y) " + $5;
+                                header += "auto " + name + "(boost::node_proxy & __y) " + $5;
                                 
-                                $$ = "make_fastnode<" + name + "_p_t>(__x, &" + name + ")";
+                                $$ = "boost::make_fastnode<" + name + "_p_t>(__x, &" + name + ")";
                         }
                         |
                         NEW FUNCTION '(' parameter_list ')' statement
                         {
                                 std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
                                 
-                                header += "auto " + name + "(node_proxy & __y, " + $4 + ") " + $6;
+                                header += "auto " + name + "(boost::node_proxy & __y, " + $4 + ") " + $6;
                                 
-                                $$ = "make_fastnode<" + name + "_p_t>(__x, &" + name + ")";
+                                $$ = "boost::make_fastnode<" + name + "_p_t>(__x, &" + name + ")";
                         }
                         |
                         type_modifier type
@@ -811,7 +809,7 @@ type_list:              type_list ',' type
 
 scope_list:             scope_list '.' type
                         {
-                                $$ = "dereference(" + $1 +")." + $3;
+                                $$ = "bbpp::dereference(" + $1 +")." + $3;
                         }
                         |
                         type
