@@ -280,7 +280,8 @@ template <typename T>
                 mutex::scoped_lock scoped_lock(node_proxy::static_mutex());
 #endif
                 
-                propagate(p);
+                if (px_->depth() < p.px_->depth())
+                    propagate(p);
 
                 base::operator = (p);
 
@@ -427,17 +428,19 @@ template <typename T>
 #endif
 
     private:
+        /**
+            Upscale the proxy of the operand.
+        */
+        
         template <typename V>
             void propagate(node_ptr<V> const & p) const
             {
-                // upscale the proxy of the operand
-                if (px_->depth() < p.px_->depth())
-                    if (p.po_)
-                    {
-                        p.header()->node_tag_.erase();
-                        boost::proxy(* px_, * p.po_);
-                        px_->init(p.header());
-                    }
+                if (p.po_)
+                {
+                    p.header()->node_tag_.erase();
+                    boost::proxy(* px_, * p.po_);
+                    px_->init(p.header());
+                }
             }
     };
 
