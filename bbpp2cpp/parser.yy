@@ -96,6 +96,7 @@ struct val
 %left           '*' '/' '%'
 %right          '^'
 %left           '!'
+%left           '.'
 
 %type   <s>     start
 %type   <s>     statement
@@ -110,7 +111,6 @@ struct val
 %type   <s>     member_list
 %type   <s>     qualifier
 %type   <s>     qualifier_list
-%type   <s>     scope_list
 %type   <s>     terminal
 %type   <s>     expression
 %type   <s>     expression_list
@@ -438,6 +438,14 @@ expression_binary:      expression_add
                                 $$ = $1;
                         }
                         |
+                        AUTO ID '=' expression_binary
+                        {
+                                if (mode.top() != "")
+                                    member.at(mode.top()).push_back($2);
+                                    
+                                $$ = "decltype(" + $4 + ") " + $2 + " = " + $4;
+                        }
+                        |
                         FUNCTION1stNOT expression_binary
                         {
                                 $$ = "bbpp::operator_not(__x, " + $2 + ")";
@@ -656,6 +664,11 @@ expression_factorial:   expression_factorial '!'
                                 
                                 $$ = "& " + name;
                         }
+                        |
+                        expression_list '.' ID
+                        {
+                                $$ = "bbpp::dereference(" + $1 +")." + $3;
+                        }
                         ;
 
 terminal:               number
@@ -664,11 +677,6 @@ terminal:               number
                         }
                         |
                         ID
-                        {
-                                $$ = $1;
-                        }
-                        |
-                        scope_list
                         {
                                 $$ = $1;
                         }
@@ -732,14 +740,6 @@ number:                 INTEGER
                         {
                                 $$ = $1 + ' ' + $2 + " = " + $4;
                         }
-                        |
-                        AUTO ID '=' expression
-                        {
-                                if (mode.top() != "")
-                                    member.at(mode.top()).push_back($2);
-                                    
-                                $$ = "decltype(" + $4 + ") " + $2 + " = " + $4;
-                        }
                         ;
                         
 parameter_list:         parameter_list ',' type_modifier ID
@@ -795,18 +795,6 @@ type_list:              type_list ',' ID
                                 $$ = $1;
                         }
                         ;
-
-scope_list:             scope_list '.' ID
-                        {
-                                $$ = "bbpp::dereference(" + $1 +")." + $3;
-                        }
-                        |
-                        ID
-                        {
-                                $$ = $1;
-                        }
-                        ;
-
 
 expression_list:        expression_list ',' expression
                         {

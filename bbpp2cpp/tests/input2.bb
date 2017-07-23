@@ -27,6 +27,6 @@ int main()
     };
     
     cout << 1 << endl;
-    bar();
+    auto result = bar().foo(temporary);
     cout << 2 << endl;
 }
