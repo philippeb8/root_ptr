@@ -102,7 +102,6 @@ struct val
 %type   <s>     statement_list
 %type   <s>     number
 %type   <s>     operator
-%type   <s>     type
 %type   <s>     type_list
 %type   <s>     type_modifier
 %type   <s>     type_modifier_list
@@ -685,12 +684,12 @@ number:                 INTEGER
                                 $$ = $1;
                         }
                         |
-                        NULLPTR FUNCTION2ndLESS type FUNCTION2ndGREATER '(' ')'
+                        NULLPTR FUNCTION2ndLESS ID FUNCTION2ndGREATER '(' ')'
                         {
                                 $$ = "boost::node_ptr<" + $3 + ">(__x)";
                         }
                         |
-                        NEW type '(' ')'
+                        NEW ID '(' ')'
                         {
                                 if (member.find($2) != member.end())
                                     $$ = "boost::make_fastnode<" + $2 + ">(__x, __x)";
@@ -698,7 +697,7 @@ number:                 INTEGER
                                     $$ = "boost::make_fastnode<" + $2 + ">(__x)";
                         }
                         |
-                        NEW type '(' expression_list ')'
+                        NEW ID '(' expression_list ')'
                         {
                                 if (member.find($2) != member.end())
                                     $$ = "boost::make_fastnode<" + $2 + ">(__x, __x, " + $4 + ")";
@@ -724,17 +723,17 @@ number:                 INTEGER
                                 $$ = "boost::make_fastnode<" + name + "_p_t>(__x, &" + name + ")";
                         }
                         |
-                        type_modifier type
+                        type_modifier ID
                         {
                                 $$ = $1 + " " + $2;
                         }
                         |
-                        type_modifier type '=' expression
+                        type_modifier ID '=' expression
                         {
                                 $$ = $1 + ' ' + $2 + " = " + $4;
                         }
                         |
-                        AUTO type '=' expression
+                        AUTO ID '=' expression
                         {
                                 if (mode.top() != "")
                                     member.at(mode.top()).push_back($2);
@@ -743,12 +742,12 @@ number:                 INTEGER
                         }
                         ;
                         
-parameter_list:         parameter_list ',' type_modifier type
+parameter_list:         parameter_list ',' type_modifier ID
                         {
                                 $$ = $1 + ", " + $3 + " " + $4;
                         }
                         |
-                        type_modifier type
+                        type_modifier ID
                         {
                                 $$ = $1 + " " +  $2;
                         }
@@ -765,50 +764,44 @@ type_modifier_list:     type_modifier_list ',' type_modifier
                         }
                         ;
 
-type_modifier:          type
+type_modifier:          ID
                         {
                                 $$ = $1;
                         }
                         |
-                        type '&'
+                        ID '&'
                         {
                                 $$ = $1 + " &";
                         }
                         |
-                        type CONST
+                        ID CONST
                         {
                                 $$ = $1 + " const";
                         }
                         |
-                        type CONST '&'
+                        ID CONST '&'
                         {
                                 $$ = $1 + " const &";
                         }
                         ;
 
-type:                   ID
-                        {
-                                $$ = $1;
-                        }
-                        ;
-
-type_list:              type_list ',' type
+type_list:              type_list ',' ID
                         {
                                 $$ = $1 + ",  " + $3;
                         }
                         |
-                        type
+                        ID
                         {
                                 $$ = $1;
                         }
                         ;
 
-scope_list:             scope_list '.' type
+scope_list:             scope_list '.' ID
                         {
                                 $$ = "bbpp::dereference(" + $1 +")." + $3;
                         }
                         |
-                        type
+                        ID
                         {
                                 $$ = $1;
                         }
