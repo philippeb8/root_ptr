@@ -649,7 +649,7 @@ expression_factorial:   expression_factorial '!'
                         |
                         FUNCTION '(' ')' statement
                         {
-                                std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
+                                std::string name = "__lambda" + boost::lexical_cast<std::string>(counter ++);
                                 
                                 header += "auto " + name + "(boost::node_proxy & __y) " + $4;
                                 
@@ -658,7 +658,7 @@ expression_factorial:   expression_factorial '!'
                         |
                         FUNCTION '(' parameter_list ')' statement
                         {
-                                std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
+                                std::string name = "__lambda" + boost::lexical_cast<std::string>(counter ++);
                                 
                                 header += "auto " + name + "(boost::node_proxy & __y, " + $3 + ") " + $5;
                                 
@@ -715,7 +715,7 @@ number:                 INTEGER
                         |
                         NEW FUNCTION '(' ')' statement
                         {
-                                std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
+                                std::string name = "__lambda" + boost::lexical_cast<std::string>(counter ++);
                                 
                                 header += "auto " + name + "(boost::node_proxy & __y) " + $5;
                                 
@@ -724,7 +724,7 @@ number:                 INTEGER
                         |
                         NEW FUNCTION '(' parameter_list ')' statement
                         {
-                                std::string name = "__" + boost::lexical_cast<std::string>(counter ++);
+                                std::string name = "__lambda" + boost::lexical_cast<std::string>(counter ++);
                                 
                                 header += "auto " + name + "(boost::node_proxy & __y, " + $4 + ") " + $6;
                                 
