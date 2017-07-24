@@ -21,6 +21,7 @@
 #endif
 
 #include <utility>
+#include <iostream>
 
 #ifndef BOOST_DISABLE_THREADS
 #include <boost/thread/thread.hpp>
@@ -217,6 +218,7 @@ template <typename T>
         : base()
         , px_(& x)
         {
+            std::cout << __PRETTY_FUNCTION__ << std::endl;
         }
 
 
@@ -232,6 +234,7 @@ template <typename T>
             : base(p)
             , px_(& x)
             {
+            std::cout << __PRETTY_FUNCTION__ << std::endl;
                 px_->init(p);
             }
 
@@ -251,6 +254,7 @@ template <typename T>
             : base(p)
             , px_(p.px_)
             {
+            std::cout << __PRETTY_FUNCTION__ << std::endl;
             }
 
 
@@ -264,6 +268,7 @@ template <typename T>
             : base(p)
             , px_(p.px_)
             {
+            std::cout << __PRETTY_FUNCTION__ << std::endl;
             }
 
             
@@ -409,6 +414,7 @@ template <typename T>
 
         ~node_ptr()
         {
+            std::cout << __PRETTY_FUNCTION__ << std::endl;
             if (cyclic())
                 base::po_ = 0;
         }
@@ -595,7 +601,7 @@ template <typename T>
 */
 
 template <typename V, typename... Args, typename PoolAllocator = pool_allocator<V> >
-    inline root_ptr<V> make_root(Args... args)
+    inline root_ptr<V> make_root(Args const &... args)
     {
         return root_ptr<V>(new node<V, PoolAllocator>(args...));
     }
@@ -608,7 +614,7 @@ template <typename V, typename... Args, typename PoolAllocator = pool_allocator<
 */
 
 template <typename V, typename... Args, typename PoolAllocator = pool_allocator<V> >
-    inline node_ptr<V> make_node(node_proxy const & x, Args... args)
+    inline node_ptr<V> make_node(node_proxy const & x, Args const &... args)
     {
         return node_ptr<V>(x, new node<V, PoolAllocator>(args...));
     }
@@ -621,7 +627,7 @@ template <typename V, typename... Args, typename PoolAllocator = pool_allocator<
 */
 
 template <typename V, typename... Args, typename PoolAllocator = pool_allocator<V> >
-    inline root_ptr<V> make_fastroot(Args... args)
+    inline root_ptr<V> make_fastroot(Args const &... args)
     {
         return root_ptr<V>(new fastnode<V>(args...));
     }
@@ -636,7 +642,7 @@ template <typename V, typename... Args, typename PoolAllocator = pool_allocator<
 */
 
 template <typename V, typename... Args, typename PoolAllocator = pool_allocator<V> >
-    inline node_ptr<V> make_fastnode(node_proxy const & x, Args... args)
+    inline node_ptr<V> make_fastnode(node_proxy const & x, Args const &... args)
     {
         return node_ptr<V>(x, new fastnode<V>(args...));
     }
