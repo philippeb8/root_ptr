@@ -63,14 +63,6 @@ using namespace std;
                                                 return BBPP2CPPParser::FUNCTION2ndEQUAL;
                                         }
 
-"<"                                     {
-                                                return BBPP2CPPParser::FUNCTION2ndLESS;
-                                        }
-
-">"                                     {
-                                                return BBPP2CPPParser::FUNCTION2ndGREATER;
-                                        }
-
 "!="                                    {
                                                 return BBPP2CPPParser::FUNCTION2ndNOTEQUAL;
                                         }

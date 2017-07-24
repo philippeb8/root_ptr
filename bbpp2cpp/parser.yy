@@ -90,7 +90,7 @@ struct val
 %left           FUNCTION2ndXOR
 %left           FUNCTION2ndAND
 %left           FUNCTION1stNOT
-%left           FUNCTION2ndEQUAL FUNCTION2ndLESS FUNCTION2ndGREATER FUNCTION2ndNOTEQUAL FUNCTION2ndLESSEQUAL FUNCTION2ndGREATEREQUAL
+%left           FUNCTION2ndEQUAL '<' '>' FUNCTION2ndNOTEQUAL FUNCTION2ndLESSEQUAL FUNCTION2ndGREATEREQUAL
 %left           FUNCTION2ndLEFTSHIFT FUNCTION2ndRIGHTSHIFT
 %left           '+' '-'
 %left           '*' '/' '%'
@@ -103,6 +103,7 @@ struct val
 %type   <s>     statement_list
 %type   <s>     number
 %type   <s>     operator
+%type   <s>     type
 %type   <s>     type_list
 %type   <s>     type_modifier
 %type   <s>     type_modifier_list
@@ -446,6 +447,11 @@ expression_binary:      expression_add
                                 $$ = "decltype(" + $4 + ") " + $2 + " = " + $4;
                         }
                         |
+                        type_modifier ID '=' expression_binary
+                        {
+                                $$ = $1 + ' ' + $2 + " = " + $4;
+                        }
+                        |
                         FUNCTION1stNOT expression_binary
                         {
                                 $$ = "bbpp::operator_not(__x, " + $2 + ")";
@@ -476,12 +482,12 @@ expression_binary:      expression_add
                                 $$ = "bbpp::operator_equal(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
-                        expression_binary FUNCTION2ndLESS expression_binary
+                        expression_binary '<' expression_binary
                         {
                                 $$ = "bbpp::operator_less(__x, " + $1 + ", " + $3 + ")";
                         }
                         |
-                        expression_binary FUNCTION2ndGREATER expression_binary
+                        expression_binary '>' expression_binary
                         {
                                 $$ = "bbpp::operator_greater(__x, " + $1 + ", " + $3 + ")";
                         }
@@ -665,7 +671,7 @@ expression_factorial:   expression_factorial '!'
                                 $$ = "& " + name;
                         }
                         |
-                        expression_list '.' ID
+                        expression_list '.' type
                         {
                                 $$ = "bbpp::dereference(" + $1 +")." + $3;
                         }
@@ -676,7 +682,7 @@ terminal:               number
                                 $$ = $1;
                         }
                         |
-                        ID
+                        type
                         {
                                 $$ = $1;
                         }
@@ -692,12 +698,12 @@ number:                 INTEGER
                                 $$ = $1;
                         }
                         |
-                        NULLPTR FUNCTION2ndLESS ID FUNCTION2ndGREATER '(' ')'
+                        NULLPTR '<' type '>' '(' ')'
                         {
                                 $$ = "boost::node_ptr<" + $3 + ">(__x)";
                         }
                         |
-                        NEW ID '(' ')'
+                        NEW type '(' ')'
                         {
                                 if (member.find($2) != member.end())
                                     $$ = "boost::make_fastnode<" + $2 + ">(__x, __x)";
@@ -705,7 +711,7 @@ number:                 INTEGER
                                     $$ = "boost::make_fastnode<" + $2 + ">(__x)";
                         }
                         |
-                        NEW ID '(' expression_list ')'
+                        NEW type '(' expression_list ')'
                         {
                                 if (member.find($2) != member.end())
                                     $$ = "boost::make_fastnode<" + $2 + ">(__x, __x, " + $4 + ")";
@@ -735,11 +741,6 @@ number:                 INTEGER
                         {
                                 $$ = $1 + " " + $2;
                         }
-                        |
-                        type_modifier ID '=' expression
-                        {
-                                $$ = $1 + ' ' + $2 + " = " + $4;
-                        }
                         ;
                         
 parameter_list:         parameter_list ',' type_modifier ID
@@ -764,38 +765,49 @@ type_modifier_list:     type_modifier_list ',' type_modifier
                         }
                         ;
 
-type_modifier:          ID
+type_modifier:          type
                         {
                                 $$ = $1;
                         }
                         |
-                        ID '&'
+                        type '&'
                         {
                                 $$ = $1 + " &";
                         }
                         |
-                        ID CONST
+                        type CONST
                         {
                                 $$ = $1 + " const";
                         }
                         |
-                        ID CONST '&'
+                        type CONST '&'
                         {
                                 $$ = $1 + " const &";
                         }
                         ;
 
-type_list:              type_list ',' ID
+type_list:              type_list ',' type
                         {
                                 $$ = $1 + ",  " + $3;
                         }
                         |
-                        ID
+                        type
                         {
                                 $$ = $1;
                         }
                         ;
 
+type:                   ID
+                        {
+                                $$ = $1;
+                        }
+                        |
+                        VAR '<' ID '>'
+                        {
+                                $$ = "boost::node_ptr<" + $3 + ">";
+                        }
+                        ;
+                        
 expression_list:        expression_list ',' expression
                         {
                                 $$ = $1 + ", " + $3;
