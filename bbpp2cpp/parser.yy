@@ -802,7 +802,7 @@ type:                   ID
                                 $$ = $1;
                         }
                         |
-                        VAR '<' ID '>'
+                        VAR '<' type '>'
                         {
                                 $$ = "boost::node_ptr<" + $3 + ">";
                         }
