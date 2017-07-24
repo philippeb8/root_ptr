@@ -124,7 +124,11 @@ struct val
 
 %%
 
-start:                  statement_list
+start:                  {
+                                YYACCEPT;
+                        }
+                        |
+                        statement_list
                         {
                                 value.s = "/*\n";
                                 value.s += "    BBPP2CPP - Generated Code.\n";
@@ -174,15 +178,16 @@ statement_list:         statement_list statement
                         {
                                 $$ = $1;
                         }
-                        |
-                        {
-                                $$ = "";
-                        }
                         ;
 
 statement:              expression EOL
                         {
                                 $$ = $1 + "; ";
+                        }
+                        |
+                        '{' '}'
+                        {
+                                $$ = "{}";
                         }
                         |
                         '{' statement_list '}'
@@ -425,6 +430,17 @@ qualifier:              STATIC
                         VIRTUAL
                         {
                                 $$ = "virtual";
+                        }
+                        ;
+                        
+expression_list:        expression_list ',' expression
+                        {
+                                $$ = $1 + ", " + $3;
+                        }
+                        |
+                        expression
+                        {
+                                $$ = $1;
                         }
                         ;
 
@@ -805,17 +821,6 @@ type:                   ID
                         VAR '<' type '>'
                         {
                                 $$ = "boost::node_ptr<" + $3 + ">";
-                        }
-                        ;
-                        
-expression_list:        expression_list ',' expression
-                        {
-                                $$ = $1 + ", " + $3;
-                        }
-                        |
-                        expression
-                        {
-                                $$ = $1;
                         }
                         ;
 
