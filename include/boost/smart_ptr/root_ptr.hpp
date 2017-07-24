@@ -21,7 +21,6 @@
 #endif
 
 #include <utility>
-#include <iostream>
 
 #ifndef BOOST_DISABLE_THREADS
 #include <boost/thread/thread.hpp>
@@ -218,7 +217,6 @@ template <typename T>
         : base()
         , px_(& x)
         {
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
         }
 
 
@@ -234,7 +232,6 @@ template <typename T>
             : base(p)
             , px_(& x)
             {
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
                 px_->init(p);
             }
 
@@ -254,7 +251,6 @@ template <typename T>
             : base(p)
             , px_(p.px_)
             {
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
             }
 
 
@@ -268,7 +264,6 @@ template <typename T>
             : base(p)
             , px_(p.px_)
             {
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
             }
 
             
@@ -414,7 +409,6 @@ template <typename T>
 
         ~node_ptr()
         {
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
             if (cyclic())
                 base::po_ = 0;
         }
