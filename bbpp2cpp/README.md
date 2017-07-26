@@ -15,4 +15,4 @@ $ g++-5 -DBOOST_DISABLE_THREADS -std=c++14 -I./include -I../include tmp.cpp -otm
 $ time ./tmp  
 $ time js tests/input3.js  
 
-BBPP2CPP is 3.5 times faster than Node.JS, there is no lag and the errors are reported at compile-time.
+BBPP2CPP is 4 times faster than Node.JS, there is no lag and the errors are reported at compile-time.
