@@ -326,8 +326,8 @@ template <typename T>
                 if (po_)
                 {
                     header()->node_tag_.erase();
-                    boost::proxy(* px_, * po_);
                     px_->init(header());
+                    boost::proxy(* px_, * po_);
                 }
             }
         }
