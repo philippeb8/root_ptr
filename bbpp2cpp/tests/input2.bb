@@ -22,7 +22,8 @@ int main()
         
         // cycle
         document.head = new Document();
-        document.head.head = document;
+        document.head.head = new Document();
+        document.head.head.head = document;
         
         return document;
     };
