@@ -247,13 +247,14 @@ statement:              expression EOL
                                 
                                 header += "namespace boost ";
                                 header += "{ ";
-                                header += "    inline void proxy(boost::node_proxy const & __y, " + $2 + " const & o) ";
-                                header += "    { ";
+                                header += "    template <> ";
+                                header += "        inline void proxy(boost::node_proxy const & __y, " + $2 + " const & o) ";
+                                header += "        { ";
                                 
                                 for (auto i = member.at(mode.top()).begin(); i != member.at(mode.top()).end(); ++ i)
-                                    header += "        bbpp::proxy(__y, o." + * i + "); ";
+                                    header += "            bbpp::proxy(__y, o." + * i + "); ";
                                 
-                                header += "    } ";
+                                header += "        } ";
                                 header += "} ";
 
                                 $$ = "";
