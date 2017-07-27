@@ -21,7 +21,8 @@ int main()
         auto document = new Document();
         
         // cycle
-        document.head = document;
+        document.head = new Document();
+        document.head.head = document;
         
         return document;
     };

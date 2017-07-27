@@ -112,7 +112,6 @@ struct val
 %type   <s>     member_list
 %type   <s>     qualifier
 %type   <s>     qualifier_list
-%type   <s>     terminal
 %type   <s>     expression
 %type   <s>     expression_list
 %type   <s>     expression_binary
@@ -121,6 +120,7 @@ struct val
 %type   <s>     expression_signed
 %type   <s>     expression_unary
 %type   <s>     expression_factorial
+%type   <s>     expression_access
 
 %%
 
@@ -648,7 +648,7 @@ expression_factorial:   expression_factorial '!'
                                 $$ = "[" + $2 + "]";
                         }
                         |
-                        terminal
+                        number
                         {
                                 $$ = $1;
                         }
@@ -685,22 +685,6 @@ expression_factorial:   expression_factorial '!'
                                 header += "auto " + name + "(boost::node_proxy & __y, " + $3 + ") " + $5;
                                 
                                 $$ = "& " + name;
-                        }
-                        |
-                        expression_list '.' type
-                        {
-                                $$ = "bbpp::dereference(" + $1 +")." + $3;
-                        }
-                        ;
-
-terminal:               number
-                        {
-                                $$ = $1;
-                        }
-                        |
-                        type
-                        {
-                                $$ = $1;
                         }
                         ;
 
@@ -756,6 +740,22 @@ number:                 INTEGER
                         type_modifier ID
                         {
                                 $$ = $1 + " " + $2;
+                        }
+                        |
+                        expression_access
+                        {
+                                $$ = $1;
+                        }
+                        ;
+
+expression_access:      expression '.' ID
+                        {
+                                $$ = "bbpp::dereference(" + $1 +")." + $3;
+                        }
+                        |
+                        ID
+                        {
+                                $$ = $1;
                         }
                         ;
                         
