@@ -197,8 +197,9 @@ template <typename T>
 
         typedef smart_ptr::detail::node_ptr_base<T> base;
 
-        using base::share;
         using base::po_;
+        using base::share;
+        using base::header;
 
         /** Reference to the @c node_proxy node @c node_ptr<> belongs to. */
         mutable node_proxy const * px_;
@@ -280,8 +281,7 @@ template <typename T>
                 mutex::scoped_lock scoped_lock(node_proxy::static_mutex());
 #endif
                 
-                if (px_->depth() < p.px_->depth())
-                    propagate(p);
+                proxy(* p.px_);
 
                 base::operator = (p);
 
@@ -319,11 +319,16 @@ template <typename T>
         
         void proxy(node_proxy const & x) const
         {
-            if (px_ != & x)
+            if (x.depth() < px_->depth())
             {
                 px_ = & x;
                 
-                propagate(* this);
+                if (po_)
+                {
+                    header()->node_tag_.erase();
+                    boost::proxy(* px_, * po_);
+                    px_->init(header());
+                }
             }
         }
 
@@ -426,22 +431,6 @@ template <typename T>
                 p.po_ = 0;
             }
 #endif
-
-    private:
-        /**
-            Upscale the proxy of the operand.
-        */
-        
-        template <typename V>
-            void propagate(node_ptr<V> const & p) const
-            {
-                if (p.po_)
-                {
-                    p.header()->node_tag_.erase();
-                    boost::proxy(* px_, * p.po_);
-                    px_->init(p.header());
-                }
-            }
     };
 
 
