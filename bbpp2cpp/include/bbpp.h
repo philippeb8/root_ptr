@@ -23,10 +23,6 @@
 
 #include <boost/smart_ptr/root_ptr.hpp>
 
-#include <list>
-#include <string>
-#include <iostream>
-
 
 namespace bbpp
 {
