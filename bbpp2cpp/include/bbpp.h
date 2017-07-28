@@ -30,99 +30,6 @@
 
 namespace bbpp
 {
-#define CONSTRUCT_UNARY_FUNCTION(name, function)                                                                                                                \
-template <typename T>                                                                                                                                           \
-    inline auto operator_ ## name(boost::node_ptr<type> & __result, T const & p) -> decltype(function(p))                                                       \
-    {                                                                                                                                                           \
-        return function(p);                                                                                                                                     \
-    }                                                                                                                                                           \
-                                                                                                                                                                \
-    inline boost::node_ptr<type> operator_ ## name(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p)                                         \
-    {                                                                                                                                                           \
-        return __result = p->operator_ ## name(__result);                                                                                                       \
-    }
-
-#define CONSTRUCT_UNARY_PREOPERATOR(name, symbol)                                                                                                               \
-template <typename T>                                                                                                                                           \
-    inline auto operator_ ## name(boost::node_proxy & __y, T & p) -> decltype(p)                                                                       \
-    {                                                                                                                                                           \
-        return symbol p;                                                                                                                                        \
-    }                                                                                                                                                           \
-                                                                                                                                                                
-//    inline boost::node_ptr<type> operator_ ## name(boost::node_ptr<type> & __result, boost::node_ptr<type> & p)                                               \
-//    {                                                                                                                                                           \
-//        return __result = p->operator_ ## name(__result);                                                                                                       \
-//    }
-
-#define CONSTRUCT_UNARY_POSTOPERATOR(name, symbol)                                                                                                              \
-template <typename T>                                                                                                                                           \
-    inline auto operator_ ## name(boost::node_ptr<type> & __result, T const & p) -> decltype(p)                                                                 \
-    {                                                                                                                                                           \
-        return p symbol;                                                                                                                                        \
-    }                                                                                                                                                           \
-                                                                                                                                                                \
-    inline boost::node_ptr<type> operator_ ## name(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p)                                         \
-    {                                                                                                                                                           \
-        return __result = p->operator_ ## name(__result);                                                                                                       \
-    }
-
-#define CONSTRUCT_BINARY_FUNCTION(name, function)                                                                                                               \
-template <typename T, typename U>                                                                                                                               \
-    inline auto operator_ ## name(boost::node_ptr<type> & __result, T const & p, U const & q) -> decltype(function(p, q))                                       \
-    {                                                                                                                                                           \
-        return function(p, q);                                                                                                                                  \
-    }                                                                                                                                                           \
-                                                                                                                                                                \
-    inline boost::node_ptr<type> operator_ ## name(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p, boost::node_ptr<type> const & q)        \
-    {                                                                                                                                                           \
-        return __result = p->operator_ ## name(__result, q);                                                                                                    \
-    }
-
-#define CONSTRUCT_BINARY_OPERATOR(name, symbol)                                                                                                                 \
-template <typename T, typename U>                                                                                                                               \
-    inline auto operator_ ## name(boost::node_proxy & __y, T const & p, U const & q) -> decltype(p symbol q)                                           \
-    {                                                                                                                                                           \
-        return p symbol q;                                                                                                                                      \
-    }                                                                                                                                                           \
-                                                                                                                                                                
-//    inline boost::node_ptr<type> operator_ ## name(boost::node_ptr<type> & __result, boost::node_ptr<type> const & p, boost::node_ptr<type> const & q)        \
-//    {                                                                                                                                                           \
-//        return __result = p->operator_ ## name(__result, q);                                                                                                    \
-//    }
-
-/*
-CONSTRUCT_BINARY_OPERATOR(add, +)
-CONSTRUCT_BINARY_OPERATOR(sub, -)
-CONSTRUCT_BINARY_OPERATOR(mul, *)
-CONSTRUCT_BINARY_OPERATOR(div, /)
-CONSTRUCT_BINARY_OPERATOR(mod, %)
-CONSTRUCT_UNARY_PREOPERATOR(not, not)
-CONSTRUCT_BINARY_OPERATOR(or, or)
-CONSTRUCT_BINARY_OPERATOR(xor, xor)
-CONSTRUCT_BINARY_OPERATOR(and, and)
-CONSTRUCT_BINARY_OPERATOR(equal, ==)
-*/
-CONSTRUCT_BINARY_OPERATOR(less, <)
-/*
-CONSTRUCT_BINARY_OPERATOR(greater, >)
-CONSTRUCT_BINARY_OPERATOR(notequal, !=)
-CONSTRUCT_BINARY_OPERATOR(lessequal, <=)
-CONSTRUCT_BINARY_OPERATOR(greaterequal, >=)
-//CONSTRUCT_BINARY_OPERATOR(leftshift, <<)
-//CONSTRUCT_BINARY_OPERATOR(rightshift, >>)
-CONSTRUCT_BINARY_FUNCTION(pow, pow)
-CONSTRUCT_UNARY_FUNCTION(abs, abs)
-CONSTRUCT_UNARY_PREOPERATOR(neg, -)
-//CONSTRUCT_BINARY_OPERATOR(factorial, std::factorial())
-*/
-CONSTRUCT_UNARY_PREOPERATOR(preinc, ++)
-/*
-CONSTRUCT_UNARY_PREOPERATOR(predec, --)
-CONSTRUCT_UNARY_POSTOPERATOR(postinc, ++)
-CONSTRUCT_UNARY_POSTOPERATOR(postdec, --)
-*/
-
-
 template <typename T>
     inline T & dereference(boost::node_ptr<T> & t)
     {
@@ -170,6 +77,69 @@ template <typename T>
     {
         return t;
     }        
+
+    
+#define CONSTRUCT_UNARY_FUNCTION(name, function)                                     \
+template <typename T>                                                                \
+    inline auto operator_ ## name(boost::node_proxy & __y, T const & p)              \
+    {                                                                                \
+        return function(dereference(p));                                             \
+    }                                                                                
+
+#define CONSTRUCT_UNARY_PREOPERATOR(name, symbol)                                    \
+template <typename T>                                                                \
+    inline auto operator_ ## name(boost::node_proxy & __y, T & p)                    \
+    {                                                                                \
+        return symbol dereference(p);                                                \
+    }                                                                                
+
+#define CONSTRUCT_UNARY_POSTOPERATOR(name, symbol)                                   \
+template <typename T>                                                                \
+    inline auto operator_ ## name(boost::node_proxy & __y, T const & p)              \
+    {                                                                                \
+        return dereference(p) symbol;                                                \
+    }                                                                                
+
+#define CONSTRUCT_BINARY_FUNCTION(name, function)                                    \
+template <typename T, typename U>                                                    \
+    inline auto operator_ ## name(boost::node_proxy & __y, T const & p, U const & q) \
+    {                                                                                \
+        return function(dereference(p), dereference(q));                             \
+    }                                                                                
+
+#define CONSTRUCT_BINARY_OPERATOR(name, symbol)                                      \
+template <typename T, typename U>                                                    \
+    inline auto operator_ ## name(boost::node_proxy & __y, T const & p, U const & q) \
+    {                                                                                \
+        return dereference(p) symbol dereference(q);                                 \
+    }                                                                                                                                                           
+          
+
+CONSTRUCT_BINARY_OPERATOR(add, +)
+CONSTRUCT_BINARY_OPERATOR(sub, -)
+CONSTRUCT_BINARY_OPERATOR(mul, *)
+CONSTRUCT_BINARY_OPERATOR(div, /)
+CONSTRUCT_BINARY_OPERATOR(mod, %)
+CONSTRUCT_UNARY_PREOPERATOR(not, not)
+CONSTRUCT_BINARY_OPERATOR(or, or)
+CONSTRUCT_BINARY_OPERATOR(xor, xor)
+CONSTRUCT_BINARY_OPERATOR(and, and)
+CONSTRUCT_BINARY_OPERATOR(equal, ==)
+CONSTRUCT_BINARY_OPERATOR(less, <)
+CONSTRUCT_BINARY_OPERATOR(greater, >)
+CONSTRUCT_BINARY_OPERATOR(notequal, !=)
+CONSTRUCT_BINARY_OPERATOR(lessequal, <=)
+CONSTRUCT_BINARY_OPERATOR(greaterequal, >=)
+//CONSTRUCT_BINARY_OPERATOR(leftshift, <<)
+//CONSTRUCT_BINARY_OPERATOR(rightshift, >>)
+CONSTRUCT_BINARY_FUNCTION(pow, pow)
+CONSTRUCT_UNARY_FUNCTION(abs, abs)
+CONSTRUCT_UNARY_PREOPERATOR(neg, -)
+//CONSTRUCT_BINARY_OPERATOR(factorial, std::factorial())
+CONSTRUCT_UNARY_PREOPERATOR(preinc, ++)
+CONSTRUCT_UNARY_PREOPERATOR(predec, --)
+CONSTRUCT_UNARY_POSTOPERATOR(postinc, ++)
+CONSTRUCT_UNARY_POSTOPERATOR(postdec, --)
 }
     
 #endif
