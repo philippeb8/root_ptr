@@ -100,15 +100,10 @@ public:
 
 
     /**
-        Copy of a single @c node_proxy and unification.
+        Disabled copy constructor.
     */
 
-    node_proxy(node_proxy const & x)
-    : depth_(static_depth() ++)
-    , destroying_(x.destroying_)
-    , node_list_(x.node_list_)
-    {
-    }
+    node_proxy(node_proxy const & x) = delete;
 
 
     /**
