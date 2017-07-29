@@ -8,5 +8,5 @@ int main()
     };
     
     for (int i = 0; i < 1000000; ++ i)
-        cout << foo()(temporary) << endl;
+        cout << (foo()(temporary) * i) << endl;
 }
