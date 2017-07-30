@@ -16,3 +16,7 @@ $ time ./tmp
 $ time js tests/input3.js  
 
 BBPP2CPP is 4 times faster than Node.JS, there is no lag and the errors are reported at compile-time.
+
+
+Here's a 5 minutes long documentary:  
+https://youtu.be/vXmddU_FS30  
