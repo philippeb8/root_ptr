@@ -19,6 +19,10 @@
 #define BOOST_DETAIL_NODE_PTR_BASE_HPP
 
 
+#include <vector>
+#include <iostream>
+#include <stdexcept>
+
 #include <boost/smart_ptr/detail/classof.hpp>
 #include <boost/smart_ptr/detail/node_base.hpp>
 
@@ -54,7 +58,7 @@ template <typename T>
 
     public:
         node_ptr_common() 
-        : po_(0)
+        : po_(nullptr)
         {
         }
 
@@ -119,56 +123,13 @@ template <typename T>
             return po_;
         }
 
-        void reset(value_type * p = 0)
+        void reset(value_type * p = nullptr)
         {
             if (po_)
             {
                 header()->release();
             }
             po_ = p;
-        }
-
-#if ( defined(__SUNPRO_CC) && BOOST_WORKAROUND(__SUNPRO_CC, < 0x570) ) || defined(__CINT__)
-        operator bool () const
-        {
-            return po_ != 0;
-        }
-#elif defined( _MANAGED )
-        static void unspecified_bool( this_type*** )
-        {
-        }
-
-        typedef void (*unspecified_bool_type)( this_type*** );
-
-        operator unspecified_bool_type() const // never throws
-        {
-            return po_ == 0? 0: unspecified_bool;
-        }
-#elif \
-        ( defined(__MWERKS__) && BOOST_WORKAROUND(__MWERKS__, < 0x3200) ) || \
-        ( defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ < 304) ) || \
-        ( defined(__SUNPRO_CC) && BOOST_WORKAROUND(__SUNPRO_CC, <= 0x590) )
-
-        typedef value_type * (this_type::*unspecified_bool_type)() const;
-        
-        operator unspecified_bool_type() const // never throws
-        {
-            return po_ == 0? 0: &this_type::get;
-        }
-#else 
-        typedef value_type * this_type::*unspecified_bool_type;
-
-        operator unspecified_bool_type() const // never throws
-        {
-            return po_ == 0? 0: &this_type::po_;
-        }
-#endif
-
-        // operator! is redundant, but some compilers need it
-
-        bool operator! () const // never throws
-        {
-            return po_ == 0;
         }
 
         long use_count() const // never throws
@@ -193,181 +154,6 @@ template <typename T>
                 )
             );
         }
-    };
-
-
-template <typename T>
-    class node_ptr_base : public node_ptr_common<T>
-    {
-        typedef node_ptr_common<T> base;
-        typedef typename base::value_type value_type;
-        
-    protected:
-        using base::po_;
-
-    public:
-        node_ptr_base() 
-        : base()
-        {
-        }
-
-        template <typename V, typename PoolAllocator>
-            node_ptr_base(node<V, PoolAllocator> * p) 
-            : base(p)
-            {
-            }
-
-        template <typename V>
-            node_ptr_base(node_ptr_base<V> const & p) 
-            : base(p)
-            {
-            }
-
-            node_ptr_base(node_ptr_base<value_type> const & p) 
-            : base(p)
-            {
-            }
-
-        template <typename V, typename PoolAllocator>
-            node_ptr_base & operator = (node<V, PoolAllocator> * p)
-            {
-                return static_cast<node_ptr_base &>(base::operator = (p));
-            }
-
-        template <typename V>
-            node_ptr_base & operator = (node_ptr_base<V> const & p)
-            {
-                return static_cast<node_ptr_base &>(base::operator = (p));
-            }
-
-            node_ptr_base & operator = (node_ptr_base<value_type> const & p)
-            {
-                return static_cast<node_ptr_base &>(base::operator = (p));
-            }
-
-        value_type & operator * () const
-        {
-            return * po_;
-        }
-
-        value_type * operator -> () const
-        {
-            return po_;
-        }
-    };
-
-
-#if !defined(_MSC_VER)
-template <typename T, size_t N>
-    class node_ptr_base<T [N]> : public node_ptr_common<T [N]>
-    {
-        typedef node_ptr_common<T [N]> base;
-        typedef typename base::value_type value_type;
-
-    protected:
-        using base::po_;
-
-    public:
-        node_ptr_base() 
-        : base()
-        {
-        }
-
-        template <typename V, typename PoolAllocator>
-            node_ptr_base(node<V, PoolAllocator> * p) 
-            : base(p)
-            {
-            }
-
-        template <typename V>
-            node_ptr_base(node_ptr_base<V> const & p) 
-            : base(p)
-            {
-            }
-
-            node_ptr_base(node_ptr_base<value_type> const & p) 
-            : base(p)
-            {
-            }
-
-        template <typename V, typename PoolAllocator>
-            node_ptr_base & operator = (node<V, PoolAllocator> * p)
-            {
-                return static_cast<node_ptr_base &>(base::operator = (p));
-            }
-
-        template <typename V>
-            node_ptr_base & operator = (node_ptr_base<V> const & p)
-            {
-                return static_cast<node_ptr_base &>(base::operator = (p));
-            }
-
-            node_ptr_base & operator = (node_ptr_base<value_type> const & p)
-            {
-                return static_cast<node_ptr_base &>(base::operator = (p));
-            }
-
-        T & operator [] (std::size_t n)
-        {
-            return * (* po_ + n);
-        }
-
-        T const & operator [] (std::size_t n) const
-        {
-            return * (* po_ + n);
-        }
-    };
-#endif
-
-
-template <>
-    class node_ptr_base<void> : public node_ptr_common<void>
-    {
-        typedef node_ptr_common<void> base;
-        typedef typename base::value_type value_type;
-
-    protected:
-        using base::po_;
-
-    public:
-        node_ptr_base() 
-        : base()
-        {
-        }
-
-        template <typename V, typename PoolAllocator>
-            node_ptr_base(node<V, PoolAllocator> * p) 
-            : base(p)
-            {
-            }
-
-        template <typename V>
-            node_ptr_base(node_ptr_base<V> const & p) 
-            : base(p)
-            {
-            }
-
-            node_ptr_base(node_ptr_base<value_type> const & p) 
-            : base(p)
-            {
-            }
-
-        template <typename V, typename PoolAllocator>
-            node_ptr_base & operator = (node<V, PoolAllocator> * p)
-            {
-                return static_cast<node_ptr_base &>(base::operator = (p));
-            }
-
-        template <typename V>
-            node_ptr_base & operator = (node_ptr_base<V> const & p)
-            {
-                return static_cast<node_ptr_base &>(base::operator = (p));
-            }
-
-            node_ptr_base & operator = (node_ptr_base<value_type> const & p)
-            {
-                return static_cast<node_ptr_base &>(base::operator = (p));
-            }
     };
 
 

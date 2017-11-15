@@ -23,6 +23,7 @@
 # pragma once
 #endif
 
+#include <array>
 #include <limits>
 #include <type_traits>
 
@@ -93,6 +94,11 @@ protected:
         return 0; 
     }
     
+    virtual void * get_local_deleter(std::type_info const &)
+    { 
+        return 0; 
+    }
+    
     virtual void * get_untyped_deleter()
     { 
         return 0; 
@@ -108,20 +114,6 @@ protected:
 #define TEMPLATE_DECL(z, n, text) BOOST_PP_COMMA_IF(n) typename T ## n
 #define ARGUMENT_DECL(z, n, text) BOOST_PP_COMMA_IF(n) T ## n const & t ## n
 #define PARAMETER_DECL(z, n, text) BOOST_PP_COMMA_IF(n) t ## n
-
-#define CONSTRUCT_NODE1(z, n, text)                                                                                             \
-    template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                                             \
-        text(BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : a_(static_pool())                                                          \
-        {                                                                                                                       \
-            container::allocator_traits<allocator_type>::construct(a_, element(), BOOST_PP_REPEAT(n, PARAMETER_DECL, 0));       \
-        }
-
-#define CONSTRUCT_NODE2(z, n, text)                                                                                             \
-    template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                                             \
-        text(allocator_type const & a, BOOST_PP_REPEAT(n, ARGUMENT_DECL, 0)) : a_(a)                                            \
-        {                                                                                                                       \
-            container::allocator_traits<allocator_type>::construct(a_, element(), BOOST_PP_REPEAT(n, PARAMETER_DECL, 0));       \
-        }
 
 #define CONSTRUCT_NODE3(z, n, text)                                                                                             \
     template <BOOST_PP_REPEAT(n, TEMPLATE_DECL, 0)>                                                                             \
@@ -159,6 +151,10 @@ template <typename T>
         
     public:
         typedef T data_type;
+
+        node_element()
+        {
+        }
 
         /**
             Cast operator used by @c node_ptr_common::header() .
@@ -205,6 +201,10 @@ template <>
         
     public:
         typedef int data_type;
+
+        node_element()
+        {
+        }
 
         /**
             Cast operator used by @c node_ptr_common::header() .
@@ -283,8 +283,19 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             container::allocator_traits<allocator_type>::construct(a_, element());
         }
 
-        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE1, node)
-        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE2, node)
+        template <typename... Args>
+            node(Args const &... args) 
+            : a_(static_pool())
+            {
+                container::allocator_traits<allocator_type>::construct(a_, element(), args...);
+            }
+
+        template <typename... Args>
+            node(allocator_type const & a, Args const &... args)
+            : a_(a)
+            {
+                container::allocator_traits<allocator_type>::construct(a_, element(), args...);
+            }
 
 
         /**
@@ -375,6 +386,179 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
     private:
         using node_element<T>::elem_;
+        
+        /** 
+            Static pool.
+            
+            This is where all @c node are allocated when @c PoolAllocator is not 
+            explicitly specified in the constructor. 
+         */
+        
+        static allocator_type & static_pool()
+        {
+            static allocator_type pool_;
+            
+            return pool_;
+        }
+
+        /** Copy of the @c PoolAllocator to be used. */
+        allocator_type a_;        
+    };
+
+
+/**
+    Pointee object & allocator wrapper.
+    
+    Main class used to instanciate pointee objects and a copy of the allocator desired.
+*/
+
+template <typename T, int S, typename PoolAllocator>
+    class node<T [S], PoolAllocator> : public node_element<T [S]>
+    {
+    public:
+        typedef T data_type[S];
+        typedef std::array<T, S> destroy_data_type;
+        typedef typename PoolAllocator::template rebind< node<T [S], PoolAllocator> >::other allocator_type;
+
+        
+        /**
+            Initialization of a pointee object.
+            
+            @note Will use a static copy of the allocator which has no parameter.
+        */
+        
+        node() 
+        : a_(static_pool())
+        {
+            container::allocator_traits<allocator_type>::construct(a_, element());
+        }
+        
+
+        /**
+            Initialization of a pointee object.
+            
+            @param  a   Allocator to copy.
+        */
+        
+        node(allocator_type const & a) 
+        : a_(a)
+        {
+            container::allocator_traits<allocator_type>::construct(a_, element());
+        }
+
+        template <typename... Args>
+            node(Args const &... args) 
+            : a_(static_pool())
+            {
+                container::allocator_traits<allocator_type>::construct(a_, element(), args...);
+            }
+
+        template <typename... Args>
+            node(allocator_type const & a, Args const &... args)
+            : a_(a)
+            {
+                container::allocator_traits<allocator_type>::construct(a_, element(), args...);
+            }
+
+
+        /**
+            @return		Pointee object address.
+        */
+        
+        data_type * element()
+        { 
+            return reinterpret_cast<data_type *>(& elem_); 
+        }
+
+
+        /**
+            @return		Pointee object address.
+        */
+        
+        destroy_data_type * destroy_element()
+        { 
+            return reinterpret_cast<destroy_data_type *>(& elem_); 
+        }
+
+
+        /**
+            Destructor.
+        */
+        
+        virtual ~node()
+        {
+            container::allocator_traits<allocator_type>::destroy(a_, destroy_element());
+        }
+
+        
+        /**
+            Allocates a new @c node using the static copy of @c PoolAllocator to be used.
+            
+            @param  s   Disregarded.
+            @return     Pointer of the new @c node.
+        */
+
+        void * operator new (size_t s)
+        {
+            return static_pool().allocate(1);
+        }
+
+
+        /**
+            Allocates a new @c node .
+            
+            @param  s   Disregarded.
+            @param  a   Copy of @c PoolAllocator to be used.
+            @return     Pointer of the new @c node.
+        */
+
+        void * operator new (size_t s, allocator_type a)
+        {
+            return a.allocate(1);
+        }
+
+
+        /**
+            Allocates a new @c node .
+            
+            @param  a   Copy of @c PoolAllocator to be used.
+            @return     Pointer of the new @c node.
+        */
+
+        static node<T> * allocate(allocator_type const & a)
+        {
+            return new (a) node<T>(a);
+        }
+
+        BOOST_PP_REPEAT_FROM_TO(1, 10, ALLOCATE_NODE1, allocate)
+
+        
+        /**
+            Deallocates a @c node from @c PoolAllocator .
+            
+            @param  p   Address of the @c node to deallocate.
+        */
+        
+        void operator delete (void * p)
+        {
+            static_cast<node *>(p)->a_.deallocate(static_cast<node *>(p), 1);
+        }
+
+
+        /**
+            Deallocates a @c node from @c PoolAllocator .
+
+            @param  p   Address of the @c node to deallocate.
+            @param  a   Copy of @c PoolAllocator to be used.
+        */
+
+        void operator delete (void * p, allocator_type a)
+        {
+            a.deallocate(static_cast<node *>(p), 1);
+        }
+
+    private:
+        using node_element<T [S]>::elem_;
         
         /** 
             Static pool.
