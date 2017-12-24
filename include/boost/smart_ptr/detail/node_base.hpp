@@ -257,7 +257,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         typedef T data_type;
         typedef typename PoolAllocator::template rebind< node<T, PoolAllocator> >::other allocator_type;
 
-        
+
         /**
             Initialization of a pointee object.
             
@@ -283,16 +283,16 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             container::allocator_traits<allocator_type>::construct(a_, element());
         }
 
+        
         template <typename... Args>
             node(Args const &... args) 
-            : a_(static_pool())
             {
                 container::allocator_traits<allocator_type>::construct(a_, element(), args...);
             }
 
+
         template <typename... Args>
             node(allocator_type const & a, Args const &... args)
-            : a_(a)
             {
                 container::allocator_traits<allocator_type>::construct(a_, element(), args...);
             }
@@ -317,7 +317,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             container::allocator_traits<allocator_type>::destroy(a_, element());
         }
 
-        
+
         /**
             Allocates a new @c node using the static copy of @c PoolAllocator to be used.
             
@@ -384,9 +384,11 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             a.deallocate(static_cast<node *>(p), 1);
         }
 
+        
     private:
         using node_element<T>::elem_;
-        
+
+
         /** 
             Static pool.
             
@@ -577,86 +579,6 @@ template <typename T, int S, typename PoolAllocator>
         /** Copy of the @c PoolAllocator to be used. */
         allocator_type a_;        
     };
-
-
-/**
-    Pointee object & allocator wrapper.
-    
-    Main class used to instanciate pointee objects and a copy of the allocator desired.
-    
-    @note Uses @c fast_pool_allocator to instanciate the pointee object.
-*/
-
-template <typename T>
-    class fastnode : public node<T, fast_pool_allocator<T> >
-    {
-        typedef node<T, fast_pool_allocator<T> > base;
-        
-    public:
-        using typename base::allocator_type;
-        
-        
-        /**
-            Initialization of a pointee object.
-            
-            @note Will use a static copy of the allocator with no parameter.
-        */
-        
-        fastnode() 
-        : base()
-        {
-        }
-        
-
-        /**
-            Initialization of a pointee object.
-            
-            @param  a   Allocator to copy.
-        */
-        
-        fastnode(allocator_type const & a) 
-        : base(a)
-        {
-        }
-
-
-        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE3, fastnode)
-        BOOST_PP_REPEAT_FROM_TO(1, 10, CONSTRUCT_NODE4, fastnode)
-    };
-
-    
-/**
-    Allocates a new @c node using the respective allocator.
-    
-    @param  a   Allocator to be used.
-    @param  args Arguments forwarded to the new object's constructor.
-
-    @note Calls @c node::allocate .
-*/
-
-template<typename T, class Alloc, typename... Args>
-    node<T, Alloc> * allocate_node(const Alloc& a, Args&&... args)
-    {
-        return node<T, Alloc>::allocate(a, args...);
-    }
-    
-    
-/**
-    Instanciates an allocator.
-    
-    @param  args Arguments forwarded to the allocator's constructor.
-
-    @note Instanciates a @c node::allocator_type .
-*/
-
-template<template <typename, typename...> class Alloc, typename T, typename... Args>
-    typename node<T, Alloc<T> >::allocator_type make_node_allocator(Args&&... args)
-    {
-        return typename node<T, Alloc<T> >::allocator_type(args...);
-    }
-    
-    
-BOOST_PP_REPEAT_FROM_TO(1, 10, MAKE_NODE_ALLOCATOR1, make_node_allocator)
     
     
 } // namespace boost
