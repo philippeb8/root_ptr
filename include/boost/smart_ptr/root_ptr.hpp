@@ -1119,9 +1119,9 @@ template <typename T, size_t S>
 */
 
 template <typename V, typename... Args, typename PoolAllocator = pool_allocator<V> >
-    inline node_ptr<V> make_node(Args const &... args)
+    inline node_ptr<V> make_node(node_proxy const & __y, Args const &... args)
     {
-        return node_ptr<V>(new node<V, PoolAllocator>(args...));
+        return node_ptr<V>(__y, new node<V, PoolAllocator>(args...));
     }
 
     

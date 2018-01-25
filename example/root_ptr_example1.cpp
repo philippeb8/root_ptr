@@ -25,10 +25,11 @@ using namespace boost;
 
 struct A
 {
+    node_proxy const & x;
     int i;
-    node_ptr<A> p;
+    node_ptr<A> p = node_ptr<A>(x);
     
-    A(node_proxy const & x, int i = 0) : i(i), p(x)
+    A(node_proxy const & x, int i = 0) : x(x), i(i)
     {
         cout << BOOST_CURRENT_FUNCTION << ": " << i << endl;
     }
@@ -44,18 +45,20 @@ struct B
     int i;
     
     B() : i(9) {}
+    
+    virtual ~B() {}
 };
 
 struct C : B
 {
 };
 
-root_ptr<int> foo()
+node_ptr<int> foo(node_proxy const & y)
 {
-    return make_root<int>(9);
+    return make_node<int>(y, 9);
 }
 
-void bar(node_ptr<B> p)
+void bar(node_proxy const & y, node_ptr<B> p)
 {
     cout << p->i << endl;
 }
@@ -64,22 +67,32 @@ int main()
 {
     cout << "R-value:" << endl;
     {
-        cout << * foo() << endl;
+        node_proxy x;
+        cout << * foo(x) << endl;
     }
     cout << endl;
 
     cout << "Slicing:" << endl;
     {
-        root_ptr<C> p = make_root<C>();
-        bar(p);
+        node_proxy x;
+        node_ptr<C> p = make_node<C>(x);
+        bar(x, p);
+    }
+    cout << endl;
+	
+    cout << "Downcasting:" << endl;
+    {
+        node_proxy x;
+        node_ptr<C> p = make_node<B>(x);
+        cout << p.get() << endl;
     }
     cout << endl;
 	
 #if 0
     cout << "Sharing:" << endl;
     {
-        root_ptr<int> p = make_root<int>(9);
-        root_ptr<int> q = p;
+        node_ptr<int> p = make_node<int>(9);
+        node_ptr<int> q = p;
         
         cout << "p: " << * p << endl;
         cout << "q: " << * q << endl;
@@ -90,7 +103,7 @@ int main()
 #if 1
     cout << "Cyclicism:" << endl;
     {
-        root_ptr<A> x;
+        node_proxy x;
         node_ptr<A> p = make_node<A>(x, x, 7);
         node_ptr<A> q = make_node<A>(x, x, 8);
         node_ptr<A> r = make_node<A>(x, x, 9);
@@ -113,7 +126,7 @@ int main()
 #if 0 //! defined(_MSC_VER)
     cout << "Array access:" << endl;
     {
-        root_ptr<char[9]> u(new node<char[9]>());
+        node_ptr<char[9]> u(new node<char[9]>());
 
         u[4] = 'Z';
 
@@ -125,7 +138,7 @@ int main()
 
     cout << "Order of destruction:" << endl;
     {
-        root_ptr<A> x;
+        node_proxy x;
         node_ptr<A> v = make_node<A>(x, x, 0);
         v->p = make_node<A>(x, x, 1);
         v->p->p = make_node<A>(x, x, 2);

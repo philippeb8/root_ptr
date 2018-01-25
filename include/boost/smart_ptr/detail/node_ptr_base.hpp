@@ -78,7 +78,7 @@ template <typename T>
 
         template <typename V>
             node_ptr_common(node_ptr_common<V> const & p) 
-            : po_(reinterpret_cast<value_type *>(p.share()))
+            : po_(dynamic_cast<value_type *>(p.share()))
             {
             }
 
@@ -108,6 +108,36 @@ template <typename T>
             {
                 return operator = <value_type>(p);
             }
+
+        T & operator * () const
+        {
+            return * po_;
+        }
+
+        T * operator -> () const
+        {
+            return po_;
+        }
+        
+        operator bool () const
+        {
+            return po_ != 0;
+        }
+
+        bool operator ! () const
+        {
+            return po_ == 0;
+        }
+
+        operator T * ()
+        {
+            return po_;
+        }
+
+        operator T const * () const
+        {
+            return po_;
+        }
 
         value_type * get() const
         {
