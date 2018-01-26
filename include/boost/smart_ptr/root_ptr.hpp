@@ -355,6 +355,34 @@ template <typename T>
             @param  p New pointer to manage.
         */
 
+        template <typename V>
+            node_ptr(node_ptr<V> const & p, smart_ptr::detail::static_cast_tag const & t)
+            : base(p, t)
+            , px_(p.px_)
+            {
+            }
+
+
+        /**
+            Initialization of a pointer.
+
+            @param  p New pointer to manage.
+        */
+
+        template <typename V>
+            node_ptr(node_ptr<V> const & p, smart_ptr::detail::dynamic_cast_tag const & t)
+            : base(p, t)
+            , px_(p.px_)
+            {
+            }
+
+
+        /**
+            Initialization of a pointer.
+
+            @param  p New pointer to manage.
+        */
+
             node_ptr(node_ptr<T> const & p)
             : base(p)
             , px_(p.px_)
@@ -1122,6 +1150,28 @@ template <typename V, typename... Args, typename PoolAllocator = pool_allocator<
     inline node_ptr<V> make_node(node_proxy const & __y, Args const &... args)
     {
         return node_ptr<V>(__y, new node<V, PoolAllocator>(args...));
+    }
+
+
+/**
+    Static cast.
+*/
+
+template <typename T, typename V>
+    inline node_ptr<T> static_pointer_cast(node_ptr<V> const & p)
+    {
+        return node_ptr<T>(p, smart_ptr::detail::static_cast_tag());
+    }
+
+
+/**
+    Dynamic cast.
+*/
+
+template <typename T, typename V>
+    inline node_ptr<T> dynamic_pointer_cast(node_ptr<V> const & p)
+    {
+        return node_ptr<T>(p, smart_ptr::detail::dynamic_cast_tag());
     }
 
     

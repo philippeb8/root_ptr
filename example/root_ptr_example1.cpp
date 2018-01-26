@@ -83,7 +83,7 @@ int main()
     cout << "Downcasting:" << endl;
     {
         node_proxy x;
-        node_ptr<C> p = make_node<B>(x);
+        node_ptr<C> p = dynamic_pointer_cast<C>(make_node<B>(x));
         cout << p.get() << endl;
     }
     cout << endl;
@@ -109,11 +109,11 @@ int main()
         node_ptr<A> r = make_node<A>(x, x, 9);
 
         //node_ptr<void> t = make_node<A>(10);
-        node_ptr<int volatile> v = make_node<int volatile>(x, 11);
+        node_ptr<int> v = make_node<int>(x, 11);
 
         p->p = p->p;
         q = r;
-        v = make_node<int volatile>(x, 12);
+        v = make_node<int>(x, 12);
 
         cout << "p->i = " << p->i << endl;
         cout << "q->i = " << q->i << endl;

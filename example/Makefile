@@ -1,5 +1,5 @@
 CXX             := g++
-CXXFLAGS        := -fpermissive -O3 -std=c++17 -DBOOST_LOG_DYN_LINK -DBOOST_STACKTRACE_USE_BACKTRACE 
+CXXFLAGS        := -O2 -std=c++17 -DBOOST_LOG_DYN_LINK -DBOOST_STACKTRACE_USE_BACKTRACE 
 INCPATH         := -I../include -I/usr/local/include
 LINK            := g++
 LFLAGS          := -L/usr/local/lib -lboost_stacktrace_backtrace -lboost_log -lboost_system -lpthread -ldl

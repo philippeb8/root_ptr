@@ -37,6 +37,10 @@ namespace detail
 {
 
 
+struct static_cast_tag {};
+struct dynamic_cast_tag {};
+
+
 /**
     Smart pointer optimized for speed and memory usage.
     
@@ -78,6 +82,18 @@ template <typename T>
 
         template <typename V>
             node_ptr_common(node_ptr_common<V> const & p) 
+            : po_(p.share())
+            {
+            }
+
+        template <typename V>
+            node_ptr_common(node_ptr_common<V> const & p, static_cast_tag const &) 
+            : po_(static_cast<value_type *>(p.share()))
+            {
+            }
+
+        template <typename V>
+            node_ptr_common(node_ptr_common<V> const & p, dynamic_cast_tag const &) 
             : po_(dynamic_cast<value_type *>(p.share()))
             {
             }
