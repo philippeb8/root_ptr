@@ -178,7 +178,7 @@ private:
 
         for (intrusive_list::iterator<node_base, &node_base::node_tag_> m = node_list_.begin(), n = node_list_.begin(); m != node_list_.end(); m = n)
         {
-            BOOST_LOG_TRIVIAL(info) << "<cycle>:" << boost::stacktrace::stacktrace(3, 1);
+            //BOOST_LOG_TRIVIAL(info) << "<cycle>:" << boost::stacktrace::stacktrace(3, 1);
             
             ++ n;
             delete &* m;
@@ -344,34 +344,6 @@ template <typename T>
         template <typename V>
             node_ptr(node_ptr<V> const & p)
             : base(p)
-            , px_(p.px_)
-            {
-            }
-
-
-        /**
-            Initialization of a pointer.
-
-            @param  p New pointer to manage.
-        */
-
-        template <typename V>
-            node_ptr(node_ptr<V> const & p, smart_ptr::detail::static_cast_tag const & t)
-            : base(p, t)
-            , px_(p.px_)
-            {
-            }
-
-
-        /**
-            Initialization of a pointer.
-
-            @param  p New pointer to manage.
-        */
-
-        template <typename V>
-            node_ptr(node_ptr<V> const & p, smart_ptr::detail::dynamic_cast_tag const & t)
-            : base(p, t)
             , px_(p.px_)
             {
             }
@@ -758,8 +730,8 @@ template <>
 
         ~root_ptr()
         {
-            if (po_ && ! cyclic() && header()->use_count() == 1)
-                BOOST_LOG_TRIVIAL(info) << "\"" << pn_ << "\":" << boost::stacktrace::stacktrace(1, 1);
+            //if (po_ && ! cyclic() && header()->use_count() == 1)
+            //    BOOST_LOG_TRIVIAL(info) << "\"" << pn_ << "\":" << boost::stacktrace::stacktrace(1, 1);
         }
     };
 
@@ -1032,13 +1004,13 @@ template <typename T>
 
         friend std::ostream & operator << (std::ostream & os, root_ptr const & o) 
         {
-            return os << o.operator T * ();
+            return os << o.operator T const * ();
         }
         
         ~root_ptr()
         {
-            if (po_ && ! cyclic() && header()->use_count() == 1)
-                BOOST_LOG_TRIVIAL(info) << "\"" << pn_ << "\":" << boost::stacktrace::stacktrace(1, 1);
+            //if (po_ && ! cyclic() && header()->use_count() == 1)
+            //    BOOST_LOG_TRIVIAL(info) << "\"" << pn_ << "\":" << boost::stacktrace::stacktrace(1, 1);
         }
     };
 
@@ -1047,9 +1019,9 @@ template <typename T>
     struct construct
     {
         template <typename... Args>
-            inline T operator () (node_proxy const & __y, char const * n, Args const &... args)
+            inline T operator () (node_proxy const & __y, char const * n, Args &&... args)
             {
-                return T(args...);
+                return T(std::forward<Args>(args)...);
             }
     };
 
@@ -1057,9 +1029,9 @@ template <typename T, size_t S>
     struct construct<root_array<T, S>>
     {
         template <typename... Args>
-            inline root_array<T, S> operator () (node_proxy const & __y, char const * n, Args const &... args)
+            inline root_array<T, S> operator () (node_proxy const & __y, char const * n, Args &&... args)
             {
-                return root_array<T, S>(__y, args...);
+                return root_array<T, S>(__y, std::forward<Args>(args)...);
             }
     };
 
@@ -1067,9 +1039,9 @@ template <typename T>
     struct construct<root_ptr<T>>
     {
         template <typename... Args>
-            inline root_ptr<T> operator () (node_proxy const & __y, char const * n, Args const &... args)
+            inline root_ptr<T> operator () (node_proxy const & __y, char const * n, Args &&... args)
             {
-                return root_ptr<T>(__y, n, args...);
+                return root_ptr<T>(__y, n, std::forward<Args>(args)...);
             }
     };
 
@@ -1077,14 +1049,14 @@ template <typename T>
     struct create
     {
         template <typename... Args>
-            inline node<std::vector<T>, boost::pool_allocator<std::vector<T>>> * operator () (node_proxy const & __y, size_t s, Args const &... args)
+            inline node<std::vector<T>> * operator () (node_proxy const & __y, size_t s, Args &&... args)
             {
-                return new node<std::vector<T>, boost::pool_allocator<std::vector<T>>>(s, construct<T>()(__y, "", args...));
+                return new node<std::vector<T>>(s, construct<T>()(__y, "", std::forward<Args>(args)...));
             }
             
-            inline node<std::vector<T>, boost::pool_allocator<std::vector<T>>> * operator () (node_proxy const & __y, std::initializer_list<T> const & l)
+            inline node<std::vector<T>> * operator () (node_proxy const & __y, std::initializer_list<T> const & l)
             {
-                return new node<std::vector<T>, boost::pool_allocator<std::vector<T>>>(l);
+                return new node<std::vector<T>>(l);
             }
     };
 
@@ -1147,31 +1119,9 @@ template <typename T, size_t S>
 */
 
 template <typename V, typename... Args, typename PoolAllocator = pool_allocator<V> >
-    inline node_ptr<V> make_node(node_proxy const & __y, Args const &... args)
+    inline node_ptr<V> make_node(Args &&... args)
     {
-        return node_ptr<V>(__y, new node<V, PoolAllocator>(args...));
-    }
-
-
-/**
-    Static cast.
-*/
-
-template <typename T, typename V>
-    inline node_ptr<T> static_pointer_cast(node_ptr<V> const & p)
-    {
-        return node_ptr<T>(p, smart_ptr::detail::static_cast_tag());
-    }
-
-
-/**
-    Dynamic cast.
-*/
-
-template <typename T, typename V>
-    inline node_ptr<T> dynamic_pointer_cast(node_ptr<V> const & p)
-    {
-        return node_ptr<T>(p, smart_ptr::detail::dynamic_cast_tag());
+        return node_ptr<V>(new node<V, PoolAllocator>(std::forward<Args>(args)...));
     }
 
     

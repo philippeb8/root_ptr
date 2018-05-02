@@ -88,6 +88,11 @@ protected:
     virtual void dispose()
     {
     }
+
+    virtual void destroy() // nothrow
+    {
+        delete this;
+    }
     
     virtual void * get_deleter(std::type_info const &)
     { 
@@ -285,16 +290,16 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
         
         template <typename... Args>
-            node(Args const &... args) 
+            node(Args &&... args) 
             {
-                container::allocator_traits<allocator_type>::construct(a_, element(), args...);
+                container::allocator_traits<allocator_type>::construct(a_, element(), std::forward<Args>(args)...);
             }
 
 
         template <typename... Args>
-            node(allocator_type const & a, Args const &... args)
+            node(allocator_type const & a, Args &&... args)
             {
-                container::allocator_traits<allocator_type>::construct(a_, element(), args...);
+                container::allocator_traits<allocator_type>::construct(a_, element(), std::forward<Args>(args)...);
             }
 
 
@@ -449,17 +454,17 @@ template <typename T, int S, typename PoolAllocator>
         }
 
         template <typename... Args>
-            node(Args const &... args) 
+            node(Args &&... args) 
             : a_(static_pool())
             {
-                container::allocator_traits<allocator_type>::construct(a_, element(), args...);
+                container::allocator_traits<allocator_type>::construct(a_, element(), std::forward<Args>(args)...);
             }
 
         template <typename... Args>
-            node(allocator_type const & a, Args const &... args)
+            node(allocator_type const & a, Args &&... args)
             : a_(a)
             {
-                container::allocator_traits<allocator_type>::construct(a_, element(), args...);
+                container::allocator_traits<allocator_type>::construct(a_, element(), std::forward<Args>(args)...);
             }
 
 

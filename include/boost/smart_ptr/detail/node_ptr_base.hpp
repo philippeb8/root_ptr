@@ -19,8 +19,6 @@
 #define BOOST_DETAIL_NODE_PTR_BASE_HPP
 
 
-#include <vector>
-#include <iostream>
 #include <stdexcept>
 
 #include <boost/smart_ptr/detail/classof.hpp>
@@ -35,10 +33,6 @@ namespace smart_ptr
 
 namespace detail
 {
-
-
-struct static_cast_tag {};
-struct dynamic_cast_tag {};
 
 
 /**
@@ -82,19 +76,7 @@ template <typename T>
 
         template <typename V>
             node_ptr_common(node_ptr_common<V> const & p) 
-            : po_(p.share())
-            {
-            }
-
-        template <typename V>
-            node_ptr_common(node_ptr_common<V> const & p, static_cast_tag const &) 
-            : po_(static_cast<value_type *>(p.share()))
-            {
-            }
-
-        template <typename V>
-            node_ptr_common(node_ptr_common<V> const & p, dynamic_cast_tag const &) 
-            : po_(dynamic_cast<value_type *>(p.share()))
+            : po_(reinterpret_cast<value_type *>(p.share()))
             {
             }
 
@@ -124,36 +106,6 @@ template <typename T>
             {
                 return operator = <value_type>(p);
             }
-
-        T & operator * () const
-        {
-            return * po_;
-        }
-
-        T * operator -> () const
-        {
-            return po_;
-        }
-        
-        operator bool () const
-        {
-            return po_ != 0;
-        }
-
-        bool operator ! () const
-        {
-            return po_ == 0;
-        }
-
-        operator T * ()
-        {
-            return po_;
-        }
-
-        operator T const * () const
-        {
-            return po_;
-        }
 
         value_type * get() const
         {
