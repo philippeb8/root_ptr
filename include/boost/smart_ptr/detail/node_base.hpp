@@ -25,6 +25,7 @@
 
 #include <array>
 #include <limits>
+#include <utility>
 #include <type_traits>
 
 #ifndef BOOST_DISABLE_THREADS

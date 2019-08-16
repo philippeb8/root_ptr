@@ -35,6 +35,7 @@
 #include <boost/smart_ptr/detail/intrusive_stack.hpp>
 #include <boost/smart_ptr/detail/classof.hpp>
 #include <boost/smart_ptr/detail/node_ptr_base.hpp>
+#include <boost/tti/has_static_member_function.hpp>
 
 
 /**
@@ -217,47 +218,92 @@ template <typename T>
 
 template <typename T, size_t S>
     class root_array;
+
+    
+BOOST_TTI_HAS_STATIC_MEMBER_FUNCTION(__proxy)
+
+
+template <typename T, bool = has_static_member_function___proxy<T, T const & (node_proxy const &, T const &)>::value>
+    struct proxy
+    {
+        inline T const & operator () (node_proxy const & __y, T const & po) 
+        { 
+            return po; 
+        }
+    };
+
+template <typename T, size_t S>
+    struct proxy<T [S], false>
+    {
+        inline T const (& operator () (node_proxy const & __y, T const (& po)[S]))[S]
+        {
+            for (T const * i = po; i != po + S; ++ i)
+                proxy<T>()(__y, * i);
+            
+            return po;
+        }
+    };
+
+template <typename T>
+    struct proxy<std::vector<T>, false>
+    {
+        inline std::vector<T> const & operator () (node_proxy const & __y, std::vector<T> const & po)
+        {
+            for (typename std::vector<T>::const_iterator i = po.begin(); i != po.end(); ++ i)
+                proxy<T>()(__y, * i);
+            
+            return po;
+        }
+    };
+
+template <>
+    struct proxy<std::vector<void>, false>
+    {
+        inline std::vector<void> const & operator () (node_proxy const & __y, std::vector<void> const & po)
+        {
+            return po;
+        }
+    };
     
 template <typename T>
-    inline T const & proxy(node_proxy const & __y, T const & po)
+    struct proxy<root_ptr<T>, false>
     {
-        return po;
-    }
+        inline root_ptr<T> const & operator () (node_proxy const & x, root_ptr<T> const & po)
+        {
+            po.proxy(x);
+            
+            return po;
+        }
+    };
 
 template <typename T, size_t S>
-    inline T const (& proxy(node_proxy const & __y, T const (& po)[S]))[S]
+    struct proxy<root_array<T, S>, false>
     {
-        for (T const * i = po; i != po + S; ++ i)
-            proxy(__y, * i);
-        
-        return po;
-    }
+        inline root_array<T, S> const & operator () (node_proxy const & x, root_array<T, S> const & po)
+        {
+            po.proxy(x);
+            
+            return po;
+        }
+    };
 
 template <typename T>
-    inline std::vector<T> const & proxy(node_proxy const & __y, std::vector<T> const & po)
+    struct proxy<T, true>
     {
-        for (typename std::vector<T>::const_iterator i = po.begin(); i != po.end(); ++ i)
-            proxy(__y, * i);
-        
-        return po;
-    }
-
+        inline T const & operator () (node_proxy const & __y, T const & po) 
+        { 
+            T::__proxy(__y, po);
+            
+            return po;
+        }
+    };
+    
 template <typename T>
-    inline root_ptr<T> const & proxy(node_proxy const & x, root_ptr<T> const & t)
+    inline T const & make_proxy(node_proxy const & __y, T const & po)
     {
-        t.proxy(x);
-        
-        return t;
+        return proxy<T>()(__y, po);
     }
-
-template <typename T, size_t S>
-    inline root_array<T, S> const & proxy(node_proxy const & x, root_array<T, S> const & t)
-    {
-        t.proxy(x);
-        
-        return t;
-    }
-
+    
     
 /**
     Deterministic region based memory manager.
@@ -531,7 +577,7 @@ template <typename T>
                 {
                     header()->node_tag_.erase();
                     px_->init(header());
-                    boost::proxy(x, * po_);
+                    boost::proxy<T>()(x, * po_);
                 }
             }
         }
@@ -627,9 +673,9 @@ template <>
         {
         }
 
-        root_ptr(node_proxy const & x, char const * n, void * p)
+        root_ptr(node_proxy const & x, char const * n, void const * p)
         : base(x)
-        , pi_(p)
+        , pi_(const_cast<void *>(p))
         , pn_(n)
         {
         }
@@ -667,9 +713,14 @@ template <>
             {
             }
 
-        root_ptr & operator = (void * p)
+        char const * const name() const
         {
-            pi_ = p;
+            return pn_;
+        }
+        
+        root_ptr & operator = (void const * p)
+        {
+            pi_ = const_cast<void *>(p);
             
             return * this;
         }
@@ -817,9 +868,9 @@ template <typename T>
         {
         }
 
-        root_ptr(node_proxy const & x, char const * n, T * p)
+        root_ptr(node_proxy const & x, char const * n, T const * p)
         : base(x)
-        , pi_(p)
+        , pi_(const_cast<T *>(p))
         , pn_(n)
         {
         }
@@ -858,18 +909,23 @@ template <typename T>
             , pn_(n)
             {
             }
-
-        root_ptr & operator = (T * p)
+            
+        char const * const name() const
         {
-            pi_ = p;
+            return pn_;
+        }
+
+        root_ptr & operator = (T const * p)
+        {
+            pi_ = const_cast<T *>(p);
             
             return * this;
         }
         
         template <typename V>
-            root_ptr & operator = (V * p)
+            root_ptr & operator = (V const * p)
             {
-                pi_ = static_cast<T *>(p);
+                pi_ = static_cast<T *>(const_cast<V *>(p));
                 
                 return * this;
             }
@@ -906,11 +962,19 @@ template <typename T>
 
         T & operator * () const
         {
+            if (po_)
+                if (pi_ < po_->data() || po_->data() + po_->size() <= pi_)
+                    throw std::out_of_range(std::string("\"") + name() + "\" out of range");
+                
             return * pi_;
         }
 
         T * operator -> () const
         {
+            if (po_)
+                if (pi_ < po_->data() || po_->data() + po_->size() <= pi_)
+                    throw std::out_of_range(std::string("\"") + name() + "\" out of range");
+                
             return pi_;
         }
         
@@ -1045,7 +1109,10 @@ template <typename T>
     };
 
 
-template <typename T>
+BOOST_TTI_HAS_STATIC_MEMBER_FUNCTION(__construct)
+
+
+template <typename T, bool = has_static_member_function___construct<T, T (node_proxy const &, char const *, T const &)>::value>
     struct construct
     {
         template <typename... Args>
@@ -1056,7 +1123,7 @@ template <typename T>
     };
 
 template <typename T, size_t S>
-    struct construct<root_array<T, S>>
+    struct construct<root_array<T, S>, false>
     {
         template <typename... Args>
             inline root_array<T, S> operator () (node_proxy const & __y, char const * n, Args &&... args)
@@ -1066,7 +1133,7 @@ template <typename T, size_t S>
     };
 
 template <typename T>
-    struct construct<root_ptr<T>>
+    struct construct<root_ptr<T>, false>
     {
         template <typename... Args>
             inline root_ptr<T> operator () (node_proxy const & __y, char const * n, Args &&... args)
@@ -1075,6 +1142,23 @@ template <typename T>
             }
     };
 
+template <typename T>
+    struct construct<T, true>
+    {
+        template <typename... Args>
+            inline T operator () (node_proxy const & __y, char const * n, Args &&... args)
+            {
+                return T::__construct(__y, n, std::forward<Args>(args)...);
+            }
+    };
+    
+template <typename T>
+    inline T make_construct(node_proxy const & __y, char const * n, T const & po)
+    {
+        return construct<T>()(__y, n, po);
+    }
+    
+    
 template <typename T>
     struct create
     {

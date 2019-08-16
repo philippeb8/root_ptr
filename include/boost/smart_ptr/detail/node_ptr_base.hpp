@@ -80,7 +80,7 @@ template <typename T>
 
         template <typename V>
             node_ptr_common(node_ptr_common<V> const & p) 
-            : po_(p.share())
+            : po_(reinterpret_cast<value_type *>(p.share()))
             {
             }
 
