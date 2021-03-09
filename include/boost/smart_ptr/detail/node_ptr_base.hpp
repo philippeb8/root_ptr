@@ -35,6 +35,17 @@ namespace detail
 {
 
 
+#ifndef BOOST_DISABLE_THREADS
+/** Main global mutex used for thread safety */
+static mutex & static_mutex()
+{
+    static mutex mutex_;
+    
+    return mutex_;
+}
+#endif
+    
+    
 struct static_cast_tag {};
 struct dynamic_cast_tag {};
 
@@ -59,13 +70,17 @@ template <typename T>
         value_type * po_;
 
     public:
-        node_ptr_common() 
+        explicit node_ptr_common() 
         : po_(nullptr)
         {
         }
 
         ~node_ptr_common()
         {
+#ifndef BOOST_DISABLE_THREADS
+            mutex::scoped_lock scoped_lock(static_mutex());
+#endif
+                
             if (po_)
             {
                 header()->release();
@@ -73,25 +88,25 @@ template <typename T>
         }
 
         template <typename V, typename PoolAllocator>
-            node_ptr_common(node<V, PoolAllocator> * p) 
-            : po_(reinterpret_cast<value_type *>(p->element()))
+            explicit node_ptr_common(node<V, PoolAllocator> * p) 
+            : po_(p->element())
             {
             }
 
         template <typename V>
-            node_ptr_common(node_ptr_common<V> const & p) 
-            : po_(reinterpret_cast<value_type *>(p.share()))
+            explicit node_ptr_common(node_ptr_common<V> const & p) 
+            : po_(p.share())
             {
             }
 
         template <typename V>
-            node_ptr_common(node_ptr_common<V> const & p, static_cast_tag const &) 
+            explicit node_ptr_common(node_ptr_common<V> const & p, static_cast_tag const &) 
             : po_(static_cast<value_type *>(p.share()))
             {
             }
 
         template <typename V>
-            node_ptr_common(node_ptr_common<V> const & p, dynamic_cast_tag const &) 
+            explicit node_ptr_common(node_ptr_common<V> const & p, dynamic_cast_tag const &) 
             : po_(dynamic_cast<value_type *>(p.share()))
             {
             }
@@ -102,7 +117,7 @@ template <typename T>
             }
 
         template <typename V, typename PoolAllocator>
-            node_ptr_common & operator = (node<V> * p)
+            node_ptr_common & operator = (node<V, PoolAllocator> * p)
             {
                 reset(p->element());
                 return * this;
@@ -111,9 +126,9 @@ template <typename T>
         template <typename V>
             node_ptr_common & operator = (node_ptr_common<V> const & p)
             {
-                if (po_ != reinterpret_cast<value_type *>(p.po_))
+                if (po_ != p.po_)
                 {
-                    reset(reinterpret_cast<value_type *>(p.share()));
+                    reset(p.share());
                 }
                 return * this;
             }
