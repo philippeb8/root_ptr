@@ -78,7 +78,7 @@ template <typename T>
         ~node_ptr_common()
         {
 #ifndef BOOST_DISABLE_THREADS
-            mutex::scoped_lock scoped_lock(static_mutex());
+            mutex::scoped_lock scoped_lock(static_mutex(), try_to_lock_t());
 #endif
                 
             if (po_)

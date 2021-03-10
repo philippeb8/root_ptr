@@ -353,9 +353,9 @@ template <typename T>
     };
 
 template <typename T>
-    inline T const & make_proxy(node_proxy & __y, T const & po)
+    inline T & make_proxy(node_proxy & __y, T const & po)
     { 
-        return * proxy<T>()(__y, & po);
+        return const_cast<T &>(* proxy<T>()(__y, & po));
     }
 
     
