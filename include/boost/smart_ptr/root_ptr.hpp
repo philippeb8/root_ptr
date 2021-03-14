@@ -20,6 +20,8 @@
 #include <new.h>
 #endif
 
+#include <cstdint>
+
 #include <vector>
 #include <utility>
 #include <sstream>
@@ -863,6 +865,13 @@ template <>
         {
         }
         
+        explicit root_ptr(node_proxy & x, char const * n, std::uintptr_t p)
+        : base(x)
+        , pi_(reinterpret_cast<void *>(p))
+        , pn_(n)
+        {
+        }
+        
         template <typename V>
             root_ptr(node_proxy & x, char const * n, V * p)
             : base(x)
@@ -1103,9 +1112,9 @@ template <typename T>
         }
 
         template <typename V>
-            root_ptr(root_ptr<V> const & p)
-            : base(p)
-            , pi_(p.pi_)
+            explicit root_ptr(root_ptr<V> const & p)
+            : base(p, smart_ptr::detail::static_cast_tag())
+            , pi_(static_cast<T *>(p.pi_))
             , pn_(p.pn_)
             {
             }
@@ -1132,17 +1141,17 @@ template <typename T>
         }
         
         template <typename V>
-            root_ptr(node_proxy & x, char const * n, V * p)
+            explicit root_ptr(node_proxy & x, char const * n, V * p)
             : base(x)
-            , pi_(p)
+            , pi_(static_cast<T *>(p))
             , pn_(n)
             {
             }
 
         template <typename V>
-            root_ptr(node_proxy & x, char const * n, V const * p)
+            explicit root_ptr(node_proxy & x, char const * n, V const * p)
             : base(x)
-            , pi_(const_cast<V *>(p))
+            , pi_(static_cast<V *>(const_cast<V *>(p)))
             , pn_(n)
             {
             }
@@ -1169,6 +1178,15 @@ template <typename T>
             , pn_(n)
             {
             }
+            
+        template <typename V>
+            explicit root_ptr(node_proxy & x, char const * n, root_ptr<V> const & p) 
+            : base(p, smart_ptr::detail::static_cast_tag())
+            , pi_(static_cast<T *>(p.pi_))
+            , pn_(n)
+            {
+            }
+        
             
         /**
             Initialization of a pointer.
@@ -1705,7 +1723,11 @@ template <typename T, size_t S>
         root_array(boost::node_proxy & __y, char const * n) : base(__y, n, boost::create<T>()(__y, S))
         {
         }
-    
+        
+        root_array(boost::node_proxy & __y, char const * n, T const pp[S]) : base(__y, n, boost::create<T>().from_range(__y, pp, pp + S))
+        {
+        }
+        
         root_array(boost::node_proxy & __y, char const * n, std::initializer_list<T> const & pp) : base(__y, n, boost::create<T>().from_initializer(__y, pp))
         {
         }
