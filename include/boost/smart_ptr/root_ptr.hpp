@@ -1140,6 +1140,13 @@ template <typename T>
         {
         }
         
+        explicit root_ptr(node_proxy & x, char const * n, std::uintptr_t p)
+        : base(x)
+        , pi_(reinterpret_cast<T *>(p))
+        , pn_(n)
+        {
+        }
+        
         template <typename V>
             explicit root_ptr(node_proxy & x, char const * n, V * p)
             : base(x)
