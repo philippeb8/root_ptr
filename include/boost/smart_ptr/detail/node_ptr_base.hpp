@@ -37,9 +37,9 @@ namespace detail
 
 #ifndef BOOST_DISABLE_THREADS
 /** Main global mutex used for thread safety */
-static mutex & static_mutex()
+static recursive_mutex & static_mutex()
 {
-    static mutex mutex_;
+    static recursive_mutex mutex_;
     
     return mutex_;
 }
@@ -78,7 +78,7 @@ template <typename T>
         ~node_ptr_common()
         {
 #ifndef BOOST_DISABLE_THREADS
-            mutex::scoped_lock scoped_lock(static_mutex(), try_to_lock_t());
+            recursive_mutex::scoped_lock scoped_lock(static_mutex());
 #endif
                 
             if (po_)
@@ -98,6 +98,14 @@ template <typename T>
             : po_(p.share())
             {
             }
+
+#if defined(BOOST_HAS_RVALUE_REFS)
+        template <typename V>
+            node_ptr_common(node_ptr_common<V> && p)
+            : po_(std::move(p.po_))
+            {
+            }
+#endif
 
         template <typename V>
             explicit node_ptr_common(node_ptr_common<V> const & p, static_cast_tag const &) 
