@@ -171,7 +171,8 @@ template <typename T>
     public:
         typedef T data_type;
 
-        node_element()
+        node_element(size_t s = 1)
+        : smart_ptr::detail::node_base(s)
         {
         }
 
@@ -221,7 +222,8 @@ template <>
     public:
         typedef int data_type;
 
-        node_element()
+        node_element(size_t s = 1)
+        : smart_ptr::detail::node_base(s)
         {
         }
 
@@ -434,11 +436,11 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 */
 
 template <typename T, size_t S, typename PoolAllocator>
-    class node<std::array<T, S>> : public node_element<std::array<T, S>>
+class node<std::array<T, S>, PoolAllocator> : public node_element<std::array<T, S>>
     {
     public:
         typedef std::array<T, S> data_type;
-        typedef typename PoolAllocator::template rebind< node<T, PoolAllocator> >::other allocator_type;
+        typedef typename PoolAllocator::template rebind< node<std::array<T, S>, PoolAllocator> >::other allocator_type;
 
 
         /**
@@ -573,7 +575,7 @@ template <typename T, size_t S, typename PoolAllocator>
 
         
     private:
-        using node_element<T>::elem_;
+        using node_element<std::array<T, S>>::elem_;
 
 
         /** 
