@@ -1,9 +1,17 @@
 /*!
     \file
-    \brief Boost node_ptr.hpp mainheader file.
-*/
-/*
-    Copyright 2008-2016 Phil Bouchard.
+    \brief Boost root_ptr.hpp mainheader file.
+
+    Patent Pending
+    'SOURCE TO SOURCE COMPILER, COMPILATION METHOD, AND
+    COMPUTER-READABLE MEDIUM FOR PREDICTABLE MEMORY MANAGEMENT'
+
+    Copyright (C) 2021 Fornux Inc.
+
+    Phil Bouchard, Founder & CEO
+    Fornux Inc.
+    phil@fornux.com
+    20 Poirier St, Gatineau, Quebec, Canada, J8V 1A6
 
     Distributed under the Boost Software License, Version 1.0.
     See accompanying file LICENSE_1_0.txt or copy at

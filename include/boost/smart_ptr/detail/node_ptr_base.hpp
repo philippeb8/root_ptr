@@ -1,17 +1,21 @@
 /**
-    @file
-    Boost node_ptr_base.hpp header file.
+    \file
+    \brief Boost detail/node_ptr_base.hpp header file.
 
-    @note
-    Copyright (c) 2003-2008 Phil Bouchard <pbouchard8@gmail.com>.
-    Copyright (c) 2001-2007 Peter Dimov
+    Patent Pending
+    'SOURCE TO SOURCE COMPILER, COMPILATION METHOD, AND
+    COMPUTER-READABLE MEDIUM FOR PREDICTABLE MEMORY MANAGEMENT'
+
+    Copyright (C) 2021 Fornux Inc.
+
+    Phil Bouchard, Founder & CEO
+    Fornux Inc.
+    phil@fornux.com
+    20 Poirier St, Gatineau, Quebec, Canada, J8V 1A6
 
     Distributed under the Boost Software License, Version 1.0.
-
     See accompanying file LICENSE_1_0.txt or copy at
     http://www.boost.org/LICENSE_1_0.txt
-
-    See http://www.boost.org/libs/smart_ptr/doc/index.html for documentation.
 */
 
 
