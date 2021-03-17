@@ -365,21 +365,6 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             return a.allocate(1);
         }
 
-
-        /**
-            Allocates a new @c node .
-            
-            @param  a   Copy of @c PoolAllocator to be used.
-            @return     Pointer of the new @c node.
-        */
-
-        static node<T> * allocate(allocator_type const & a)
-        {
-            return new (a) node<T>(a);
-        }
-
-        BOOST_PP_REPEAT_FROM_TO(1, 10, ALLOCATE_NODE1, allocate)
-
         
         /**
             Deallocates a @c node from @c PoolAllocator .
@@ -532,21 +517,6 @@ class node<std::array<T, S>, PoolAllocator> : public node_element<std::array<T, 
         {
             return a.allocate(1);
         }
-
-
-        /**
-            Allocates a new @c node .
-            
-            @param  a   Copy of @c PoolAllocator to be used.
-            @return     Pointer of the new @c node.
-        */
-
-        static node<std::array<T, S>> * allocate(allocator_type const & a)
-        {
-            return new (a) node<std::array<T, S>>(a);
-        }
-
-        BOOST_PP_REPEAT_FROM_TO(1, 10, ALLOCATE_NODE1, allocate)
 
         
         /**

@@ -645,27 +645,28 @@ class node_ptr : public smart_ptr::detail::node_ptr_common<T>
                 
                 return * this;
             }
-            
-            
-#if 0
+
+
         /**
             Assignment.
 
             @param  p New pointer to manage.
         */
 
-            node_ptr & operator = (node_ptr<void> const & p)
+            node_ptr & operator = (node_ptr const & p)
             {
-#ifndef BOOST_DISABLE_THREADS
-                recursive_mutex::scoped_lock scoped_lock(smart_ptr::detail::static_recursive_mutex());
-#endif
+                if (p.px_->depth() < px_->depth())
+                    proxy(p.px_);
+                else if (px_->depth() < p.px_->depth())
+                    p.proxy(px_);
                 
-                base1::operator = (static_cast<base1 const &>(p));
-                base2::operator = (static_cast<base2 const &>(p));
+                base1::operator = (static_cast<node_ptr::base1 const &>(p));
+#ifndef BOOST_DISABLE_ROOT_PTR_VECTORS
+                base2::operator = (static_cast<node_ptr::base2 const &>(p));
+#endif
                 
                 return * this;
             }
-#endif
 
             
         /**
@@ -1417,6 +1418,17 @@ template <typename T>
                 return static_cast<root_ptr &>(base::template operator = <V>(p));
             }
 
+            root_ptr & operator = (root_ptr const & p)
+            {
+#ifndef BOOST_DISABLE_THREADS
+                recursive_mutex::scoped_lock scoped_lock(smart_ptr::detail::static_recursive_mutex());
+#endif        
+
+                pi_ = p.pi_;
+                
+                return static_cast<root_ptr &>(base::operator = (p));
+            }
+
         template <typename V>
             T & operator [] (V n)
             {
@@ -1987,11 +1999,6 @@ template <typename T, size_t S>
         typedef boost::root_ptr<T> base;
         
     public:
-        root_array(base const & p) 
-        : base(p)
-        {
-        }
-        
         root_array(boost::node_proxy & __y, char const * n, T const pp[S]) 
         : base(__y, n, boost::create_array<T, S>()(__y, pp))
         {
@@ -2007,14 +2014,6 @@ template <typename T, size_t S>
             : base(__y, n, boost::create_array<T, S>()(__y,  std::forward<Args>(args)...))
             {
             }
-        
-        ~root_array()
-        {
-            base::base1::reset(nullptr);
-#ifndef BOOST_DISABLE_ROOT_PTR_VECTORS
-            base::base2::reset(nullptr);
-#endif
-        }
     };    
 
 
