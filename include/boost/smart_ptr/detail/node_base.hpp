@@ -57,6 +57,11 @@
 namespace boost
 {
 
+    
+template <typename, typename>
+    class node;
+
+    
 namespace smart_ptr
 {
 
@@ -77,8 +82,14 @@ struct node_base : public boost::detail::sp_counted_base
     /** Tag used to enlist to @c node_proxy::node_list_ . */
     intrusive_list::node node_tag_;
 
-    node_base()
+    node_base(size_t s = 1)
+    : size_(s)
     {
+    }
+    
+    size_t size() const
+    {
+        return size_;
     }
 
     virtual ~node_base()
@@ -86,6 +97,8 @@ struct node_base : public boost::detail::sp_counted_base
     }
 
 protected:
+    size_t const size_;
+    
     virtual void dispose()
     {
     }
@@ -420,15 +433,14 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
     Main class used to instanciate pointee objects and a copy of the allocator desired.
 */
 
-template <typename T, int S, typename PoolAllocator>
-    class node<T [S], PoolAllocator> : public node_element<T [S]>
+template <typename T, size_t S, typename PoolAllocator>
+    class node<std::array<T, S>> : public node_element<std::array<T, S>>
     {
     public:
-        typedef T data_type[S];
-        typedef std::array<T, S> destroy_data_type;
-        typedef typename PoolAllocator::template rebind< node<T [S], PoolAllocator> >::other allocator_type;
+        typedef std::array<T, S> data_type;
+        typedef typename PoolAllocator::template rebind< node<T, PoolAllocator> >::other allocator_type;
 
-        
+
         /**
             Initialization of a pointee object.
             
@@ -436,7 +448,8 @@ template <typename T, int S, typename PoolAllocator>
         */
         
         node() 
-        : a_(static_pool())
+        : node_element<std::array<T, S>>(S)
+        , a_(static_pool())
         {
             container::allocator_traits<allocator_type>::construct(a_, element());
         }
@@ -449,21 +462,24 @@ template <typename T, int S, typename PoolAllocator>
         */
         
         node(allocator_type const & a) 
-        : a_(a)
+        : node_element<std::array<T, S>>(S)
+        , a_(a)
         {
             container::allocator_traits<allocator_type>::construct(a_, element());
         }
 
+        
         template <typename... Args>
             node(Args &&... args) 
-            : a_(static_pool())
+            : node_element<std::array<T, S>>(S)
             {
                 container::allocator_traits<allocator_type>::construct(a_, element(), std::forward<Args>(args)...);
             }
 
+
         template <typename... Args>
             node(allocator_type const & a, Args &&... args)
-            : a_(a)
+            : node_element<std::array<T, S>>(S)
             {
                 container::allocator_traits<allocator_type>::construct(a_, element(), std::forward<Args>(args)...);
             }
@@ -480,25 +496,15 @@ template <typename T, int S, typename PoolAllocator>
 
 
         /**
-            @return		Pointee object address.
-        */
-        
-        destroy_data_type * destroy_element()
-        { 
-            return reinterpret_cast<destroy_data_type *>(& elem_); 
-        }
-
-
-        /**
             Destructor.
         */
         
         virtual ~node()
         {
-            container::allocator_traits<allocator_type>::destroy(a_, destroy_element());
+            container::allocator_traits<allocator_type>::destroy(a_, element());
         }
 
-        
+
         /**
             Allocates a new @c node using the static copy of @c PoolAllocator to be used.
             
@@ -533,9 +539,9 @@ template <typename T, int S, typename PoolAllocator>
             @return     Pointer of the new @c node.
         */
 
-        static node<T> * allocate(allocator_type const & a)
+        static node<std::array<T, S>> * allocate(allocator_type const & a)
         {
-            return new (a) node<T>(a);
+            return new (a) node<std::array<T, S>>(a);
         }
 
         BOOST_PP_REPEAT_FROM_TO(1, 10, ALLOCATE_NODE1, allocate)
@@ -565,9 +571,11 @@ template <typename T, int S, typename PoolAllocator>
             a.deallocate(static_cast<node *>(p), 1);
         }
 
-    private:
-        using node_element<T [S]>::elem_;
         
+    private:
+        using node_element<T>::elem_;
+
+
         /** 
             Static pool.
             
@@ -585,8 +593,8 @@ template <typename T, int S, typename PoolAllocator>
         /** Copy of the @c PoolAllocator to be used. */
         allocator_type a_;        
     };
-    
-    
+
+
 } // namespace boost
 
 

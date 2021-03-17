@@ -22,6 +22,7 @@
 
 #include <cstdint>
 
+#include <array>
 #include <vector>
 #include <utility>
 #include <sstream>
@@ -56,7 +57,7 @@ namespace std
 
 namespace boost
 {
-
+    
 namespace smart_ptr
 {
 
@@ -66,7 +67,7 @@ namespace detail
 
 struct node_base;
 
-
+    
 } // namespace detail
 
 } // namespace smart_ptr
@@ -262,39 +263,29 @@ BOOST_TTI_HAS_STATIC_MEMBER_FUNCTION(__proxy)
 template <typename T, bool = has_static_member_function___proxy<T, T const * (node_proxy &, T const *)>::value>
     struct proxy
     {
-        inline T const * operator () (node_proxy & __y, T const * po) const
-        { 
+        inline T const * operator () (node_proxy * __y, T const * po, size_t s = 1) const
+        {
             return po; 
         }
     };
 
 template <>
-    struct proxy<void *, false>
+    struct proxy<void, false>
     {
-        inline void * const * operator () (node_proxy & __y, void * const * po)
+        inline void * operator () (node_proxy * __y, void * po, size_t s = 1)
         {
-            return po;
-        }
-    };
-
-template <typename T>
-    struct proxy<T *, false>
-    {
-        inline T * const * operator () (node_proxy & __y, T * const * po)
-        {
-            proxy<T>()(__y, * po);
-            
             return po;
         }
     };
 
 template <typename T, size_t S>
-    struct proxy<T [S], false>
+    struct proxy<std::array<T, S>, false>
     {
-        inline T (* operator () (node_proxy & __y, T (* const po)[S]) const) [S]
+        inline std::array<T, S> const * operator () (node_proxy * __y, std::array<T, S> const * po, size_t s = 1) const
         {
-            for (T * i = * po; i != * po + S; ++ i)
-                proxy<T>()(__y, i);
+            for (auto pi = po; pi != po + s; ++ pi)
+                for (typename std::array<T, S>::const_iterator i = pi->begin(); i != pi->end(); ++ i)
+                    proxy<T>()(__y, &* i);
             
             return po;
         }
@@ -303,10 +294,11 @@ template <typename T, size_t S>
 template <typename T>
     struct proxy<std::vector<T>, false>
     {
-        inline std::vector<T> const * operator () (node_proxy & __y, std::vector<T> const * po) const
+        inline std::vector<T> const * operator () (node_proxy * __y, std::vector<T> const * po, size_t s = 1) const
         {
-            for (typename std::vector<T>::const_iterator i = po->begin(); i != po->end(); ++ i)
-                proxy<T>()(__y, &* i);
+            for (auto pi = po; pi != po + s; ++ pi)
+                for (typename std::vector<T>::const_iterator i = pi->begin(); i != pi->end(); ++ i)
+                    proxy<T>()(__y, &* i);
             
             return po;
         }
@@ -315,7 +307,7 @@ template <typename T>
 template <>
     struct proxy<std::vector<void>, false>
     {
-        inline std::vector<void> const * operator () (node_proxy & __y, std::vector<void> const * po) const
+        inline std::vector<void> const * operator () (node_proxy * __y, std::vector<void> const * po, size_t s = 1) const
         {
             return po;
         }
@@ -324,9 +316,10 @@ template <>
 template <typename T>
     struct proxy<root_ptr<T>, false>
     {
-        inline root_ptr<T> const * operator () (node_proxy & x, root_ptr<T> const * po) const
+        inline root_ptr<T> const * operator () (node_proxy * x, root_ptr<T> const * po, size_t s = 1) const
         {
-            po->proxy(& x);
+            for (auto pi = po; pi != po + s; ++ pi)
+                pi->proxy(x);
             
             return po;
         }
@@ -335,9 +328,10 @@ template <typename T>
 template <typename T, size_t S>
     struct proxy<root_array<T, S>, false>
     {
-        inline root_array<T, S> const * operator () (node_proxy & x, root_array<T, S> const * po) const
+        inline root_array<T, S> const * operator () (node_proxy * x, root_array<T, S> const * po, size_t s = 1) const
         {
-            const_cast<root_array<T, S> *>(po)->proxy(x);
+            for (auto pi = po; pi != po + s; ++ pi)
+                pi->proxy(x);
             
             return po;
         }
@@ -346,16 +340,17 @@ template <typename T, size_t S>
 template <typename T>
     struct proxy<T, true>
     {
-        inline T const * operator () (node_proxy & __y, T const * po) const
+        inline T const * operator () (node_proxy * __y, T const * po, size_t s = 1) const
         { 
-            T::__proxy(__y, const_cast<T *>(po));
+            for (auto pi = po; pi != po + s; ++ pi)
+                T::__proxy(* __y, const_cast<T *>(pi));
             
             return po;
         }
     };
 
 template <typename T>
-    inline T & make_proxy(node_proxy & __y, T const & po)
+    inline T & make_proxy(node_proxy * __y, T const & po)
     { 
         return const_cast<T &>(* proxy<T>()(__y, & po));
     }
@@ -428,6 +423,28 @@ class node_ptr : public smart_ptr::detail::node_ptr_common<T>
                 px_->init(p);
             }
 
+
+        /**
+            Initialization of a pointer.
+
+            @param  x   Reference to a @c node_proxy the pointer belongs to.
+            @param  p New pointee object to manage.
+        */
+
+        template <typename V, size_t S, typename PoolAllocator>
+            explicit node_ptr(node_proxy & x, node<std::array<V, S>, PoolAllocator> * p)
+            : base1(p)
+#ifndef BOOST_DISABLE_ROOT_PTR_VECTORS
+            , base2()
+#endif
+            , px_(& x)
+            {
+#ifndef BOOST_DISABLE_THREADS
+                recursive_mutex::scoped_lock scoped_lock(smart_ptr::detail::static_recursive_mutex());
+#endif
+                
+                px_->init(p);
+            }
 
         /**
             Initialization of a pointer.
@@ -715,14 +732,15 @@ class node_ptr : public smart_ptr::detail::node_ptr_common<T>
                 {
                     base1::header()->node_tag_.erase();
                     px_->init(base1::header());
-                    boost::proxy<T>()(* x, base1::po_);
+                    boost::proxy<T>()(x, base1::po_, base1::header()->size());
                 }
+                
 #ifndef BOOST_DISABLE_ROOT_PTR_VECTORS
                 if (base2::po_)
                 {
                     base2::header()->node_tag_.erase();
                     px_->init(base2::header());
-                    boost::proxy<std::vector<T>>()(* x, base2::po_);
+                    boost::proxy<std::vector<T>>()(x, base2::po_);
                 }
 #endif
             }
@@ -1221,6 +1239,14 @@ template <typename T>
             {
             }
 
+        template <typename V, size_t S, typename PoolAllocator>
+            root_ptr(node_proxy & x, char const * n, node<std::array<V, S>, PoolAllocator> * p) 
+            : base(x, p)
+            , pi_(p->element()->data())
+            , pn_(n)
+            {
+            }
+            
         template <typename V, typename PoolAllocator>
             root_ptr(node_proxy & x, char const * n, node<std::vector<V>, PoolAllocator> * p) 
             : base(x, p)
@@ -1270,6 +1296,7 @@ template <typename T>
                     throw std::out_of_range(out.str());
                 }
 #endif
+
                 if (! pi_)
                 {
                     std::stringstream out;
@@ -1304,6 +1331,7 @@ template <typename T>
                     throw std::out_of_range(out.str());
                 }
 #endif
+
                 if (! pi_)
                 {
                     std::stringstream out;
@@ -1353,6 +1381,18 @@ template <typename T>
                 return static_cast<root_ptr &>(base::template operator = <V, PoolAllocator>(p));
             }
 
+        template <typename V, size_t S, typename PoolAllocator>
+            root_ptr & operator = (node<std::array<V, S>, PoolAllocator> * p)
+            {
+#ifndef BOOST_DISABLE_THREADS
+                recursive_mutex::scoped_lock scoped_lock(smart_ptr::detail::static_recursive_mutex());
+#endif        
+
+                pi_ = p->element()->data();
+                
+                return static_cast<root_ptr &>(base::template operator = <V, PoolAllocator>(p));
+            }
+
         template <typename V, typename PoolAllocator>
             root_ptr & operator = (node<std::vector<V>, PoolAllocator> * p)
             {
@@ -1384,13 +1424,6 @@ template <typename T>
                 recursive_mutex::scoped_lock scoped_lock(smart_ptr::detail::static_recursive_mutex());
 #endif
                 
-                if (base::base1::po_)
-                {
-                    std::stringstream out;
-                    out << "\"" << name() << "\" is not a buffer\n";
-                    node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
-                    throw std::out_of_range(out.str());
-                }
 #ifndef BOOST_DISABLE_ROOT_PTR_VECTORS
                 if (base::base2::po_)
                     if (pi_ + n < base::base2::po_->data() || base::base2::po_->data() + base::base2::po_->size() <= pi_ + n)
@@ -1402,6 +1435,14 @@ template <typename T>
                     }
 #endif
                 
+                if (! pi_)
+                {
+                    std::stringstream out;
+                    out << "\"" << name() << "\" is null pointer\n";
+                    node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
+                    throw std::out_of_range(out.str());
+                }            
+                
                 return * (pi_ + n); 
             }
 
@@ -1412,13 +1453,6 @@ template <typename T>
                 recursive_mutex::scoped_lock scoped_lock(smart_ptr::detail::static_recursive_mutex());
 #endif
             
-                if (base::base1::po_)
-                {
-                    std::stringstream out;
-                    out << "\"" << name() << "\" is not a buffer\n";
-                    node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
-                    throw std::out_of_range(out.str());
-                }
 #ifndef BOOST_DISABLE_ROOT_PTR_VECTORS
                 if (base::base2::po_)
                     if (pi_ + n < base::base2::po_->data() || base::base2::po_->data() + base::base2::po_->size() <= pi_ + n)
@@ -1429,6 +1463,14 @@ template <typename T>
                         throw std::out_of_range(out.str());
                     }
 #endif
+                
+                if (! pi_)
+                {
+                    std::stringstream out;
+                    out << "\"" << name() << "\" is null pointer\n";
+                    node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
+                    throw std::out_of_range(out.str());
+                }            
                 
                 return * (pi_ + n); 
             }
@@ -1450,6 +1492,14 @@ template <typename T>
                 }
 #endif
                 
+            if (! pi_)
+            {
+                std::stringstream out;
+                out << "\"" << name() << "\" is null pointer\n";
+                node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
+                throw std::out_of_range(out.str());
+            }            
+            
             return * pi_;
         }
 
@@ -1469,7 +1519,15 @@ template <typename T>
                     throw std::out_of_range(out.str());
                 }
 #endif
-                
+
+            if (! pi_)
+            {
+                std::stringstream out;
+                out << "\"" << name() << "\" is null pointer\n";
+                node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
+                throw std::out_of_range(out.str());
+            }            
+            
             return pi_;
         }
         
@@ -1485,6 +1543,14 @@ template <typename T>
 
         operator T * () const
         {
+            if (! pi_)
+            {
+                std::stringstream out;
+                out << "\"" << name() << "\" is null pointer\n";
+                node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
+                throw std::out_of_range(out.str());
+            }            
+            
             return pi_;
         }
 
@@ -1494,14 +1560,6 @@ template <typename T>
             recursive_mutex::scoped_lock scoped_lock(smart_ptr::detail::static_recursive_mutex());
 #endif
             
-            if (base::base1::po_)
-            {
-                std::stringstream out;
-                out << "\"" << name() << "\" is not a buffer\n";
-                node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
-                throw std::out_of_range(out.str());
-            }
-                
             return ++ pi_, * this;
         }
 
@@ -1511,14 +1569,6 @@ template <typename T>
             recursive_mutex::scoped_lock scoped_lock(smart_ptr::detail::static_recursive_mutex());
 #endif
             
-            if (base::base1::po_)
-            {
-                std::stringstream out;
-                out << "\"" << name() << "\" is not a buffer\n";
-                node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
-                throw std::out_of_range(out.str());
-            }
-                
             return -- pi_, * this;
         }
         
@@ -1528,14 +1578,6 @@ template <typename T>
             recursive_mutex::scoped_lock scoped_lock(smart_ptr::detail::static_recursive_mutex());
 #endif
             
-            if (base::base1::po_)
-            {
-                std::stringstream out;
-                out << "\"" << name() << "\" is not a buffer\n";
-                node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
-                throw std::out_of_range(out.str());
-            }
-                
             root_ptr temp(* this);
             
             return ++ pi_, temp;
@@ -1547,14 +1589,6 @@ template <typename T>
             recursive_mutex::scoped_lock scoped_lock(smart_ptr::detail::static_recursive_mutex());
 #endif
             
-            if (base::base1::po_)
-            {
-                std::stringstream out;
-                out << "\"" << name() << "\" is not a buffer\n";
-                node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
-                throw std::out_of_range(out.str());
-            }
-                
             root_ptr temp(* this);
             
             return -- pi_, temp;
@@ -1573,28 +1607,12 @@ template <typename T>
         template <typename V>
             root_ptr operator + (V i) const
             {
-                if (base::base1::po_)
-                {
-                    std::stringstream out;
-                    out << "\"" << name() << "\" is not a buffer\n";
-                    node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
-                    throw std::out_of_range(out.str());
-                }
-                    
                 return root_ptr(base::proxy(), "", pi_ + i);
             }
 
         template <typename V>
             root_ptr operator - (V i) const
             {
-                if (base::base1::po_)
-                {
-                    std::stringstream out;
-                    out << "\"" << name() << "\" is not a buffer\n";
-                    node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
-                    throw std::out_of_range(out.str());
-                }
-                    
                 return root_ptr(base::proxy(), "", pi_ - i);
             }
 
@@ -1605,14 +1623,6 @@ template <typename T>
                 recursive_mutex::scoped_lock scoped_lock(smart_ptr::detail::static_recursive_mutex());
 #endif
                 
-                if (base::base1::po_)
-                {
-                    std::stringstream out;
-                    out << "\"" << name() << "\" is not a buffer\n";
-                    node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
-                    throw std::out_of_range(out.str());
-                }
-                    
                 pi_ += i;
                 
                 return * this;
@@ -1625,14 +1635,6 @@ template <typename T>
                 recursive_mutex::scoped_lock scoped_lock(smart_ptr::detail::static_recursive_mutex());
 #endif
                 
-                if (base::base1::po_)
-                {
-                    std::stringstream out;
-                    out << "\"" << name() << "\" is not a buffer\n";
-                    node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
-                    throw std::out_of_range(out.str());
-                }
-                    
                 pi_ -= i;
                 
                 return * this;
@@ -1700,6 +1702,69 @@ template <typename T>
         }
     };
 
+    
+/**
+    Construct new objects.
+*/
+
+template <typename T, size_t S>
+    struct construct_array1
+    {
+        template <typename First, typename... Args>
+            inline std::array<T, S> & operator () (node_proxy & __y, char const * n, std::array<T, S> & res, First && first, Args &&... args) const
+            {
+                new (& res[S - sizeof...(args) - 1]) T(first);
+                
+                return construct_array1<T, S>()(__y, n, res, std::forward<Args>(args)...);
+            }
+            
+            inline std::array<T, S> & operator () (node_proxy & __y, char const * n, std::array<T, S> & res) const
+            {
+                return res;
+            }
+    };
+
+template <typename T, size_t S, size_t I = 0>
+    struct construct_array2
+    {
+        inline std::array<T, S> & operator () (node_proxy & __y, char const * n, std::array<T, S> & res, T const args[S]) const
+        {
+            new (& res[I]) T(args[I]);
+            
+            return construct_array2<T, S, I + 1>()(__y, n, res, args);
+        }
+    };
+
+template <typename T, size_t S>
+    struct construct_array2<T, S, S>
+    {
+        inline std::array<T, S> & operator () (node_proxy & __y, char const * n, std::array<T, S> & res, T const args[S]) const
+        {
+            return res;
+        }
+    };
+
+
+template <typename T, size_t S, size_t I = 0>
+    struct construct_array3
+    {
+        inline std::array<T, S> & operator () (node_proxy & __y, char const * n, std::array<T, S> & res, std::initializer_list<T> && args) const
+        {
+            new (& res[I]) T(* (args.begin() + I));
+            
+            return construct_array3<T, S, I + 1>()(__y, n, res, std::forward<std::initializer_list<T>>(args));
+        }
+    };
+
+template <typename T, size_t S>
+    struct construct_array3<T, S, S>
+    {
+        inline std::array<T, S> & operator () (node_proxy & __y, char const * n, std::array<T, S> & res, std::initializer_list<T> && args) const
+        {
+            return res;
+        }
+    };
+
 
 template <typename T, bool = has_static_member_function___proxy<T, T const * (node_proxy &, T const *)>::value>
     struct construct
@@ -1711,6 +1776,32 @@ template <typename T, bool = has_static_member_function___proxy<T, T const * (no
             }
     };
 
+template <typename T, size_t S>
+    struct construct<std::array<T, S>, false>
+    {
+        template <typename... Args>
+        inline std::array<T, S> operator () (node_proxy & __y, char const * n, Args &&... args) const
+        {
+            typename std::aligned_storage<sizeof(std::array<T, S>), alignof(std::array<T, S>)>::type res;
+            
+            return construct_array1<T, S>()(__y, n, reinterpret_cast<std::array<T, S> &>(res), std::forward<Args>(args)...);
+        }
+        
+        inline std::array<T, S> operator () (node_proxy & __y, char const * n, T const args[S]) const
+        {
+            typename std::aligned_storage<sizeof(std::array<T, S>), alignof(std::array<T, S>)>::type res;
+            
+            return construct_array2<T, S>()(__y, n, reinterpret_cast<std::array<T, S> &>(res), args);
+        }
+
+        inline std::array<T, S> operator () (node_proxy & __y, char const * n, std::initializer_list<T> && args) const
+        {
+            typename std::aligned_storage<sizeof(std::array<T, S>), alignof(std::array<T, S>)>::type res;
+            
+            return construct_array3<T, S>()(__y, n, reinterpret_cast<std::array<T, S> &>(res), std::forward<std::initializer_list<T>>(args));
+        }
+    };
+    
 template <typename T, size_t S>
     struct construct<root_array<T, S>, false>
     {
@@ -1742,14 +1833,49 @@ template <typename T>
     };
     
 template <typename T>
-    inline T make_construct(node_proxy & __y, char const * n, T const & po)
+    inline T make_construct(node_proxy & __y, char const * n, T && po)
     {
-        return construct<T>()(__y, n, po);
+        return construct<T>()(__y, n, std::forward<T>(po));
     }
     
-    
+
+/**
+    Allocate new buffers;
+*/
+
 template <typename T>
     struct create
+    {
+        template <typename... Args>
+            inline node<T> * operator () (node_proxy & __y, Args &&... args) const
+            {
+                return new node<T>(construct<T>()(__y, "",  std::forward<Args>(args)...));
+            }
+    };
+    
+template <typename T, size_t S>
+    struct create_array
+    {
+        template <typename... Args>
+            inline node<std::array<T, S>> * operator () (node_proxy & __y, Args &&... args) const
+            {
+                return new node<std::array<T, S>>(construct<std::array<T, S>>()(__y, "", std::forward<Args>(args)...));
+            }
+            
+        inline node<std::array<T, S>> * from_range(node_proxy & __y, T const * begin, T const * end) const
+        {
+            return new node<std::array<T, S>>(begin, end);
+        }
+    
+        inline node<std::array<T, S>> * from_initializer(node_proxy & __y, std::initializer_list<T> && l) const
+        {
+            return new node<std::array<T, S>>(construct<std::array<T, S>>()(__y, "", std::forward<std::initializer_list<T>>(l)));
+        }
+    };
+
+#ifndef BOOST_DISABLE_ROOT_PTR_VECTORS
+template <typename T>
+    struct create_vector
     {
         template <typename... Args>
             inline node<std::vector<T>> * operator () (node_proxy & __y, size_t s, Args &&... args) const
@@ -1762,22 +1888,12 @@ template <typename T>
             return new node<std::vector<T>>(begin, end);
         }
         
-        inline node<std::vector<T>> * from_initializer(node_proxy & __y, std::initializer_list<T> const & l) const
+        inline node<std::vector<T>> * from_initializer(node_proxy & __y, std::initializer_list<T> && l) const
         {
-            return new node<std::vector<T>>(l);
+            return new node<std::vector<T>>(construct<std::vector<T>>()(__y, "", std::forward<std::initializer_list<T>>(l)));
         }
     };
-
-
-template <typename T>
-    struct create<T [1]>
-    {
-        template <typename... Args>
-            inline node<T> * operator () (node_proxy & __y, Args &&... args) const
-            {
-                return new node<T>(construct<T>()(__y, "", std::forward<Args>(args)...));
-            }
-    };
+#endif
 
 
 template <typename T, size_t S>
@@ -1786,22 +1902,27 @@ template <typename T, size_t S>
         typedef boost::root_ptr<T> base;
         
     public:
-        root_array(base const & p) : base(p)
+        root_array(base const & p) 
+        : base(p)
         {
         }
         
-        root_array(boost::node_proxy & __y, char const * n) : base(__y, n, boost::create<T>()(__y, S))
+        root_array(boost::node_proxy & __y, char const * n, T const pp[S]) 
+        : base(__y, n, boost::create_array<T, S>()(__y, pp))
         {
         }
         
-        root_array(boost::node_proxy & __y, char const * n, T const pp[S]) : base(__y, n, boost::create<T>().from_range(__y, pp, pp + S))
+        root_array(boost::node_proxy & __y, char const * n, std::initializer_list<T> && pp) 
+        : base(__y, n, boost::create_array<T, S>().from_initializer(__y, std::forward<std::initializer_list<T>>(pp)))
         {
         }
         
-        root_array(boost::node_proxy & __y, char const * n, std::initializer_list<T> const & pp) : base(__y, n, boost::create<T>().from_initializer(__y, pp))
-        {
-        }
-            
+        template <typename... Args>
+            root_array(boost::node_proxy & __y, char const * n, Args &&... args) 
+            : base(__y, n, boost::create_array<T, S>()(__y,  std::forward<Args>(args)...))
+            {
+            }
+        
         ~root_array()
         {
             base::base1::reset(nullptr);
@@ -1836,17 +1957,6 @@ template <typename T, size_t S>
     inline size_t size_of(root_array<T, S> const &)
     {
         return sizeof(T) * S;
-    }
-
-
-/**
-    Instanciates a new @c node_ptr<> .
-*/
-
-template <typename V, typename... Args, typename PoolAllocator = pool_allocator<V> >
-    inline node_ptr<V> make_node(Args &&... args)
-    {
-        return node_ptr<V>(new node<V, PoolAllocator>(std::forward<Args>(args)...));
     }
 
 

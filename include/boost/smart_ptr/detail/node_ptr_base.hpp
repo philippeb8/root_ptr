@@ -93,6 +93,12 @@ template <typename T>
             {
             }
 
+        template <typename V, size_t S, typename PoolAllocator>
+            explicit node_ptr_common(node<std::array<V, S>, PoolAllocator> * p) 
+            : po_(p->element()->data())
+            {
+            }
+
         template <typename V>
             explicit node_ptr_common(node_ptr_common<V> const & p) 
             : po_(p.share())
@@ -128,6 +134,15 @@ template <typename T>
             node_ptr_common & operator = (node<V, PoolAllocator> * p)
             {
                 reset(p->element());
+                
+                return * this;
+            }
+            
+        template <typename V, size_t S, typename PoolAllocator>
+            node_ptr_common & operator = (node<std::array<V, S>, PoolAllocator> * p)
+            {
+                reset(p->element()->data());
+                
                 return * this;
             }
             
