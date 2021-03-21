@@ -1640,9 +1640,9 @@ template <typename T>
     };
     
 template <typename T>
-    inline T make_construct(node_proxy & __y, char const * n, T && po)
+    inline T make_construct(node_proxy & __y, char const * n, T const & po)
     {
-        return construct<T>()(__y, n, std::forward<T>(po));
+        return construct<T>()(__y, n, po);
     }
     
 
