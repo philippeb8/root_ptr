@@ -317,29 +317,6 @@ template <typename T>
         typename std::aligned_storage<sizeof(data_type), alignof(data_type)>::type elem_;
     };
 
-    
-template <>
-    class node_element<void> : public node_base
-    {
-    public:
-        typedef int data_type;
-
-        virtual size_t size() const
-        {
-            return 0;
-        }
-        
-        virtual void * data()
-        {
-            return nullptr;
-        }
-        
-        
-    protected:
-        /** Pointee object.*/
-        typename std::aligned_storage<sizeof(data_type), alignof(data_type)>::type elem_;
-    };
-
 
 /**
     Pointee object & allocator wrapper.
