@@ -1215,7 +1215,7 @@ template <typename T>
                 if (base::base::get() && base::base::get()->size() <= n)
                 {
                     std::stringstream out;
-                    out << "\"" << name() << "\" (" << n << ") out of range [0, " << base::base::get()->size() << "[\n";
+                    out << "\"" << name() << "\" (" << n << ") is out of range [0, " << base::base::get()->size() << "[\n";
                     node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
                     throw std::out_of_range(out.str());
                 }
@@ -1241,7 +1241,7 @@ template <typename T>
                 if (base::base::get() && base::base::get()->size() <= n)
                 {
                     std::stringstream out;
-                    out << "\"" << name() << "\" (" << n << ") out of range [0, " << base::base::get()->size() << "[\n";
+                    out << "\"" << name() << "\" (" << n << ") is out of range [0, " << base::base::get()->size() << "[\n";
                     node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
                     throw std::out_of_range(out.str());
                 }
@@ -1266,7 +1266,7 @@ template <typename T>
             if (base::base::get() && (base::base::get()->size() == 0 || pi_ < static_cast<T *>(base::base::get()->data()) || pi_ >= static_cast<T *>(base::base::get()->data()) + base::base::get()->size()))
             {
                 std::stringstream out;
-                out << "\"" << name() << "\" (" << pi_ - static_cast<T *>(base::base::get()->data()) << ") out of range [0, " << base::base::get()->size() << "[\n";
+                out << "\"" << name() << "\" (" << pi_ - static_cast<T *>(base::base::get()->data()) << ") is out of range [0, " << base::base::get()->size() << "[\n";
                 node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
                 throw std::out_of_range(out.str());
             }
@@ -1291,12 +1291,17 @@ template <typename T>
             if (base::base::get() && (base::base::get()->size() == 0 || pi_ < static_cast<T *>(base::base::get()->data()) || pi_ >= static_cast<T *>(base::base::get()->data()) + base::base::get()->size()))
             {
                 std::stringstream out;
-                out << "\"" << name() << "\" (" << pi_ - static_cast<T *>(base::base::get()->data()) << ") out of range [0, " << base::base::get()->size() << "[\n";
+                out << "\"" << name() << "\" (" << pi_ - static_cast<T *>(base::base::get()->data()) << ") is out of range [0, " << base::base::get()->size() << "[\n";
                 node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
                 throw std::out_of_range(out.str());
             }
 
             return pi_;
+        }
+        
+        root_ptr<root_ptr<T>> operator & () const
+        {
+            return root_ptr<root_ptr<T>>(base::proxy(), "", this);
         }
         
         operator bool () const
@@ -1322,7 +1327,7 @@ template <typename T>
             if (base::base::get() && (base::base::get()->size() == 0 || pi_ < static_cast<T *>(base::base::get()->data()) || pi_ >= static_cast<T *>(base::base::get()->data()) + base::base::get()->size()))
             {
                 std::stringstream out;
-                out << "\"" << name() << "\" (" << pi_ - static_cast<T *>(base::base::get()->data()) << ") out of range [0, " << base::base::get()->size() << "[\n";
+                out << "\"" << name() << "\" (" << pi_ - static_cast<T *>(base::base::get()->data()) << ") is out of range [0, " << base::base::get()->size() << "[\n";
                 node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
                 throw std::out_of_range(out.str());
             }
