@@ -53,31 +53,119 @@
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
 #include <boost/concept_check.hpp>
 #include <boost/container/allocator_traits.hpp>
+#include <boost/tti/has_static_member_function.hpp>
 
 #include <boost/smart_ptr/detail/intrusive_list.hpp>
 #include <boost/smart_ptr/detail/intrusive_stack.hpp>
-#include <boost/smart_ptr/detail/classof.hpp>
 
 
 namespace boost
 {
 
     
-template <typename, typename>
-    class node;
+struct node_proxy;
+
+template <typename T>
+    class root_ptr;
+    
+template <typename T, size_t S>
+    class root_array;
 
     
-namespace smart_ptr
-{
-
-namespace detail
-{
+BOOST_TTI_HAS_STATIC_MEMBER_FUNCTION(__proxy)
 
 
-struct node_proxy;
-struct node_base;
+template <typename T, bool = has_static_member_function___proxy<T, T const * (node_proxy &, T const *)>::value>
+    struct proxy
+    {
+        inline T const * operator () (node_proxy * x, T const * po) const
+        {
+            return po; 
+        }
+    };
 
+template <>
+    struct proxy<void, false>
+    {
+        inline void const * operator () (node_proxy * x, void const * po)
+        {
+            return po;
+        }
+    };
 
+template <typename T, size_t S>
+    struct proxy<std::array<T, S>, false>
+    {
+        inline std::array<T, S> const * operator () (node_proxy * x, std::array<T, S> const * po) const
+        {
+            for (typename std::array<T, S>::const_iterator i = po->begin(); i != po->end(); ++ i)
+                proxy<T>()(x, &* i);
+            
+            return po;
+        }
+    };
+
+template <typename T>
+    struct proxy<std::vector<T>, false>
+    {
+        inline std::vector<T> const * operator () (node_proxy * x, std::vector<T> const * po) const
+        {
+            for (typename std::vector<T>::const_iterator i = po->begin(); i != po->end(); ++ i)
+                proxy<T>()(x, &* i);
+            
+            return po;
+        }
+    };
+
+template <>
+    struct proxy<std::vector<void>, false>
+    {
+        inline std::vector<void> const * operator () (node_proxy * x, std::vector<void> const * po) const
+        {
+            return po;
+        }
+    };
+    
+template <typename T>
+    struct proxy<root_ptr<T>, false>
+    {
+        inline root_ptr<T> const * operator () (node_proxy * x, root_ptr<T> const * po) const
+        {
+            po->proxy(x);
+            
+            return po;
+        }
+    };
+
+template <typename T, size_t S>
+    struct proxy<root_array<T, S>, false>
+    {
+        inline root_array<T, S> const * operator () (node_proxy * x, root_array<T, S> const * po) const
+        {
+            po->proxy(x);
+            
+            return po;
+        }
+    };
+
+template <typename T>
+    struct proxy<T, true>
+    {
+        inline T const * operator () (node_proxy * x, T const * po) const
+        { 
+            T::__proxy(* x, po);
+            
+            return po;
+        }
+    };
+
+template <typename T>
+    inline T const & make_proxy(node_proxy * x, T const & po)
+    { 
+        return * proxy<T>()(x, const_cast<T *>(& po));
+    }
+
+    
 /**
     Root class of all pointee objects.
 */
@@ -85,25 +173,21 @@ struct node_base;
 struct node_base : public boost::detail::sp_counted_base
 {
     /** Tag used to enlist to @c node_proxy::node_list_ . */
-    intrusive_list::node node_tag_;
+    smart_ptr::detail::intrusive_list::node node_tag_;
 
-    node_base(size_t s = 1)
-    : size_(s)
-    {
-    }
+    virtual size_t size() const = 0;
     
-    size_t size() const
-    {
-        return size_;
-    }
-
+    virtual void * data() = 0;
+    
+    virtual void * element() = 0;
+    
+    virtual void const * proxy(node_proxy *) = 0;
+    
     virtual ~node_base()
     {
     }
 
 protected:
-    size_t const size_;
-    
     virtual void dispose()
     {
     }
@@ -129,10 +213,6 @@ protected:
     }
 };
 
-
-} // namespace detail
-
-} // namespace smart_ptr
 
 #define TEMPLATEARGUMENT_DECL(z, n, text) BOOST_PP_COMMA_IF(n) T ## n
 #define TEMPLATE_DECL(z, n, text) BOOST_PP_COMMA_IF(n) typename T ## n
@@ -163,55 +243,28 @@ protected:
             return typename node<T, Alloc<T, BOOST_PP_REPEAT(n, TEMPLATEARGUMENT_DECL, 0)> >::allocator_type(args...);          \
         }
     
-    
+
 /**
     Pointee object wrapper.
 */
 
 template <typename T>
-    class node_element : public smart_ptr::detail::node_base
+    class node_element : public node_base
     {
-        friend class classof;
-        
     public:
         typedef T data_type;
 
-        node_element(size_t s = 1)
-        : smart_ptr::detail::node_base(s)
-        {
-        }
-
-        /**
-            Cast operator used by @c node_ptr_common::header() .
-        */
         
-        class classof
+        virtual size_t size() const
         {
-            /** Address of the @c node the element belong to. */
-            node_element * p_;
-
-        public:
-            /**
-                Casts from a @c data_type to its parent @c node object.
-                
-                @param  p   Address of a @c data_type member object to cast from.
-            */
-            
-            classof(data_type * p) 
-            : p_(smart_ptr::detail::classof((data_type node_element::*)(& node_element::elem_), p)) 
-            {
-            }
-            
-            
-            /**
-                @return     Address of the parent @c node object.
-            */
-            
-            operator node_element * () const 
-            { 
-                return p_; 
-            }
-        };
+            return 1;
+        }
+        
+        virtual void * data()
+        {
+            return & elem_;
+        }
+        
 
     protected:
         /** Pointee object.*/
@@ -219,51 +272,69 @@ template <typename T>
     };
 
     
-template <>
-    class node_element<void> : public smart_ptr::detail::node_base
+template <typename T, size_t S>
+    class node_element<std::array<T, S>> : public node_base
     {
-        friend class classof;
+    public:
+        typedef std::array<T, S> data_type;
+
+        virtual size_t size() const
+        {
+            return S;
+        }
         
+        virtual void * data()
+        {
+            return reinterpret_cast<data_type *>(& elem_)->data();
+        }
+        
+        
+    protected:
+        /** Pointee object.*/
+        typename std::aligned_storage<sizeof(data_type), alignof(data_type)>::type elem_;
+    };
+
+    
+template <typename T>
+    class node_element<std::vector<T>> : public node_base
+    {        
+    public:
+        typedef std::vector<T> data_type;
+        
+        virtual size_t size() const
+        {
+            return reinterpret_cast<data_type const *>(& elem_)->size();
+        }
+        
+        virtual void * data()
+        {
+            return reinterpret_cast<data_type *>(& elem_)->data();
+        }
+        
+        
+    protected:
+        /** Pointee object.*/
+        typename std::aligned_storage<sizeof(data_type), alignof(data_type)>::type elem_;
+    };
+
+    
+template <>
+    class node_element<void> : public node_base
+    {
     public:
         typedef int data_type;
 
-        node_element(size_t s = 1)
-        : smart_ptr::detail::node_base(s)
+        virtual size_t size() const
         {
+            return 0;
         }
-
-        /**
-            Cast operator used by @c node_ptr_common::header() .
-        */
         
-        class classof
+        virtual void * data()
         {
-            /** Address of the @c node the element belong to. */
-            node_element * p_;
-
-        public:
-            /**
-                Casts from a @c data_type to its parent @c node object.
-                
-                @param  p   Address of a @c data_type member object to cast from.
-            */
-            
-            classof(void * p) 
-            : p_(smart_ptr::detail::classof((data_type node_element::*)(& node_element::elem_), static_cast<data_type *>(p))) 
-            {
-            }
-            
-            
-            /**
-                @return     Address of the parent @c node object.
-            */
-            
-            operator node_element * () const 
-            { 
-                return p_; 
-            }
-        };
-
+            return nullptr;
+        }
+        
+        
     protected:
         /** Pointee object.*/
         typename std::aligned_storage<sizeof(data_type), alignof(data_type)>::type elem_;
@@ -279,11 +350,24 @@ template <>
 template <typename T, typename PoolAllocator = pool_allocator<T> >
     class node : public node_element<T>
     {
+        typedef node_element<T> base;
+        
     public:
         typedef T data_type;
         typedef typename PoolAllocator::template rebind< node<T, PoolAllocator> >::other allocator_type;
 
-
+        
+        virtual void * element()
+        {
+            return reinterpret_cast<void *>(& this->base::elem_);
+        }
+        
+        virtual void const * proxy(node_proxy * p)
+        {
+            return reinterpret_cast<void const *>(boost::proxy<data_type>()(p, static_cast<data_type *>(element())));
+        }
+        
+        
         /**
             Initialization of a pointee object.
             
@@ -293,7 +377,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         node() 
         : a_(static_pool())
         {
-            container::allocator_traits<allocator_type>::construct(a_, element());
+            container::allocator_traits<allocator_type>::construct(a_, static_cast<data_type *>(element()));
         }
         
 
@@ -306,41 +390,31 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         node(allocator_type const & a) 
         : a_(a)
         {
-            container::allocator_traits<allocator_type>::construct(a_, element());
+            container::allocator_traits<allocator_type>::construct(a_, static_cast<data_type *>(element()));
         }
 
         
         template <typename... Args>
             node(Args &&... args) 
             {
-                container::allocator_traits<allocator_type>::construct(a_, element(), std::forward<Args>(args)...);
+                container::allocator_traits<allocator_type>::construct(a_, static_cast<data_type *>(element()), std::forward<Args>(args)...);
             }
 
 
         template <typename... Args>
             node(allocator_type const & a, Args &&... args)
             {
-                container::allocator_traits<allocator_type>::construct(a_, element(), std::forward<Args>(args)...);
+                container::allocator_traits<allocator_type>::construct(a_, static_cast<data_type *>(element()), std::forward<Args>(args)...);
             }
 
-
-        /**
-            @return		Pointee object address.
-        */
         
-        data_type * element()
-        { 
-            return reinterpret_cast<data_type *>(& elem_); 
-        }
-
-
         /**
             Destructor.
         */
         
         virtual ~node()
         {
-            container::allocator_traits<allocator_type>::destroy(a_, element());
+            container::allocator_traits<allocator_type>::destroy(a_, static_cast<data_type *>(element()));
         }
 
 
@@ -397,162 +471,6 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
         
     private:
-        using node_element<T>::elem_;
-
-
-        /** 
-            Static pool.
-            
-            This is where all @c node are allocated when @c PoolAllocator is not 
-            explicitly specified in the constructor. 
-         */
-        
-        static allocator_type & static_pool()
-        {
-            static allocator_type pool_;
-            
-            return pool_;
-        }
-
-        /** Copy of the @c PoolAllocator to be used. */
-        allocator_type a_;        
-    };
-
-
-/**
-    Pointee object & allocator wrapper.
-    
-    Main class used to instanciate pointee objects and a copy of the allocator desired.
-*/
-
-template <typename T, size_t S, typename PoolAllocator>
-class node<std::array<T, S>, PoolAllocator> : public node_element<std::array<T, S>>
-    {
-    public:
-        typedef std::array<T, S> data_type;
-        typedef typename PoolAllocator::template rebind< node<std::array<T, S>, PoolAllocator> >::other allocator_type;
-
-
-        /**
-            Initialization of a pointee object.
-            
-            @note Will use a static copy of the allocator which has no parameter.
-        */
-        
-        node() 
-        : node_element<std::array<T, S>>(S)
-        , a_(static_pool())
-        {
-            container::allocator_traits<allocator_type>::construct(a_, element());
-        }
-        
-
-        /**
-            Initialization of a pointee object.
-            
-            @param  a   Allocator to copy.
-        */
-        
-        node(allocator_type const & a) 
-        : node_element<std::array<T, S>>(S)
-        , a_(a)
-        {
-            container::allocator_traits<allocator_type>::construct(a_, element());
-        }
-
-        
-        template <typename... Args>
-            node(Args &&... args) 
-            : node_element<std::array<T, S>>(S)
-            {
-                container::allocator_traits<allocator_type>::construct(a_, element(), std::forward<Args>(args)...);
-            }
-
-
-        template <typename... Args>
-            node(allocator_type const & a, Args &&... args)
-            : node_element<std::array<T, S>>(S)
-            {
-                container::allocator_traits<allocator_type>::construct(a_, element(), std::forward<Args>(args)...);
-            }
-
-
-        /**
-            @return		Pointee object address.
-        */
-        
-        data_type * element()
-        { 
-            return reinterpret_cast<data_type *>(& elem_); 
-        }
-
-
-        /**
-            Destructor.
-        */
-        
-        virtual ~node()
-        {
-            container::allocator_traits<allocator_type>::destroy(a_, element());
-        }
-
-
-        /**
-            Allocates a new @c node using the static copy of @c PoolAllocator to be used.
-            
-            @param  s   Disregarded.
-            @return     Pointer of the new @c node.
-        */
-
-        void * operator new (size_t s)
-        {
-            return static_pool().allocate(1);
-        }
-
-
-        /**
-            Allocates a new @c node .
-            
-            @param  s   Disregarded.
-            @param  a   Copy of @c PoolAllocator to be used.
-            @return     Pointer of the new @c node.
-        */
-
-        void * operator new (size_t s, allocator_type a)
-        {
-            return a.allocate(1);
-        }
-
-        
-        /**
-            Deallocates a @c node from @c PoolAllocator .
-            
-            @param  p   Address of the @c node to deallocate.
-        */
-        
-        void operator delete (void * p)
-        {
-            static_cast<node *>(p)->a_.deallocate(static_cast<node *>(p), 1);
-        }
-
-
-        /**
-            Deallocates a @c node from @c PoolAllocator .
-
-            @param  p   Address of the @c node to deallocate.
-            @param  a   Copy of @c PoolAllocator to be used.
-        */
-
-        void operator delete (void * p, allocator_type a)
-        {
-            a.deallocate(static_cast<node *>(p), 1);
-        }
-
-        
-    private:
-        using node_element<std::array<T, S>>::elem_;
-
-
         /** 
             Static pool.
             
