@@ -29,6 +29,7 @@
 #endif
 
 #include <cstdint>
+#include <cstdlib>
 
 #include <array>
 #include <vector>
@@ -235,6 +236,19 @@ public:
     {
     }
 };
+
+
+#ifdef BOOST_NO_EXCEPTIONS
+
+void throw_exception(std::exception const & e)
+{
+    std::cerr << e.what() << "\n";
+    node_proxy::stacktrace(std::cerr, * node_proxy::top_node_proxy());
+
+    exit(-1);
+}
+
+#endif
 
 
 struct static_cast_tag {};
@@ -814,6 +828,7 @@ template <typename T>
                 recursive_mutex::scoped_lock scoped_lock(static_mutex());
 #endif
 
+#ifndef BOOST_NO_EXCEPTIONS
                 if (! pi_)
                 {
                     std::stringstream out;
@@ -821,6 +836,7 @@ template <typename T>
                     node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
                     throw std::out_of_range(out.str());
                 }            
+#endif
             }
 
         /**
@@ -839,6 +855,7 @@ template <typename T>
                 recursive_mutex::scoped_lock scoped_lock(static_mutex());
 #endif
                 
+#ifndef BOOST_NO_EXCEPTIONS
                 if (! pi_)
                 {
                     std::stringstream out;
@@ -846,6 +863,7 @@ template <typename T>
                     node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
                     throw std::out_of_range(out.str());
                 }            
+#endif
             }
 
         char const * name() const
@@ -918,6 +936,7 @@ template <typename T>
                 recursive_mutex::scoped_lock scoped_lock(static_mutex());
 #endif
                 
+#ifndef BOOST_NO_EXCEPTIONS
                 if (! pi_)
                 {
                     std::stringstream out;
@@ -933,6 +952,7 @@ template <typename T>
                     node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
                     throw std::out_of_range(out.str());
                 }
+#endif
 
                 return * (pi_ + n); 
             }
@@ -944,6 +964,7 @@ template <typename T>
                 recursive_mutex::scoped_lock scoped_lock(static_mutex());
 #endif
             
+#ifndef BOOST_NO_EXCEPTIONS
                 if (! pi_)
                 {
                     std::stringstream out;
@@ -959,7 +980,8 @@ template <typename T>
                     node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
                     throw std::out_of_range(out.str());
                 }
-                
+#endif
+
                 return * (pi_ + n); 
             }
 
@@ -969,6 +991,7 @@ template <typename T>
             recursive_mutex::scoped_lock scoped_lock(static_mutex());
 #endif
             
+#ifndef BOOST_NO_EXCEPTIONS
             if (! pi_)
             {
                 std::stringstream out;
@@ -984,7 +1007,8 @@ template <typename T>
                 node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
                 throw std::out_of_range(out.str());
             }
-                
+#endif
+
             return * pi_;
         }
 
@@ -994,6 +1018,7 @@ template <typename T>
             recursive_mutex::scoped_lock scoped_lock(static_mutex());
 #endif
             
+#ifndef BOOST_NO_EXCEPTIONS
             if (! pi_)
             {
                 std::stringstream out;
@@ -1009,15 +1034,18 @@ template <typename T>
                 node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
                 throw std::out_of_range(out.str());
             }
+#endif
 
             return pi_;
         }
         
+#if 0
         root_ptr<root_ptr<T>> operator & () const
         {
             return root_ptr<root_ptr<T>>(base::proxy(), "", this);
         }
-        
+#endif
+
         operator bool () const
         {
             return pi_ != 0;
@@ -1030,6 +1058,7 @@ template <typename T>
 
         operator T * () const
         {
+#ifndef BOOST_NO_EXCEPTIONS
             if (! pi_)
             {
                 std::stringstream out;
@@ -1045,6 +1074,7 @@ template <typename T>
                 node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
                 throw std::out_of_range(out.str());
             }
+#endif
 
             return pi_;
         }
@@ -1393,11 +1423,13 @@ template <>
                 return static_cast<root_ptr &>(base::template operator = <void>(p));
             }
 
+#if 0
         root_ptr<root_ptr<void>> operator & () const
         {
             return root_ptr<root_ptr<void>>(base::proxy(), "", this);
         }
-        
+#endif
+
         operator bool () const
         {
             return pi_ != 0;
@@ -1740,13 +1772,13 @@ template <typename T, size_t S>
     };
 
 template <typename T>
-    inline size_t size_of(T const &)
+    inline size_t constexpr size_of(T const &)
     {
         return sizeof(T);
     }
 
 template <typename T, size_t S>
-    inline size_t size_of(root_array<T, S> const &)
+    inline size_t constexpr size_of(root_array<T, S> const &)
     {
         return sizeof(T) * S;
     }

@@ -405,6 +405,8 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         void * operator new (size_t s)
         {
             return static_pool().allocate(1);
+
+            //return ::operator new (s);
         }
 
 
@@ -419,6 +421,8 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         void * operator new (size_t s, allocator_type a)
         {
             return a.allocate(1);
+
+            //return ::operator new (s);
         }
 
         
@@ -431,6 +435,8 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         void operator delete (void * p)
         {
             static_cast<node *>(p)->a_.deallocate(static_cast<node *>(p), 1);
+
+            //::operator delete (p);
         }
 
 
@@ -444,6 +450,8 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         void operator delete (void * p, allocator_type a)
         {
             a.deallocate(static_cast<node *>(p), 1);
+
+            //::operator delete (p);
         }
 
         
