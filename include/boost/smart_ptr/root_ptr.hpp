@@ -277,12 +277,12 @@ public:
 
     ~root_core()
     {
-#ifndef BOOST_DISABLE_THREADS
-        mutex::scoped_lock scoped_lock(static_mutex());
-#endif
-            
         if (po_)
         {
+#ifndef BOOST_DISABLE_THREADS
+            mutex::scoped_lock scoped_lock(static_mutex());
+#endif
+
             po_->release();
         }
     }
