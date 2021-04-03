@@ -330,6 +330,10 @@ public:
 
     value_type * share() const
     {
+#ifndef BOOST_DISABLE_THREADS
+        boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
+#endif
+
         if (po_)
         {
             po_->add_ref_copy();
