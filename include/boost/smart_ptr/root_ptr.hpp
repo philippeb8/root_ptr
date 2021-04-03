@@ -1066,24 +1066,6 @@ template <typename T>
 
         operator T * () const
         {
-#ifndef BOOST_NO_EXCEPTIONS
-            if (! pi_)
-            {
-                std::stringstream out;
-                out << "\"" << name() << "\" is a null pointer\n";
-                node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
-                throw std::out_of_range(out.str());
-            }            
-            
-            if (base::base::get() && (base::base::get()->size() == 0 || pi_ < static_cast<T *>(base::base::get()->data()) || pi_ >= static_cast<T *>(base::base::get()->data()) + base::base::get()->size()))
-            {
-                std::stringstream out;
-                out << "\"" << name() << "\" (" << pi_ - static_cast<T *>(base::base::get()->data()) << ") is out of range [0, " << base::base::get()->size() << "[\n";
-                node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
-                throw std::out_of_range(out.str());
-            }
-#endif
-
             return pi_;
         }
 
@@ -1613,40 +1595,45 @@ template <typename T, bool>
             {
                 return T(std::forward<Args>(args)...);
             }
+
+            inline T operator () (node_proxy & __y, char const * n, T const & arg) const
+            {
+                return T(arg);
+            }
     };
 
 template <typename T, size_t S>
     struct construct<std::array<T, S>, false>
     {
         template <typename... Args>
-        inline std::array<T, S> operator () (node_proxy & __y, char const * n, Args &&... args) const
-        {
-            typename std::aligned_storage<sizeof(std::array<T, S>), alignof(std::array<T, S>)>::type res;
-            
-            construct_array1<T, S>()(__y, n, reinterpret_cast<std::array<T, S> &>(res), std::forward<Args>(args)...);
-            construct_array4<T, S, sizeof...(args)>()(__y, n, reinterpret_cast<std::array<T, S> &>(res));
-            
-            return reinterpret_cast<std::array<T, S> &>(res);
-        }
-        
-        inline std::array<T, S> operator () (node_proxy & __y, char const * n, std::array<T, S> const & arg) const
-        {
-            return std::array<T, S>(arg);
-        }
-        
-        inline std::array<T, S> operator () (node_proxy & __y, char const * n, T const args[S]) const
-        {
-            typename std::aligned_storage<sizeof(std::array<T, S>), alignof(std::array<T, S>)>::type res;
-            
-            return construct_array2<T, S>()(__y, n, reinterpret_cast<std::array<T, S> &>(res), args);
-        }
+            inline std::array<T, S> operator () (node_proxy & __y, char const * n, Args &&... args) const
+            {
+                typename std::aligned_storage<sizeof(std::array<T, S>), alignof(std::array<T, S>)>::type res;
 
-        inline std::array<T, S> operator () (node_proxy & __y, char const * n, std::initializer_list<T> && args) const
-        {
-            typename std::aligned_storage<sizeof(std::array<T, S>), alignof(std::array<T, S>)>::type res;
-            
-            return construct_array3<T, S>()(__y, n, reinterpret_cast<std::array<T, S> &>(res), std::forward<std::initializer_list<T>>(args));
-        }
+                construct_array1<T, S>()(__y, n, reinterpret_cast<std::array<T, S> &>(res), std::forward<Args>(args)...);
+                construct_array4<T, S, sizeof...(args)>()(__y, n, reinterpret_cast<std::array<T, S> &>(res));
+
+                return reinterpret_cast<std::array<T, S> &>(res);
+            }
+
+            inline std::array<T, S> operator () (node_proxy & __y, char const * n, std::array<T, S> const & arg) const
+            {
+                return std::array<T, S>(arg);
+            }
+
+            inline std::array<T, S> operator () (node_proxy & __y, char const * n, T const args[S]) const
+            {
+                typename std::aligned_storage<sizeof(std::array<T, S>), alignof(std::array<T, S>)>::type res;
+
+                return construct_array2<T, S>()(__y, n, reinterpret_cast<std::array<T, S> &>(res), args);
+            }
+
+            inline std::array<T, S> operator () (node_proxy & __y, char const * n, std::initializer_list<T> && args) const
+            {
+                typename std::aligned_storage<sizeof(std::array<T, S>), alignof(std::array<T, S>)>::type res;
+
+                return construct_array3<T, S>()(__y, n, reinterpret_cast<std::array<T, S> &>(res), std::forward<std::initializer_list<T>>(args));
+            }
     };
     
 template <typename T, size_t S>
