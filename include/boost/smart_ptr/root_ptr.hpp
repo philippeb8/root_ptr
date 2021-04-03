@@ -39,7 +39,7 @@
 
 #ifndef BOOST_DISABLE_THREADS
 #include <boost/thread/thread.hpp>
-#include <boost/thread/mutex.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 #endif
 
 #include <iostream>
@@ -58,10 +58,10 @@ struct node_base;
     
 #ifndef BOOST_DISABLE_THREADS
 /** Main global mutex used for thread safety */
-static mutex & static_mutex()
+static recursive_mutex & static_recursive_mutex()
 {
-    static mutex mutex_;
-    
+    static recursive_mutex mutex_;
+
     return mutex_;
 }
 #endif
@@ -277,12 +277,12 @@ public:
 
     ~root_core()
     {
-        if (po_)
-        {
 #ifndef BOOST_DISABLE_THREADS
-            mutex::scoped_lock scoped_lock(static_mutex());
+        boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
 
+        if (po_)
+        {
             po_->release();
         }
     }
@@ -340,6 +340,10 @@ public:
 
     void reset(value_type * p)
     {
+#ifndef BOOST_DISABLE_THREADS
+        boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
+#endif
+
         if (po_)
         {
             po_->release();
@@ -404,7 +408,7 @@ class root_proxy : public root_core
             , px_(& x)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(static_mutex());
+                boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
                 
                 px_->init(p);
@@ -683,7 +687,7 @@ template <>
         friend std::ostream & operator << (std::ostream & os, root_ptr const & o) 
         {
 #ifndef BOOST_DISABLE_THREADS
-            mutex::scoped_lock scoped_lock(static_mutex());
+            boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
                 
             return os << o.operator std::nullptr_t * ();
@@ -825,7 +829,7 @@ template <typename T>
             , pn_(n)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(static_mutex());
+                boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
 
 #ifndef BOOST_NO_EXCEPTIONS
@@ -852,7 +856,7 @@ template <typename T>
             , pn_(n)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(static_mutex());
+                boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
                 
 #ifndef BOOST_NO_EXCEPTIONS
@@ -874,7 +878,7 @@ template <typename T>
         root_ptr & operator = (std::nullptr_t)
         {
 #ifndef BOOST_DISABLE_THREADS
-            mutex::scoped_lock scoped_lock(static_mutex());
+            boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif        
 
             pi_ = nullptr;
@@ -886,7 +890,7 @@ template <typename T>
             root_ptr & operator = (V const * p)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(static_mutex());
+                boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif        
 
                 pi_ = const_cast<V *>(p);
@@ -898,7 +902,7 @@ template <typename T>
             root_ptr & operator = (node<V, PoolAllocator> * p)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(static_mutex());
+                boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif        
 
                 pi_ = static_cast<V *>(p->data());
@@ -910,7 +914,7 @@ template <typename T>
             root_ptr & operator = (root_ptr<V> const & p)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(static_mutex());
+                boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif        
 
                 pi_ = p.pi_;
@@ -921,7 +925,7 @@ template <typename T>
             root_ptr & operator = (root_ptr const & p)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(static_mutex());
+                boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif        
 
                 pi_ = p.pi_;
@@ -933,7 +937,7 @@ template <typename T>
             T & operator [] (V n)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(static_mutex());
+                boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
                 
 #ifndef BOOST_NO_EXCEPTIONS
@@ -961,7 +965,7 @@ template <typename T>
             T const & operator [] (V n) const
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(static_mutex());
+                boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
             
 #ifndef BOOST_NO_EXCEPTIONS
@@ -988,7 +992,7 @@ template <typename T>
         T & operator * () const
         {
 #ifndef BOOST_DISABLE_THREADS
-            mutex::scoped_lock scoped_lock(static_mutex());
+            boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
             
 #ifndef BOOST_NO_EXCEPTIONS
@@ -1015,7 +1019,7 @@ template <typename T>
         T * operator -> () const
         {
 #ifndef BOOST_DISABLE_THREADS
-            mutex::scoped_lock scoped_lock(static_mutex());
+            boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
             
 #ifndef BOOST_NO_EXCEPTIONS
@@ -1082,7 +1086,7 @@ template <typename T>
         root_ptr & operator ++ ()
         {
 #ifndef BOOST_DISABLE_THREADS
-            mutex::scoped_lock scoped_lock(static_mutex());
+            boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
             
             return ++ pi_, * this;
@@ -1091,7 +1095,7 @@ template <typename T>
         root_ptr & operator -- ()
         {
 #ifndef BOOST_DISABLE_THREADS
-            mutex::scoped_lock scoped_lock(static_mutex());
+            boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
             
             return -- pi_, * this;
@@ -1100,7 +1104,7 @@ template <typename T>
         root_ptr operator ++ (int)
         {
 #ifndef BOOST_DISABLE_THREADS
-            mutex::scoped_lock scoped_lock(static_mutex());
+            boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
             
             root_ptr temp(* this);
@@ -1111,7 +1115,7 @@ template <typename T>
         root_ptr operator -- (int)
         {
 #ifndef BOOST_DISABLE_THREADS
-            mutex::scoped_lock scoped_lock(static_mutex());
+            boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
             
             root_ptr temp(* this);
@@ -1145,7 +1149,7 @@ template <typename T>
             root_ptr & operator += (V i)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(static_mutex());
+                boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
                 
                 pi_ += i;
@@ -1157,7 +1161,7 @@ template <typename T>
             root_ptr & operator -= (V i)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(static_mutex());
+                boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
                 
                 pi_ -= i;
@@ -1214,7 +1218,7 @@ template <typename T>
         friend std::ostream & operator << (std::ostream & os, root_ptr const & o) 
         {
 #ifndef BOOST_DISABLE_THREADS
-            mutex::scoped_lock scoped_lock(static_mutex());
+            boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
                 
             return os << o.operator T * ();
@@ -1380,7 +1384,7 @@ template <>
         root_ptr & operator = (std::nullptr_t)
         {
 #ifndef BOOST_DISABLE_THREADS
-            mutex::scoped_lock scoped_lock(static_mutex());
+            boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
             
             pi_ = nullptr;
@@ -1392,7 +1396,7 @@ template <>
             root_ptr & operator = (V const * p)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(static_mutex());
+                boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
                 
                 pi_ = const_cast<V *>(p);
@@ -1404,7 +1408,7 @@ template <>
             root_ptr & operator = (node<V, PoolAllocator> * p)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(static_mutex());
+                boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
                 
                 pi_ = static_cast<V *>(p->data());
@@ -1415,7 +1419,7 @@ template <>
             root_ptr & operator = (root_ptr const & p)
             {
 #ifndef BOOST_DISABLE_THREADS
-                mutex::scoped_lock scoped_lock(static_mutex());
+                boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
                 
                 pi_ = p.pi_;
@@ -1494,7 +1498,7 @@ template <>
         friend std::ostream & operator << (std::ostream & os, root_ptr const & o) 
         {
 #ifndef BOOST_DISABLE_THREADS
-            mutex::scoped_lock scoped_lock(static_mutex());
+            boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
                 
             return os << o.operator void * ();
