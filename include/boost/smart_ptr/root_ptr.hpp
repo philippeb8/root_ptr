@@ -1734,6 +1734,16 @@ template <typename T, size_t S>
         typedef boost::root_ptr<T> base;
         
     public:
+        root_array(root_ptr<T> const & p)
+        : base(p)
+        {
+        }
+        
+        root_array(node_proxy & x, char const * n, root_ptr<T> const & p) 
+        : base(x, n, p)
+        {
+        }
+        
         root_array(boost::node_proxy & __y, char const * n, T const pp[S]) 
         : base(__y, n, boost::create_array<T, S>()(__y, pp))
         {
