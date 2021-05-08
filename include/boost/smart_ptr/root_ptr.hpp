@@ -1511,36 +1511,34 @@ template <typename T, size_t S>
     struct construct_array1
     {
         template <typename First, typename... Args>
-            inline std::array<T, S> & operator () (node_proxy & __y, char const * n, std::array<T, S> & res, First && first, Args &&... args) const
+            inline void operator () (node_proxy & __y, char const * n, std::array<T, S> & res, First && first, Args &&... args) const
             {
                 new (& res[S - sizeof...(args) - 1]) T(construct<T>()(__y, n, first));
                 
-                return construct_array1<T, S>()(__y, n, res, std::forward<Args>(args)...);
+                construct_array1<T, S>()(__y, n, res, std::forward<Args>(args)...);
             }
             
-            inline std::array<T, S> & operator () (node_proxy & __y, char const * n, std::array<T, S> & res) const
+            inline void operator () (node_proxy & __y, char const * n, std::array<T, S> & res) const
             {
-                return res;
             }
     };
 
 template <typename T, size_t S, size_t I = 0>
     struct construct_array2
     {
-        inline std::array<T, S> & operator () (node_proxy & __y, char const * n, std::array<T, S> & res, T const args[S]) const
+        inline void operator () (node_proxy & __y, char const * n, std::array<T, S> & res, T const args[S]) const
         {
             new (& res[I]) T(construct<T>()(__y, n, args[I]));
             
-            return construct_array2<T, S, I + 1>()(__y, n, res, args);
+            construct_array2<T, S, I + 1>()(__y, n, res, args);
         }
     };
 
 template <typename T, size_t S>
     struct construct_array2<T, S, S>
     {
-        inline std::array<T, S> & operator () (node_proxy & __y, char const * n, std::array<T, S> & res, T const args[S]) const
+        inline void operator () (node_proxy & __y, char const * n, std::array<T, S> & res, T const args[S]) const
         {
-            return res;
         }
     };
 
@@ -1548,20 +1546,19 @@ template <typename T, size_t S>
 template <typename T, size_t S, size_t I = 0>
     struct construct_array3
     {
-        inline std::array<T, S> & operator () (node_proxy & __y, char const * n, std::array<T, S> & res, std::initializer_list<T> && args) const
+        inline void operator () (node_proxy & __y, char const * n, std::array<T, S> & res, std::initializer_list<T> && args) const
         {
             new (& res[I]) T(construct<T>()(__y, n, * (args.begin() + I)));
             
-            return construct_array3<T, S, I + 1>()(__y, n, res, std::forward<std::initializer_list<T>>(args));
+            construct_array3<T, S, I + 1>()(__y, n, res, std::forward<std::initializer_list<T>>(args));
         }
     };
 
 template <typename T, size_t S>
     struct construct_array3<T, S, S>
     {
-        inline std::array<T, S> & operator () (node_proxy & __y, char const * n, std::array<T, S> & res, std::initializer_list<T> && args) const
+        inline void operator () (node_proxy & __y, char const * n, std::array<T, S> & res, std::initializer_list<T> && args) const
         {
-            return res;
         }
     };
 
@@ -1569,20 +1566,19 @@ template <typename T, size_t S>
 template <typename T, size_t S, size_t I = 0>
     struct construct_array4
     {
-        inline std::array<T, S> & operator () (node_proxy & __y, char const * n, std::array<T, S> & res) const
+        inline void operator () (node_proxy & __y, char const * n, std::array<T, S> & res) const
         {
             new (& res[I]) T(construct<T>()(__y, n));
             
-            return construct_array4<T, S, I + 1>()(__y, n, res);
+            construct_array4<T, S, I + 1>()(__y, n, res);
         }
     };
 
 template <typename T, size_t S>
     struct construct_array4<T, S, S>
     {
-        inline std::array<T, S> & operator () (node_proxy & __y, char const * n, std::array<T, S> & res) const
+        inline void operator () (node_proxy & __y, char const * n, std::array<T, S> & res) const
         {
-            return res;
         }
     };
 
@@ -1596,9 +1592,9 @@ template <typename T, bool>
                 return T(std::forward<Args>(args)...);
             }
 
-            inline T operator () (node_proxy & __y, char const * n, T const & arg) const
+            inline T operator () (node_proxy & __y, char const * n, T && arg) const
             {
-                return T(arg);
+                return T(std::forward<T>(arg));
             }
     };
 
@@ -1625,14 +1621,18 @@ template <typename T, size_t S>
             {
                 typename std::aligned_storage<sizeof(std::array<T, S>), alignof(std::array<T, S>)>::type res;
 
-                return construct_array2<T, S>()(__y, n, reinterpret_cast<std::array<T, S> &>(res), args);
+                construct_array2<T, S>()(__y, n, reinterpret_cast<std::array<T, S> &>(res), args);
+
+		return reinterpret_cast<std::array<T, S> &>(res);
             }
 
             inline std::array<T, S> operator () (node_proxy & __y, char const * n, std::initializer_list<T> && args) const
             {
                 typename std::aligned_storage<sizeof(std::array<T, S>), alignof(std::array<T, S>)>::type res;
 
-                return construct_array3<T, S>()(__y, n, reinterpret_cast<std::array<T, S> &>(res), std::forward<std::initializer_list<T>>(args));
+                construct_array3<T, S>()(__y, n, reinterpret_cast<std::array<T, S> &>(res), std::forward<std::initializer_list<T>>(args));
+
+		return reinterpret_cast<std::array<T, S> &>(res);
             }
     };
     
@@ -1644,6 +1644,11 @@ template <typename T, size_t S>
             {
                 return root_array<T, S>(__y, n, std::forward<Args>(args)...);
             }
+
+            inline root_array<T, S> operator () (node_proxy & __y, char const * n, std::initializer_list<T> && l) const
+	    {
+		return root_array<T, S>(__y, n, std::forward<std::initializer_list<T>>(l));
+	    }
     };
 
 template <typename T>
@@ -1665,13 +1670,13 @@ template <typename T>
                 return T(__y, std::forward<Args>(args)...);
             }
     };
-    
+
 template <typename T>
     inline T make_construct(node_proxy & __y, char const * n, T const & po)
     {
         return construct<T>()(__y, n, po);
     }
-    
+
 
 /**
     Allocate new buffers;
@@ -1696,7 +1701,7 @@ template <typename T, size_t S>
                 return new node<std::array<T, S>>(construct<std::array<T, S>>()(__y, "", std::forward<Args>(args)...));
             }
         
-        inline node<std::array<T, S>> * from_copy(node_proxy & __y, char const * n, std::array<T, S> const & arg) const
+        inline node<std::array<T, S>> * from_copy(node_proxy & __y, std::array<T, S> const & arg) const
         {
             return new node<std::array<T, S>>(construct<std::array<T, S>>()(__y, "", arg));
         }
@@ -1738,27 +1743,21 @@ template <typename T, size_t S>
         : base(p)
         {
         }
+
+        root_array(node_proxy & x, char const * n)
+        : base(x, n, boost::create_array<T, S>()(x))
+        {
+        }
         
         root_array(node_proxy & x, char const * n, root_ptr<T> const & p) 
         : base(x, n, p)
         {
         }
-        
-        root_array(boost::node_proxy & __y, char const * n, T const pp[S]) 
-        : base(__y, n, boost::create_array<T, S>()(__y, pp))
-        {
-        }
-        
+
         root_array(boost::node_proxy & __y, char const * n, std::initializer_list<T> && pp) 
-        : base(__y, n, boost::create_array<T, S>().from_initializer(__y, std::forward<std::initializer_list<T>>(pp)))
+        : base(__y, n, boost::create_array<T, S>()(__y, std::forward<std::initializer_list<T>>(pp)))
         {
         }
-        
-        template <typename... Args>
-            root_array(boost::node_proxy & __y, char const * n, Args &&... args) 
-            : base(__y, n, boost::create_array<T, S>()(__y,  std::forward<Args>(args)...))
-            {
-            }
     };    
 
 
