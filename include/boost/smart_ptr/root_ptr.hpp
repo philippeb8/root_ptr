@@ -702,6 +702,10 @@ template <>
 #ifdef BOOST_REPORT
             if (base::base::get() && ! base::cyclic() && base::base::get()->explicit_delete_ == false)
             {
+#ifndef BOOST_DISABLE_THREADS
+                boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
+#endif
+                
                 std::cerr << "report; memory leak; " << name() << "; " << base::base::get()->size_bytes() << std::endl;
             }
 #endif
@@ -1129,6 +1133,10 @@ template <typename T>
 #ifdef BOOST_REPORT
             if (base::base::get() && base::base::get()->explicit_delete_ == true)
             {
+#ifndef BOOST_DISABLE_THREADS
+                boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
+#endif
+                
                 std::cerr << "report; use after free; " << name() << "; " << 1 << std::endl;
             }
 #endif
@@ -1282,6 +1290,10 @@ template <typename T>
 #ifdef BOOST_REPORT
             if (base::base::get() && ! base::cyclic() && base::base::get()->explicit_delete_ == false)
             {
+#ifndef BOOST_DISABLE_THREADS
+                boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
+#endif
+                
                 std::cerr << "report; memory leak; " << name() << "; " << base::base::get()->size_bytes() << std::endl;
             }
 #endif
@@ -1566,6 +1578,10 @@ template <>
 #ifdef BOOST_REPORT
             if (base::base::get() && ! base::cyclic() && base::base::get()->explicit_delete_ == false)
             {
+#ifndef BOOST_DISABLE_THREADS
+                boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
+#endif
+                
                 std::cerr << "report; memory leak; " << name() << "; " << base::base::get()->size_bytes() << std::endl;
             }
 #endif
