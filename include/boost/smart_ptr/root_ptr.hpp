@@ -826,6 +826,13 @@ template <typename T>
             , pn_(n)
             {
             }
+
+            explicit root_ptr(node_proxy & x, char const * n, root_ptr<std::nullptr_t> const & p)
+            : base(x)
+            , pi_(nullptr)
+            , pn_(n)
+            {
+            }
         
             
         /**
