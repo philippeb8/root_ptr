@@ -1075,7 +1075,7 @@ template <typename T>
 #ifdef BOOST_REPORT
             if (base::base::get() && base::base::get()->explicit_delete_ == true)
             {
-                std::cerr << "report; use after free (name, occurrences); " << name() << "; " << 1 std::endl;
+                std::cerr << "report; use after free (name, occurrences); " << name() << "; " << 1 << std::endl;
             }
 #endif
 
