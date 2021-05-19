@@ -699,8 +699,12 @@ template <>
 
         ~root_ptr()
         {
-            //if (po_ && ! cyclic() && get()->use_count() == 1)
-            //    BOOSstd::nullptr_t_LOG_std::nullptr_tRIVIAL(info) << "\"" << pn_ << "\":" << boost::stacktrace::stacktrace(1, 1);
+#ifdef BOOST_REPORT
+            if (base::base::get() && ! base::cyclic() && base::base::get()->explicit_delete_ == false)
+            {
+                std::cerr << "report: memory leak (name, bytes): " << name() << "; " << base::base::get()->size_bytes() << std::endl;
+            }
+#endif
         }
     };
     
@@ -943,7 +947,21 @@ template <typename T>
 #ifndef BOOST_DISABLE_THREADS
                 boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
-                
+
+#ifdef BOOST_REPORT
+                if (base::base::get() && base::base::get()->explicit_delete_ == true)
+                {
+                    std::cerr << "report: use after free (name): " << name() << std::endl;
+                }
+#endif
+
+#ifdef BOOST_REPORT
+                if (base::base::get() && base::base::get()->size() <= n)
+                {
+                    std::cerr << "report: out of bounds (name, index): " << name() << "; " << n << std::endl;
+                }
+#endif
+
 #ifndef BOOST_NO_EXCEPTIONS
                 if (! pi_)
                 {
@@ -972,6 +990,20 @@ template <typename T>
                 boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
             
+#ifdef BOOST_REPORT
+                if (base::base::get() && base::base::get()->explicit_delete_ == true)
+                {
+                    std::cerr << "report: use after free (name): " << name() << std::endl;
+                }
+#endif
+
+#ifdef BOOST_REPORT
+                if (base::base::get() && base::base::get()->size() <= n)
+                {
+                    std::cerr << "report: out of bounds (name, index): " << name() << "; " << n << std::endl;
+                }
+#endif
+
 #ifndef BOOST_NO_EXCEPTIONS
                 if (! pi_)
                 {
@@ -999,6 +1031,20 @@ template <typename T>
             boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
             
+#ifdef BOOST_REPORT
+            if (base::base::get() && base::base::get()->explicit_delete_ == true)
+            {
+                std::cerr << "report: use after free (name): " << name() << std::endl;
+            }
+#endif
+
+#ifdef BOOST_REPORT
+            if (base::base::get() && (base::base::get()->size() == 0 || pi_ < static_cast<T *>(base::base::get()->data()) || pi_ >= static_cast<T *>(base::base::get()->data()) + base::base::get()->size()))
+            {
+                std::cerr << "report: out of bounds (name, index): " << name() << "; " << pi_ - static_cast<T *>(base::base::get()->data()) << std::endl;
+            }
+#endif
+
 #ifndef BOOST_NO_EXCEPTIONS
             if (! pi_)
             {
@@ -1026,6 +1072,20 @@ template <typename T>
             boost::lock_guard<boost::recursive_mutex> guard(static_recursive_mutex());
 #endif
             
+#ifdef BOOST_REPORT
+            if (base::base::get() && base::base::get()->explicit_delete_ == true)
+            {
+                std::cerr << "report: use after free (name): " << name() << std::endl;
+            }
+#endif
+
+#ifdef BOOST_REPORT
+            if (base::base::get() && (base::base::get()->size() == 0 || pi_ < static_cast<T *>(base::base::get()->data()) || pi_ >= static_cast<T *>(base::base::get()->data()) + base::base::get()->size()))
+            {
+                std::cerr << "report: out of bounds (name, index): " << name() << "; " << pi_ - static_cast<T *>(base::base::get()->data()) << std::endl;
+            }
+#endif
+
 #ifndef BOOST_NO_EXCEPTIONS
             if (! pi_)
             {
@@ -1066,6 +1126,13 @@ template <typename T>
 
         operator T * () const
         {
+#ifdef BOOST_REPORT
+            if (base::base::get() && base::base::get()->explicit_delete_ == true)
+            {
+                std::cerr << "report: use after free (name): " << name() << std::endl;
+            }
+#endif
+
             return pi_;
         }
 
@@ -1212,8 +1279,12 @@ template <typename T>
 
         ~root_ptr()
         {
-            //if (po_ && ! cyclic() && get()->use_count() == 1)
-            //    BOOST_LOG_TRIVIAL(info) << "\"" << pn_ << "\":" << boost::stacktrace::stacktrace(1, 1);
+#ifdef BOOST_REPORT
+            if (base::base::get() && ! base::cyclic() && base::base::get()->explicit_delete_ == false)
+            {
+                std::cerr << "report: memory leak (name, bytes): " << name() << "; " << base::base::get()->size_bytes() << std::endl;
+            }
+#endif
         }
     };
 
@@ -1492,8 +1563,12 @@ template <>
 
         ~root_ptr()
         {
-            //if (po_ && ! cyclic() && get()->use_count() == 1)
-            //    BOOSvoid_LOG_voidRIVIAL(info) << "\"" << pn_ << "\":" << boost::stacktrace::stacktrace(1, 1);
+#ifdef BOOST_REPORT
+            if (base::base::get() && ! base::cyclic() && base::base::get()->explicit_delete_ == false)
+            {
+                std::cerr << "report: memory leak (name, bytes): " << name() << "; " << base::base::get()->size_bytes() << std::endl;
+            }
+#endif
         }
     };
 

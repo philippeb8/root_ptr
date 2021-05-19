@@ -174,8 +174,14 @@ struct node_base : public boost::detail::sp_counted_base
 {
     /** Tag used to enlist to @c node_proxy::node_list_ . */
     smart_ptr::detail::intrusive_list::node node_tag_;
+    
+#ifdef BOOST_REPORT
+    bool explicit_delete_ = false;
+#endif
 
     virtual size_t size() const = 0;
+
+    virtual size_t size_bytes() const = 0;
     
     virtual void * data() = 0;
     
@@ -260,6 +266,11 @@ template <typename T>
             return 1;
         }
         
+        virtual size_t size_bytes() const
+        {
+            return sizeof(T);
+        }
+        
         virtual void * data()
         {
             return & elem_;
@@ -283,6 +294,11 @@ template <typename T, size_t S>
             return S;
         }
         
+        virtual size_t size_bytes() const
+        {
+            return S * sizeof(T);
+        }
+        
         virtual void * data()
         {
             return reinterpret_cast<data_type *>(& elem_)->data();
@@ -304,6 +320,11 @@ template <typename T>
         virtual size_t size() const
         {
             return reinterpret_cast<data_type const *>(& elem_)->size();
+        }
+        
+        virtual size_t size_bytes() const
+        {
+            return reinterpret_cast<data_type const *>(& elem_)->size() * sizeof(T);
         }
         
         virtual void * data()
