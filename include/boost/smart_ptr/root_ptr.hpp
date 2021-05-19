@@ -702,7 +702,7 @@ template <>
 #ifdef BOOST_REPORT
             if (base::base::get() && ! base::cyclic() && base::base::get()->explicit_delete_ == false)
             {
-                std::cerr << "report; memory leak (name, bytes); " << name() << "; " << base::base::get()->size_bytes() << std::endl;
+                std::cerr << "report; memory leak; " << name() << "; " << base::base::get()->size_bytes() << std::endl;
             }
 #endif
         }
@@ -951,14 +951,14 @@ template <typename T>
 #ifdef BOOST_REPORT
                 if (base::base::get() && base::base::get()->explicit_delete_ == true)
                 {
-                    std::cerr << "report; use after free (name, occurrences); " << name() << "; " << 1 <<std::endl;
+                    std::cerr << "report; use after free; " << name() << "; " << 1 <<std::endl;
                 }
 #endif
 
 #ifdef BOOST_REPORT
                 if (base::base::get() && base::base::get()->size() <= n)
                 {
-                    std::cerr << "report; out of bounds (name, occurrences); " << name() << "; " << 1 << std::endl;
+                    std::cerr << "report; out of bounds; " << name() << "; " << 1 << std::endl;
                 }
 #endif
 
@@ -993,14 +993,14 @@ template <typename T>
 #ifdef BOOST_REPORT
                 if (base::base::get() && base::base::get()->explicit_delete_ == true)
                 {
-                    std::cerr << "report; use after free (name, occurrences); " << name() << "; " << 1 << std::endl;
+                    std::cerr << "report; use after free; " << name() << "; " << 1 << std::endl;
                 }
 #endif
 
 #ifdef BOOST_REPORT
                 if (base::base::get() && base::base::get()->size() <= n)
                 {
-                    std::cerr << "report; out of bounds (name, occurrences); " << name() << "; " << 1 << std::endl;
+                    std::cerr << "report; out of bounds; " << name() << "; " << 1 << std::endl;
                 }
 #endif
 
@@ -1034,14 +1034,14 @@ template <typename T>
 #ifdef BOOST_REPORT
             if (base::base::get() && base::base::get()->explicit_delete_ == true)
             {
-                std::cerr << "report; use after free (name, occurrences); " << name() << "; " << 1 << std::endl;
+                std::cerr << "report; use after free; " << name() << "; " << 1 << std::endl;
             }
 #endif
 
 #ifdef BOOST_REPORT
             if (base::base::get() && (base::base::get()->size() == 0 || pi_ < static_cast<T *>(base::base::get()->data()) || pi_ >= static_cast<T *>(base::base::get()->data()) + base::base::get()->size()))
             {
-                std::cerr << "report; out of bounds (name, occurrences); " << name() << "; " << 1 << std::endl;
+                std::cerr << "report; out of bounds; " << name() << "; " << 1 << std::endl;
             }
 #endif
 
@@ -1075,14 +1075,14 @@ template <typename T>
 #ifdef BOOST_REPORT
             if (base::base::get() && base::base::get()->explicit_delete_ == true)
             {
-                std::cerr << "report; use after free (name, occurrences); " << name() << "; " << 1 << std::endl;
+                std::cerr << "report; use after free; " << name() << "; " << 1 << std::endl;
             }
 #endif
 
 #ifdef BOOST_REPORT
             if (base::base::get() && (base::base::get()->size() == 0 || pi_ < static_cast<T *>(base::base::get()->data()) || pi_ >= static_cast<T *>(base::base::get()->data()) + base::base::get()->size()))
             {
-                std::cerr << "report; out of bounds (name, occurrences); " << name() << "; " << 1 << std::endl;
+                std::cerr << "report; out of bounds; " << name() << "; " << 1 << std::endl;
             }
 #endif
 
@@ -1129,7 +1129,7 @@ template <typename T>
 #ifdef BOOST_REPORT
             if (base::base::get() && base::base::get()->explicit_delete_ == true)
             {
-                std::cerr << "report; use after free (name, occurrences); " << name() << "; " << 1 << std::endl;
+                std::cerr << "report; use after free; " << name() << "; " << 1 << std::endl;
             }
 #endif
 
@@ -1282,7 +1282,7 @@ template <typename T>
 #ifdef BOOST_REPORT
             if (base::base::get() && ! base::cyclic() && base::base::get()->explicit_delete_ == false)
             {
-                std::cerr << "report; memory leak (name, bytes); " << name() << "; " << base::base::get()->size_bytes() << std::endl;
+                std::cerr << "report; memory leak; " << name() << "; " << base::base::get()->size_bytes() << std::endl;
             }
 #endif
         }
@@ -1566,7 +1566,7 @@ template <>
 #ifdef BOOST_REPORT
             if (base::base::get() && ! base::cyclic() && base::base::get()->explicit_delete_ == false)
             {
-                std::cerr << "report; memory leak (name, bytes); " << name() << "; " << base::base::get()->size_bytes() << std::endl;
+                std::cerr << "report; memory leak; " << name() << "; " << base::base::get()->size_bytes() << std::endl;
             }
 #endif
         }
