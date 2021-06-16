@@ -75,10 +75,10 @@ template <typename T, size_t S>
 BOOST_TTI_HAS_STATIC_MEMBER_FUNCTION(__proxy)
 
 
-template <typename T, bool = has_static_member_function___proxy<T, T const * (node_proxy &, T const *)>::value>
+template <typename T, bool = has_static_member_function___proxy<typename std::remove_reference<T>::type, typename std::remove_reference<T>::type const * (node_proxy &, typename std::remove_reference<T>::type const *)>::value>
     struct proxy
     {
-        inline T const * operator () (node_proxy * x, T const * po) const
+        inline typename std::remove_reference<T>::type const * operator () (node_proxy * x, typename std::remove_reference<T>::type const * po) const
         {
             return po; 
         }
@@ -160,8 +160,14 @@ template <typename T>
     };
 
 template <typename T>
-    inline T const & make_proxy(node_proxy * x, T const & po)
+    inline T & make_proxy(node_proxy * x, T & po)
     { 
+        return * const_cast<T *>(proxy<T>()(x, & po));
+    }
+
+template <typename T>
+    inline T const & make_proxy(node_proxy * x, T const & po)
+    {
         return * proxy<T>()(x, const_cast<T *>(& po));
     }
 

@@ -1601,7 +1601,7 @@ template <>
 */
 
 
-template <typename T, bool = has_static_member_function___proxy<T, T const * (node_proxy &, T const *)>::value>
+template <typename T, bool = has_static_member_function___proxy<typename std::remove_reference<T>::type, typename std::remove_reference<T>::type const * (node_proxy &, typename std::remove_reference<T>::type const *)>::value>
     struct construct;
 
     
@@ -1693,6 +1693,25 @@ template <typename T, bool>
             inline T operator () (node_proxy & __y, char const * n, T && arg) const
             {
                 return T(std::forward<T>(arg));
+            }
+    };
+
+template <typename T, bool B>
+    struct construct<T &, B>
+    {
+        template <typename... Args>
+            inline T & operator () (node_proxy & __y, char const * n, Args &&... args) const
+            {
+		static T t(std::forward<Args>(args)...);
+
+                return t;
+            }
+
+            inline T & operator () (node_proxy & __y, char const * n, T && arg) const
+            {
+		static T t(std::forward<T>(arg));
+
+                return t;
             }
     };
 
