@@ -1,16 +1,26 @@
 /**
-    @file
-    Boost sh_utility.h header file.
+    \file
+    Boost classof.hpp header file.
 
-    @note
-    Copyright (c) 2008 Phil Bouchard <pbouchard8@gmail.com>.
+    \note
+    Copyright (C) 2021 Fornux Inc.
+    
+    Phil Bouchard, Founder & CTO
+    Fornux Inc.
+    phil@fornux.com
+    20 Poirier St, Gatineau, Quebec, Canada, J8V 1A6
+    
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-    Distributed under the Boost Software License, Version 1.0.
+        http://www.apache.org/licenses/LICENSE-2.0
 
-    See accompanying file LICENSE_1_0.txt or copy at
-    http://www.boost.org/LICENSE_1_0.txt
-
-    See http://www.boost.org/libs/smart_ptr/doc/index.html for documentation.
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 */
 
 
