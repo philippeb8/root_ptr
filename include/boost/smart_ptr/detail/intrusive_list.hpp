@@ -28,7 +28,7 @@
 #define BOOST_INTRUSIVE_LIST_HPP_INCLUDED
 
 
-#include <boost/smart_ptr/detail/classof.hpp>
+#include "classof.hpp"
 
 
 namespace boost
@@ -61,11 +61,19 @@ struct intrusive_list_node
 
     void erase()
     {
-        prev->next = next;
-        next->prev = prev;
-        
-        next = this;
-        prev = this;
+        if (! singleton())
+        {
+            prev->next = next;
+            next->prev = prev;
+
+            next = this;
+            prev = this;
+        }
+    }
+
+    bool singleton() const
+    {
+        return next == this && prev == this;
     }
     
     ~intrusive_list_node()
@@ -84,6 +92,11 @@ protected:
     {
         impl.next = & impl;
         impl.prev = & impl;
+    }
+
+    ~intrusive_list_base()
+    {
+        clear();
     }
 };
 
@@ -105,6 +118,8 @@ public:
     typedef intrusive_list_node * pointer;
     template <typename T, intrusive_list_node T::* P> 
         struct iterator;
+    template <typename T, intrusive_list_node T::* P>
+        struct reverse_iterator;
 
 protected:
     using base::impl;
@@ -127,7 +142,18 @@ public:
     
     pointer end()
     {
-        return & impl; 
+        return & impl;
+    }
+
+    pointer rbegin()
+    {
+        return impl.prev;
+
+    }
+
+    pointer rend()
+    {
+        return & impl;
     }
 
     bool empty() const
@@ -137,11 +163,13 @@ public:
     
     void push_front(pointer i)
     {
+        i->erase();
         begin()->insert(i);
     }
     
     void push_back(pointer i)
     {
+        i->erase();
         end()->insert(i);
     }
     
@@ -211,6 +239,59 @@ template <typename T, intrusive_list_node T::* P>
         }
 
         node_type * node_;
+    };
+
+
+template <typename T, intrusive_list_node T::* P>
+    struct intrusive_list::reverse_iterator
+    {
+      typedef reverse_iterator self_type;
+      typedef intrusive_list_node node_type;
+
+      reverse_iterator(intrusive_list::pointer __x)
+          : node_(__x)
+      {
+      }
+
+      T & operator * () const
+      {
+        return * classof(P, node_);
+      }
+
+      T * operator -> () const
+      {
+        return classof(P, node_);
+      }
+
+      self_type & operator = (self_type const & x)
+      {
+        node_ = x.node_;
+        return * this;
+      }
+
+      self_type & operator ++ ()
+      {
+        node_ = node_->prev;
+        return * this;
+      }
+
+      self_type & operator -- ()
+      {
+        node_ = node_->next;
+        return * this;
+      }
+
+      bool operator == (const self_type & x) const
+      {
+        return node_ == x.node_;
+      }
+
+      bool operator != (const self_type & x) const
+      {
+        return node_ != x.node_;
+      }
+
+      node_type * node_;
     };
 
 

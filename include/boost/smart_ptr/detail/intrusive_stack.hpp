@@ -50,6 +50,21 @@ struct intrusive_stack_node
         p->next = next;
         next = p;
     }
+
+    bool singleton() const
+    {
+        return next == this;
+    }
+
+    void erase()
+    {
+        next = this;
+    }
+
+    ~intrusive_stack_node()
+    {
+        erase();
+    }
 };
 
 
@@ -57,15 +72,15 @@ class intrusive_stack_base
 {
 protected:
     intrusive_stack_node impl;
-    
-    intrusive_stack_base()
-    { 
-        clear(); 
-    }
 
     void clear()
     {
         impl.next = & impl;
+    }
+
+    ~intrusive_stack_base()
+    {
+        clear();
     }
 };
 
