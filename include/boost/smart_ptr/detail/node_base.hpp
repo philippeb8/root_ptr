@@ -6,12 +6,12 @@
     'SOURCE TO SOURCE COMPILER, COMPILATION METHOD, AND
     COMPUTER-READABLE MEDIUM FOR PREDICTABLE MEMORY MANAGEMENT'
     
-    Copyright (C) 2020-2024 Fornux Inc.
-    
+    Copyright (C) 2020-2026 Fornux LLC
+
     Phil Bouchard, Founder & CEO
-    Fornux Inc.
+    Fornux LLC
     phil@fornux.com
-    20 Poirier St, Gatineau, Quebec, Canada, J8V 1A6
+    3909 S Maryland Pkwy Ste 314 #638, Las Vegas, NV, 89119
     
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -36,9 +36,9 @@
 # pragma once
 #endif
 
-#include <array>
 #include <limits>
 #include <utility>
+#include <iterator>
 #include <type_traits>
 
 #ifndef BOOST_DISABLE_THREADS
@@ -64,7 +64,6 @@
 #include <boost/tti/has_static_member_function.hpp>
 
 #include <boost/smart_ptr/detail/intrusive_list.hpp>
-#include <boost/smart_ptr/detail/intrusive_stack.hpp>
 
 
 namespace boost
@@ -73,168 +72,6 @@ namespace boost
     
 struct node_proxy;
 
-template <typename T>
-    class root_ptr;
-    
-template <typename T, size_t S>
-    class root_array;
-
-    
-BOOST_TTI_HAS_STATIC_MEMBER_FUNCTION(__proxy)
-
-
-template <typename T, bool = has_static_member_function___proxy<typename std::remove_reference<T>::type, typename std::remove_reference<T>::type const * (node_proxy const &, typename std::remove_reference<T>::type const *)>::value>
-    struct proxy
-    {
-        inline typename std::remove_const<typename std::remove_reference<T>::type>::type & operator () (node_proxy const & x, typename std::remove_const<typename std::remove_reference<T>::type>::type & po) const
-        {
-            return po;
-        }
-
-#if 1
-        inline typename std::remove_const<typename std::remove_reference<T>::type>::type const & operator () (node_proxy const & x, typename std::remove_const<typename std::remove_reference<T>::type>::type const & po) const
-        {
-            return po;
-        }
-#endif
-    };
-
-template <typename T, size_t S>
-    struct proxy<std::array<T, S>, false>
-    {
-        inline std::array<T, S> & operator () (node_proxy const & x, std::array<T, S> & po) const
-        {
-            for (typename std::array<T, S>::iterator i = po.begin(); i != po.end(); ++ i)
-                proxy<T>()(x, * i);
-            
-            return po;
-        }
-
-#if 1
-        inline std::array<T, S> const & operator () (node_proxy const & x, std::array<T, S> const & po) const
-        {
-            for (typename std::array<T, S>::const_iterator i = po.begin(); i != po.end(); ++ i)
-                proxy<T>()(x, * i);
-
-            return po;
-        }
-#endif
-    };
-
-template <typename T>
-    struct proxy<std::vector<T>, false>
-    {
-        inline std::vector<T> & operator () (node_proxy const & x, std::vector<T> & po) const
-        {
-            for (typename std::vector<T>::iterator i = po.begin(); i != po.end(); ++ i)
-                proxy<T>()(x, * i);
-            
-            return po;
-        }
-
-#if 1
-        inline std::vector<T> const & operator () (node_proxy const & x, std::vector<T> const & po) const
-        {
-            for (typename std::vector<T>::const_iterator i = po.begin(); i != po.end(); ++ i)
-                proxy<T>()(x, * i);
-
-            return po;
-        }
-#endif
-    };
-
-template <>
-    struct proxy<std::vector<void>, false>
-    {
-        inline std::vector<void> & operator () (node_proxy const & x, std::vector<void> & po) const
-        {
-            return po;
-        }
-
-#if 1
-        inline std::vector<void> const & operator () (node_proxy const & x, std::vector<void> const & po) const
-        {
-            return po;
-        }
-#endif
-    };
-    
-template <typename T>
-    struct proxy<root_ptr<T>, false>
-    {
-        inline root_ptr<T> & operator () (node_proxy const & x, root_ptr<T> & po) const
-        {
-            po.proxy(x);
-            
-            return po;
-        }
-
-#if 1
-        inline root_ptr<T> const & operator () (node_proxy const & x, root_ptr<T> const & po) const
-        {
-            po.proxy(x);
-
-            return po;
-        }
-#endif
-    };
-
-template <typename T, size_t S>
-    struct proxy<root_array<T, S>, false>
-    {
-        inline root_array<T, S> & operator () (node_proxy const & x, root_array<T, S> & po) const
-        {
-            po.proxy(x);
-            
-            return po;
-        }
-
-#if 1
-        inline root_array<T, S> const & operator () (node_proxy const & x, root_array<T, S> const & po) const
-        {
-            po.proxy(x);
-
-            return po;
-        }
-#endif
-    };
-
-template <typename T>
-    struct proxy<T, true>
-    {
-        inline T & operator () (node_proxy const & x, T & po) const
-        { 
-            T::__proxy(x, po);
-            
-            return po;
-        }
-
-#if 1
-        inline T const & operator () (node_proxy const & x, T const & po) const
-        {
-            T::__proxy(x, po);
-
-            return po;
-        }
-#endif
-    };
-
-template <typename T>
-    inline T && make_proxy(node_proxy const & x, T && po)
-    {
-        proxy<T>()(x, std::forward<T>(po));
-
-        return std::forward<T>(po);
-    }
-
-template <typename T>
-    inline T const & make_proxy(node_proxy const & x, T const & po)
-    {
-        proxy<T>()(x, po);
-
-        return po;
-    }
-
 
 /**
     Root class of all pointee objects.
@@ -242,12 +79,13 @@ template <typename T>
 
 struct node_base : public boost::detail::sp_counted_base
 {
-    /** Tag used to enlist to @c node_proxy::node_list_ . */
-    smart_ptr::detail::intrusive_list::node node_tag_;
-    
 #ifdef BOOST_REPORT
     bool explicit_delete_ = false;
 #endif
+
+    node_base()
+    {
+    }
 
     virtual size_t size() const = 0;
 
@@ -263,7 +101,6 @@ struct node_base : public boost::detail::sp_counted_base
     {
     }
 
-protected:
     virtual void dispose() BOOST_SP_NOEXCEPT
     {
     }
@@ -273,6 +110,7 @@ protected:
         delete this;
     }
     
+protected:
     virtual void * get_deleter(std::type_info const &) BOOST_SP_NOEXCEPT
     { 
         return 0; 
@@ -481,7 +319,8 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
         template <typename... Args>
             node(Args &&... args)
-            : node_element<T>{std::forward<Args>(args)...}
+            : a_(static_pool())
+            , node_element<T>{std::forward<Args>(args)...}
             {
             }
             
@@ -512,7 +351,9 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
         void * operator new (size_t s)
         {
-            return static_pool().allocate(1);
+            void * p = static_pool().allocate(1);
+
+            return p;
         }
 
 
@@ -526,7 +367,9 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
         void * operator new (size_t s, allocator_type a)
         {
-            return a.allocate(1);
+            void * p = a.allocate(1);
+
+            return p;
         }
 
 
@@ -622,7 +465,8 @@ template <typename T, size_t S, typename PoolAllocator>
 
         template <typename... Args>
             node(Args &&... args)
-                : node_element<data_type>{std::forward<Args>(args)...}
+                : a_(static_pool())
+                , node_element<data_type>{std::forward<Args>(args)...}
             {
             }
 
@@ -666,7 +510,9 @@ template <typename T, size_t S, typename PoolAllocator>
 
         void * operator new (size_t s)
         {
-            return static_pool().allocate(1);
+            void * p = static_pool().allocate(1);
+
+            return p;
         }
 
 
@@ -680,7 +526,9 @@ template <typename T, size_t S, typename PoolAllocator>
 
         void * operator new (size_t s, allocator_type a)
         {
-            return a.allocate(1);
+            void * p = a.allocate(1);
+
+            return p;
         }
 
 

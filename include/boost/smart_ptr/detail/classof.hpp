@@ -2,13 +2,16 @@
     \file
     Boost classof.hpp header file.
 
-    \note
-    Copyright (C) 2021 Fornux Inc.
+    Patent US11288049B2
+    'SOURCE TO SOURCE COMPILER, COMPILATION METHOD, AND
+    COMPUTER-READABLE MEDIUM FOR PREDICTABLE MEMORY MANAGEMENT'
     
-    Phil Bouchard, Founder & CTO
-    Fornux Inc.
+    Copyright (C) 2020-2026 Fornux LLC
+
+    Phil Bouchard, Founder & CEO
+    Fornux LLC
     phil@fornux.com
-    20 Poirier St, Gatineau, Quebec, Canada, J8V 1A6
+    3909 S Maryland Pkwy Ste 314 #638, Las Vegas, NV, 89119
     
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.

@@ -2,13 +2,16 @@
     \file
     Boost intrusive_list.hpp header file.
 
-    \note
-    Copyright (C) 2021 Fornux Inc.
+    Patent US11288049B2
+    'SOURCE TO SOURCE COMPILER, COMPILATION METHOD, AND
+    COMPUTER-READABLE MEDIUM FOR PREDICTABLE MEMORY MANAGEMENT'
     
-    Phil Bouchard, Founder & CTO
-    Fornux Inc.
+    Copyright (C) 2020-2026 Fornux LLC
+
+    Phil Bouchard, Founder & CEO
+    Fornux LLC
     phil@fornux.com
-    20 Poirier St, Gatineau, Quebec, Canada, J8V 1A6
+    3909 S Maryland Pkwy Ste 314 #638, Las Vegas, NV, 89119
     
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -50,6 +53,11 @@ struct intrusive_list_node
     {
     }
 
+    intrusive_list_node(intrusive_list_node * const p) : intrusive_list_node()
+    {
+        insert(p);
+    }
+
     void insert(intrusive_list_node * const p)
     {
         p->next = this;
@@ -61,14 +69,16 @@ struct intrusive_list_node
 
     void erase()
     {
-        if (! singleton())
-        {
-            prev->next = next;
-            next->prev = prev;
+        prev->next = next;
+        next->prev = prev;
 
-            next = this;
-            prev = this;
-        }
+        clear();
+    }
+    
+    void clear()
+    {
+        next = this;
+        prev = this;
     }
 
     bool singleton() const
@@ -83,24 +93,6 @@ struct intrusive_list_node
 };
 
 
-class intrusive_list_base
-{
-protected:
-    intrusive_list_node impl;
-
-    void clear()
-    {
-        impl.next = & impl;
-        impl.prev = & impl;
-    }
-
-    ~intrusive_list_base()
-    {
-        clear();
-    }
-};
-
-
 /**
     Static list.
     
@@ -109,56 +101,47 @@ protected:
     together without the need of any memory allocation.
 */
 
-class intrusive_list : protected intrusive_list_base
+struct intrusive_list : intrusive_list_node
 {
-    typedef intrusive_list_base base;
+    typedef intrusive_list_node base;
 
-public:
-    typedef intrusive_list_node node;
-    typedef intrusive_list_node * pointer;
-    template <typename T, intrusive_list_node T::* P> 
+    typedef intrusive_list node;
+    typedef intrusive_list * pointer;
+    template <typename T, intrusive_list T::* P> 
         struct iterator;
-    template <typename T, intrusive_list_node T::* P>
+    template <typename T, intrusive_list T::* P>
         struct reverse_iterator;
+        
+    using base::base;
 
-protected:
-    using base::impl;
 
-public:
-    intrusive_list()                                
-    {
-    }
-    
-    intrusive_list(intrusive_list & x)
-    {
-        merge(x);
-    }
+    intrusive_list(intrusive_list const &) = delete;
     
     pointer begin() 
     { 
-        return impl.next; 
+        return static_cast<pointer>(next); 
         
     }
     
     pointer end()
     {
-        return & impl;
+        return this;
     }
 
     pointer rbegin()
     {
-        return impl.prev;
+        return static_cast<pointer>(prev);
 
     }
 
     pointer rend()
     {
-        return & impl;
+        return this;
     }
 
     bool empty() const
     { 
-        return impl.next == & impl; 
+        return singleton();
     }
     
     void push_front(pointer i)
@@ -177,23 +160,35 @@ public:
     {
         if (! x.empty())
         {
-            x.impl.prev->next = impl.next;
-            impl.next->prev = x.impl.prev;
+            x.prev->next = next;
+            next->prev = x.prev;
             
-            impl.next = x.impl.next;
-            x.impl.next->prev = & impl;
+            next = x.next;
+            x.next->prev = this;
+        }
+    }
 
+    void splice(intrusive_list& x)
+    {
+        if (! x.empty())
+        {
+            x.prev->next = next;
+            next->prev = x.prev;
+            
+            next = x.next;
+            x.next->prev = this;
+            
             x.clear();
         }
     }
 };
 
 
-template <typename T, intrusive_list_node T::* P>
+template <typename T, intrusive_list T::* P>
     struct intrusive_list::iterator
     {
         typedef iterator self_type;
-        typedef intrusive_list_node node_type;
+        typedef intrusive_list node_type;
 
         iterator(intrusive_list::pointer __x) 
         : node_(__x) 
@@ -213,18 +208,21 @@ template <typename T, intrusive_list_node T::* P>
         self_type & operator = (self_type const & x)
         {
             node_ = x.node_;
+            
             return * this;
         }
 
         self_type & operator ++ ()
         {
-            node_ = node_->next;
+            node_ = static_cast<intrusive_list::pointer>(node_->next);
+            
             return * this;
         }
 
         self_type & operator -- ()
         {
-            node_ = node_->prev;
+            node_ = static_cast<intrusive_list::pointer>(node_->prev);
+            
             return * this;
         }
 
@@ -242,11 +240,11 @@ template <typename T, intrusive_list_node T::* P>
     };
 
 
-template <typename T, intrusive_list_node T::* P>
+template <typename T, intrusive_list T::* P>
     struct intrusive_list::reverse_iterator
     {
       typedef reverse_iterator self_type;
-      typedef intrusive_list_node node_type;
+      typedef intrusive_list node_type;
 
       reverse_iterator(intrusive_list::pointer __x)
           : node_(__x)
@@ -266,18 +264,21 @@ template <typename T, intrusive_list_node T::* P>
       self_type & operator = (self_type const & x)
       {
         node_ = x.node_;
+        
         return * this;
       }
 
       self_type & operator ++ ()
       {
-        node_ = node_->prev;
+        node_ = static_cast<intrusive_list::pointer>(node_->prev);
+        
         return * this;
       }
 
       self_type & operator -- ()
       {
-        node_ = node_->next;
+        node_ = static_cast<intrusive_list::pointer>(node_->next);
+        
         return * this;
       }
 

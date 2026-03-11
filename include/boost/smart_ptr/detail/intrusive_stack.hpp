@@ -2,13 +2,16 @@
     \file
     Boost intrusive_stack.hpp header file.
 
-    \note
-    Copyright (C) 2021 Fornux Inc.
+    Patent US11288049B2
+    'SOURCE TO SOURCE COMPILER, COMPILATION METHOD, AND
+    COMPUTER-READABLE MEDIUM FOR PREDICTABLE MEMORY MANAGEMENT'
     
-    Phil Bouchard, Founder & CTO
-    Fornux Inc.
+    Copyright (C) 2020-2026 Fornux LLC
+
+    Phil Bouchard, Founder & CEO
+    Fornux LLC
     phil@fornux.com
-    20 Poirier St, Gatineau, Quebec, Canada, J8V 1A6
+    3909 S Maryland Pkwy Ste 314 #638, Las Vegas, NV, 89119
     
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -45,6 +48,15 @@ struct intrusive_stack_node
 {
     intrusive_stack_node * next;
     
+    intrusive_stack_node() : next(this)
+    {
+    }
+
+    intrusive_stack_node(intrusive_stack_node * const p) : intrusive_stack_node()
+    {
+        insert(p);
+    }
+
     void insert(intrusive_stack_node * const p)
     {
         p->next = next;
@@ -68,23 +80,6 @@ struct intrusive_stack_node
 };
 
 
-class intrusive_stack_base
-{
-protected:
-    intrusive_stack_node impl;
-
-    void clear()
-    {
-        impl.next = & impl;
-    }
-
-    ~intrusive_stack_base()
-    {
-        clear();
-    }
-};
-
-
 /**
     Static stack.
     
@@ -93,33 +88,33 @@ protected:
     together without the need of any memory allocation.
 */
 
-class intrusive_stack : protected intrusive_stack_base
+struct intrusive_stack : intrusive_stack_node
 {
-    typedef intrusive_stack_base base;
+    typedef intrusive_stack_node base;
 
-public:
-    typedef intrusive_stack_node node;
-    typedef intrusive_stack_node * pointer;
-    template <typename T, intrusive_stack_node T::* P> 
+    typedef intrusive_stack node;
+    typedef intrusive_stack * pointer;
+    template <typename T, intrusive_stack T::* P> 
         struct iterator;
+        
+    using base::base;
+    
 
-protected:
-    using base::impl;
-
-public:
+    intrusive_stack(intrusive_stack const &) = delete;
+    
     pointer begin()
     { 
-        return impl.next; 
+        return static_cast<intrusive_stack *>(next); 
     }
     
     pointer end()
     { 
-        return & impl; 
+        return this; 
     }
 
     bool empty() const
     { 
-        return impl.next == & impl; 
+        return next == this; 
     }
     
     void push(pointer i)
@@ -129,11 +124,11 @@ public:
 };
 
 
-template <typename T, intrusive_stack_node T::* P>
+template <typename T, intrusive_stack T::* P>
     struct intrusive_stack::iterator
     {
         typedef iterator self_type;
-        typedef intrusive_stack_node node_type;
+        typedef intrusive_stack node_type;
 
         iterator() 
         : node_() 
@@ -157,7 +152,8 @@ template <typename T, intrusive_stack_node T::* P>
 
         self_type & operator ++ ()
         {
-            node_ = node_->next;
+            node_ = static_cast<intrusive_stack::pointer>(node_->next);
+            
             return * this;
         }
 
