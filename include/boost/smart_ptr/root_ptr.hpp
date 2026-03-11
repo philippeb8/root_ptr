@@ -106,8 +106,6 @@ struct node_proxy
     bool destroying_;
 
     /** List of all pointer instances belonging to a @c node_proxy . */
-    mutable smart_ptr::detail::intrusive_list node_set_;
-
     mutable smart_ptr::detail::intrusive_list root_set_;
 
 
