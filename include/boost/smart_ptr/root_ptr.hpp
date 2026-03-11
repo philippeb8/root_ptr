@@ -378,6 +378,10 @@ inline void node_proxy::reset()
 }
 
 
+template <typename T>
+    class root_ptr;
+
+
 template <>
     class root_ptr<std::nullptr_t> : protected root_core
     {
