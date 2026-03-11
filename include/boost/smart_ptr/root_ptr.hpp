@@ -70,7 +70,7 @@ struct root_core;
 
 #ifndef BOOST_DISABLE_THREADS
 /** Main global mutex used for thread safety */
-inline std::recursive_mutex & static_recursive_mutex()
+static inline std::recursive_mutex & static_recursive_mutex()
 {
     static std::recursive_mutex mutex_;
 
@@ -115,12 +115,20 @@ struct node_proxy
 
     node_proxy(char const * file, char const * function, unsigned line, node_proxy const * parent = nullptr, size_t depth = 0) : file_(file), function_(function), line_(line), parent_(parent), depth_(parent ? parent->depth_ + 1 : 0), destroying_(false)
     {
+#ifndef BOOST_DISABLE_THREADS
+        std::scoped_lock guard(static_recursive_mutex());
+#endif
+
         * top_node_proxy() = this;
     }
 
 
     static node_proxy const ** top_node_proxy()
     {
+#ifndef BOOST_DISABLE_THREADS
+        std::scoped_lock guard(static_recursive_mutex());
+#endif
+
         static thread_local node_proxy const * p;
 
         return & p;
@@ -129,10 +137,12 @@ struct node_proxy
 
     static std::ostream & stacktrace(std::ostream & out, node_proxy const * p)
     {
-#if 1
+#ifndef BOOST_DISABLE_THREADS
+        std::scoped_lock guard(static_recursive_mutex());
+#endif
+
         for (size_t depth = 0; p && p->depth_; ++ depth, p = p->parent_)
             out << '#' << depth << ' ' << p->function_ << " in " << p->file_ << " line " << p->line_<< '\n';
-#endif
 
         return out;
     }
@@ -161,6 +171,10 @@ struct node_proxy
 
     ~node_proxy()
     {
+#ifndef BOOST_DISABLE_THREADS
+        std::scoped_lock guard(static_recursive_mutex());
+#endif
+
         reset();
 
         * top_node_proxy() = parent();
@@ -194,7 +208,6 @@ struct node_proxy
 
 
 #ifdef BOOST_NO_EXCEPTIONS
-
 void throw_exception(std::exception const & e)
 {
     std::cerr << e.what() << "\n";
@@ -202,7 +215,6 @@ void throw_exception(std::exception const & e)
 
     exit(-1);
 }
-
 #endif
 
 
@@ -221,15 +233,19 @@ struct root_core
 {
     typedef node_base value_type;
 
+    value_type * po_;
+
     /** Enlists the @c node_proxy node @c root_core belongs to. */
     mutable smart_ptr::detail::intrusive_list root_tag_;
-
-    value_type * po_;
 
 
     explicit root_core(node_proxy const & x)
     : po_(nullptr)
     {
+#ifndef BOOST_DISABLE_THREADS
+        std::scoped_lock guard(static_recursive_mutex());
+#endif
+
         x.root_set_.push_back(& root_tag_);
     }
 
@@ -255,6 +271,10 @@ struct root_core
     root_core(root_core const & p)
     : po_(p.share())
     {
+#ifndef BOOST_DISABLE_THREADS
+        std::scoped_lock guard(static_recursive_mutex());
+#endif
+
         root_tag_.push_back(& p.root_tag_);
     }
 
@@ -302,9 +322,9 @@ struct root_core
             std::scoped_lock guard(static_recursive_mutex());
 #endif
 
-            root_tag_.push_back(& p.root_tag_);
-
             reset(p.share());
+
+            root_tag_.push_back(& p.root_tag_);
 
             return * this;
         }
@@ -322,9 +342,9 @@ struct root_core
         std::scoped_lock guard(static_recursive_mutex());
 #endif
 
-        root_tag_.push_back(& p.root_tag_);
-
         reset(p.share());
+
+        root_tag_.push_back(& p.root_tag_);
 
         return * this;
     }
@@ -337,6 +357,10 @@ struct root_core
 
     value_type * share() const
     {
+#ifndef BOOST_DISABLE_THREADS
+        std::scoped_lock guard(static_recursive_mutex());
+#endif
+
         if (po_)
         {          
             po_->add_ref_copy();
@@ -347,6 +371,10 @@ struct root_core
 
     void reset(value_type * p = nullptr)
     {
+#ifndef BOOST_DISABLE_THREADS
+        std::scoped_lock guard(static_recursive_mutex());
+#endif
+
         if (po_)
         {
             po_->release();
@@ -361,15 +389,28 @@ inline void node_proxy::reset()
 {
     using namespace smart_ptr::detail;
 
+#ifndef BOOST_DISABLE_THREADS
+    std::scoped_lock guard(static_recursive_mutex());
+#endif
+
     {
         // destroy cycles remaining
         if (! destroying() && ! root_set_.empty())
         {
             destroying(true);
 
-            for (intrusive_list::iterator<root_core, & root_core::root_tag_> p = root_set_.begin(), q = root_set_.begin(); ++ q, p != q; p = q)
+            for (intrusive_list::iterator<root_core, & root_core::root_tag_> p = root_set_.begin(), q = root_set_.begin(); ++ q, p != q && p != root_set_.end(); p = q)
             {
+#if 0
+                if (root_core::value_type * i = p->po_)
+                {
+                    p->po_ = nullptr;
+
+                    delete i;
+                }
+#else
                 p->reset();
+#endif
             }
 
             destroying(false);
@@ -461,9 +502,9 @@ template <>
             std::scoped_lock guard(static_recursive_mutex());
 #endif
 
-            if (base::base::get() && ! base::cyclic() && base::base::get()->explicit_delete_ == false)
+            if (base::get() && base::get()->explicit_delete_ == false)
             {
-                std::cerr << "report; memory leak; " << base::base::get()->size_bytes() << std::endl;
+                std::cerr << "report; memory leak; " << base::get()->size_bytes() << std::endl;
             }
 #endif
         }
@@ -716,96 +757,6 @@ template <typename T>
                 return static_cast<root_ptr &>(base::operator = (p));
             }
 
-#if 0
-        template <typename V>
-            T & operator [] (V n)
-            {
-#ifndef BOOST_DISABLE_THREADS
-                std::scoped_lock guard(static_recursive_mutex());
-#endif
-
-#ifdef BOOST_REPORT
-                if (base::base::get() && base::base::get()->explicit_delete_ == true)
-                {
-                    std::cerr << "report; use after free; " << 1 << std::endl;
-                }
-#endif
-
-#ifdef BOOST_REPORT
-                if (base::base::get() && base::base::get()->size() <= n)
-                {
-                    std::cerr << "report; out of bounds; " << 1 << std::endl;
-                }
-#endif
-
-#ifndef BOOST_NO_EXCEPTIONS
-                if (! pi_)
-                {
-                    std::stringstream out;
-                    out << "null pointer\n";
-                    node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
-                    throw std::out_of_range(out.str());
-                }
-
-#if 0
-                if (base::base::get() && base::base::get()->size() <= n)
-                {
-                    std::stringstream out;
-                    out << "out of range [0, " << base::base::get()->size() << "[\n";
-                    node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
-                    throw std::out_of_range(out.str());
-                }
-#endif
-#endif
-
-                return * (pi_ + n);
-            }
-
-        template <typename V>
-            T const & operator [] (V n) const
-            {
-#ifndef BOOST_DISABLE_THREADS
-                std::scoped_lock guard(static_recursive_mutex());
-#endif
-
-#ifdef BOOST_REPORT
-                if (base::base::get() && base::base::get()->explicit_delete_ == true)
-                {
-                    std::cerr << "report; use after free; " << 1 << std::endl;
-                }
-#endif
-
-#ifdef BOOST_REPORT
-                if (base::base::get() && base::base::get()->size() <= n)
-                {
-                    std::cerr << "report; out of bounds; " << 1 << std::endl;
-                }
-#endif
-
-#ifndef BOOST_NO_EXCEPTIONS
-                if (! pi_)
-                {
-                    std::stringstream out;
-                    out << "null pointer\n";
-                    node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
-                    throw std::out_of_range(out.str());
-                }
-
-#if 0
-                if (base::base::get() && base::base::get()->size() <= n)
-                {
-                    std::stringstream out;
-                    out << "(" << n << ") is out of range [0, " << base::base::get()->size() << "[\n";
-                    node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
-                    throw std::out_of_range(out.str());
-                }
-#endif
-#endif
-
-                return * (pi_ + n);
-            }
-#endif
-
         T & operator * () const
         {
 #ifndef BOOST_DISABLE_THREADS
@@ -813,14 +764,14 @@ template <typename T>
 #endif
 
 #ifdef BOOST_REPORT
-            if (base::base::get() && base::base::get()->explicit_delete_ == true)
+            if (base::get() && base::get()->explicit_delete_ == true)
             {
                 std::cerr << "report; use after free; " << 1 << std::endl;
             }
 #endif
 
 #ifdef BOOST_REPORT
-            if (base::base::get() && (base::base::get()->size() == 0 || pi_ < static_cast<T *>(const_cast<void *>(base::base::get()->data())) || pi_ >= static_cast<T *>(const_cast<void *>(base::base::get()->data())) + base::base::get()->size()))
+            if (base::get() && (base::get()->size() == 0 || pi_ < static_cast<T *>(const_cast<void *>(base::get()->data())) || pi_ >= static_cast<T *>(const_cast<void *>(base::get()->data())) + base::get()->size()))
             {
                 std::cerr << "report; out of bounds; " << 1 << std::endl;
             }
@@ -836,10 +787,10 @@ template <typename T>
             }
 
 #if 0
-            if (base::base::get() && (base::base::get()->size() == 0 || pi_ < static_cast<T *>(const_cast<void *>(base::base::get()->data())) || pi_ >= static_cast<T *>(const_cast<void *>(base::base::get()->data())) + base::base::get()->size()))
+            if (base::get() && (base::get()->size() == 0 || pi_ < static_cast<T *>(const_cast<void *>(base::get()->data())) || pi_ >= static_cast<T *>(const_cast<void *>(base::get()->data())) + base::get()->size()))
             {
                 std::stringstream out;
-                out << "(" << pi_ - static_cast<T *>(const_cast<void *>(base::base::get()->data())) << ") is out of range [0, " << base::base::get()->size() << "[\n";
+                out << "(" << pi_ - static_cast<T *>(const_cast<void *>(base::get()->data())) << ") is out of range [0, " << base::get()->size() << "[\n";
                 node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
                 throw std::out_of_range(out.str());
             }
@@ -856,14 +807,14 @@ template <typename T>
 #endif
 
 #ifdef BOOST_REPORT
-            if (base::base::get() && base::base::get()->explicit_delete_ == true)
+            if (base::get() && base::get()->explicit_delete_ == true)
             {
                 std::cerr << "report; use after free; " << 1 << std::endl;
             }
 #endif
 
 #ifdef BOOST_REPORT
-            if (base::base::get() && (base::base::get()->size() == 0 || pi_ < static_cast<T *>(const_cast<void *>(base::base::get()->data())) || pi_ >= static_cast<T *>(const_cast<void *>(base::base::get()->data())) + base::base::get()->size()))
+            if (base::get() && (base::get()->size() == 0 || pi_ < static_cast<T *>(const_cast<void *>(base::get()->data())) || pi_ >= static_cast<T *>(const_cast<void *>(base::get()->data())) + base::get()->size()))
             {
                 std::cerr << "report; out of bounds; " << 1 << std::endl;
             }
@@ -879,10 +830,10 @@ template <typename T>
             }
 
 #if 0
-            if (base::base::get() && (base::base::get()->size() == 0 || pi_ < static_cast<T *>(const_cast<void *>(base::base::get()->data())) || pi_ >= static_cast<T *>(const_cast<void *>(base::base::get()->data())) + base::base::get()->size()))
+            if (base::get() && (base::get()->size() == 0 || pi_ < static_cast<T *>(const_cast<void *>(base::get()->data())) || pi_ >= static_cast<T *>(const_cast<void *>(base::get()->data())) + base::get()->size()))
             {
                 std::stringstream out;
-                out << "(" << pi_ - static_cast<T *>(const_cast<void *>(base::base::get()->data())) << ") is out of range [0, " << base::base::get()->size() << "[\n";
+                out << "(" << pi_ - static_cast<T *>(const_cast<void *>(base::get()->data())) << ") is out of range [0, " << base::get()->size() << "[\n";
                 node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
                 throw std::out_of_range(out.str());
             }
@@ -919,7 +870,7 @@ template <typename T>
             std::scoped_lock guard(static_recursive_mutex());
 #endif
 
-            if (base::base::get() && base::base::get()->explicit_delete_ == true)
+            if (base::get() && base::get()->explicit_delete_ == true)
             {
                 std::cerr << "report; use after free; " << 1 << std::endl;
             }
@@ -936,7 +887,7 @@ template <typename T>
             std::scoped_lock guard(static_recursive_mutex());
 #endif
 
-            if (base::base::get() && base::base::get()->explicit_delete_ == true)
+            if (base::get() && base::get()->explicit_delete_ == true)
             {
                 std::cerr << "report; use after free; " << 1 << std::endl;
             }
@@ -945,81 +896,6 @@ template <typename T>
             return pi_;
         }
 #endif
-#endif
-
-#if 0
-        template <typename V>
-            operator V const * () const
-            {
-#ifdef BOOST_REPORT
-#ifndef BOOST_DISABLE_THREADS
-                std::scoped_lock guard(static_recursive_mutex());
-#endif
-
-                if (base::base::get() && base::base::get()->explicit_delete_ == true)
-                {
-                    std::cerr << "report; use after free; " << 1 << std::endl;
-                }
-#endif
-
-                return reinterpret_cast<V const *>(pi_);
-            }
-#endif
-
-#if 0
-        template <typename V>
-            operator root_ptr<V> () const
-            {
-#ifdef BOOST_REPORT
-#ifndef BOOST_DISABLE_THREADS
-                std::scoped_lock guard(static_recursive_mutex());
-#endif
-
-                if (base::base::get() && base::base::get()->explicit_delete_ == true)
-                {
-                    std::cerr << "report; use after free; " << 1 << std::endl;
-                }
-#endif
-
-                return root_ptr<V>(base::proxy(), reinterpret_cast<V>(pi_));
-            }
-
-#if 1
-        template <typename V, typename... Args>
-            operator root_ptr<V (Args...)> () const
-            {
-#ifdef BOOST_REPORT
-#ifndef BOOST_DISABLE_THREADS
-                std::scoped_lock guard(static_recursive_mutex());
-#endif
-
-                if (base::base::get() && base::base::get()->explicit_delete_ == true)
-                {
-                    std::cerr << "report; use after free; " << 1 << std::endl;
-                }
-#endif
-
-                return root_ptr<V (Args...)>(base::proxy(), reinterpret_cast<V (*)(Args...)>(pi_));
-            }
-#endif
-#endif
-
-#if 0
-        operator uintptr_t () const
-        {
-#ifdef BOOST_REPORT
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
-            if (base::base::get() && base::base::get()->explicit_delete_ == true)
-            {
-                std::cerr << "report; use after free; " << 1 << std::endl;
-            }
-#endif
-
-            return reinterpret_cast<uintptr_t>(pi_);
-        }
 #endif
 
         root_ptr & operator ++ ()
@@ -1071,6 +947,10 @@ template <typename T>
         template <typename V>
             root_ptr operator + (V i) const
             {
+#ifndef BOOST_DISABLE_THREADS
+                std::scoped_lock guard(static_recursive_mutex());
+#endif
+
                 root_ptr res(* this);
                 
                 res.pi_ += i;
@@ -1081,6 +961,10 @@ template <typename T>
         template <typename V>
             root_ptr operator - (V i) const
             {
+#ifndef BOOST_DISABLE_THREADS
+                std::scoped_lock guard(static_recursive_mutex());
+#endif
+
                 root_ptr res(* this);
                 
                 res.pi_ -= i;
@@ -1177,9 +1061,9 @@ template <typename T>
             std::scoped_lock guard(static_recursive_mutex());
 #endif
 
-            if (base::base::get() && ! base::cyclic() && base::base::get()->explicit_delete_ == false)
+            if (base::get() && base::get()->explicit_delete_ == false)
             {
-                std::cerr << "report; memory leak; " << base::base::get()->size_bytes() << std::endl;
+                std::cerr << "report; memory leak; " << base::get()->size_bytes() << std::endl;
             }
 #endif
         }
@@ -1365,20 +1249,6 @@ template <>
                 return static_cast<root_ptr &>(base::template operator = <void>(p));
             }
 
-#if 0
-        root_ptr<root_ptr<void>> operator & () const
-        {
-            return root_ptr<root_ptr<void>>(base::proxy(), this);
-        }
-#endif
-
-#if 0
-        operator bool () const
-        {
-            return pi_ != 0;
-        }
-#endif
-
         bool operator ! () const
         {
             return pi_ == 0;
@@ -1404,7 +1274,7 @@ template <>
             std::scoped_lock guard(static_recursive_mutex());
 #endif
 
-            if (base::base::get() && base::base::get()->explicit_delete_ == true)
+            if (base::get() && base::get()->explicit_delete_ == true)
             {
                 std::cerr << "report; use after free; " << 1 << std::endl;
             }
@@ -1478,9 +1348,9 @@ template <>
             std::scoped_lock guard(static_recursive_mutex());
 #endif
 
-            if (base::base::get() && ! base::cyclic() && base::base::get()->explicit_delete_ == false)
+            if (base::get() && base::get()->explicit_delete_ == false)
             {
-                std::cerr << "report; memory leak; " << base::base::get()->size_bytes() << std::endl;
+                std::cerr << "report; memory leak; " << base::get()->size_bytes() << std::endl;
             }
 #endif
         }
@@ -1497,280 +1367,6 @@ template <>
         root_ptr(root_ptr<void> const & p)
         : root_ptr<void>(p)
         {
-        }
-    };
-#endif
-
-
-#if 0
-template <typename T, typename... Args>
-    class root_ptr<T (Args...)> : protected root_core
-    {
-        template <typename> friend class root_ptr;
-
-        template <typename U, typename V> friend U static_pointer_cast(V const & p);
-        template <typename U, typename V> friend U dynamic_pointer_cast(V const & p);
-        template <typename U, typename V> friend U reinterpret_pointer_cast(V const & p);
-        template <typename V> friend root_ptr<V const> const_pointer_cast(root_ptr<V> const & p);
-        template <typename V> friend root_ptr<V> const_pointer_cast(root_ptr<V const> const & p);
-
-    protected:
-        typedef root_core base;
-
-    public:
-        using element_type = T (Args...);
-        using value_type = typename base::value_type;
-
-    protected:
-        /** Iterator. */
-        element_type * pi_;
-
-    public:
-        root_ptr(root_ptr const & p)
-        : base(p)
-        , pi_(p.pi_)
-        {
-        }
-
-        template <typename V>
-            root_ptr(root_ptr<V> const & p)
-            : base(p)
-            , pi_(p.pi_)
-            {
-            }
-
-            root_ptr(root_ptr<std::nullptr_t> const & p)
-            : base(p.proxy())
-            , pi_(nullptr)
-            {
-            }
-
-#if defined(BOOST_HAS_RVALUE_REFS)
-        template <typename V>
-            root_ptr(root_ptr<V> && p)
-            : base(std::move(p))
-            , pi_(std::exchange(p.pi_, nullptr))
-            {
-            }
-#endif
-
-        root_ptr(node_proxy const & x)
-        : base(x)
-        , pi_(nullptr)
-        {
-        }
-
-        root_ptr(node_proxy const & x, root_ptr<std::nullptr_t> const & p)
-        : base(x)
-        , pi_(p)
-        {
-        }
-
-        root_ptr(node_proxy const & x, std::uintptr_t p)
-        : base(x)
-        , pi_(reinterpret_cast<void *>(p))
-        {
-        }
-
-        template <typename V>
-            root_ptr(node_proxy const & x, V * p)
-            : base(x)
-            , pi_(p)
-            {
-            }
-
-        template <typename V>
-            root_ptr(node_proxy const & x, V const * p)
-            : base(x)
-            , pi_(const_cast<V *>(p))
-            {
-            }
-
-        template <typename V, typename PoolAllocator>
-            root_ptr(node_proxy const & x, node<V, PoolAllocator> * p)
-            : base(x, p)
-            , pi_(static_cast<V *>(p->data()))
-            {
-            }
-
-        template <typename V>
-            root_ptr(node_proxy const & x, root_ptr<V> const & p)
-            : base(p)
-            , pi_(p.pi_)
-            {
-            }
-
-            root_ptr(node_proxy const & x, root_ptr const & p)
-            : base(p)
-            , pi_(p.pi_)
-            {
-            }
-
-        /**
-            Initialization of a pointer.
-
-            @param  p New pointer to manage.
-        */
-
-        template <typename V>
-            root_ptr(root_ptr<V> const & p, static_cast_tag const & t)
-            : base(p)
-            , pi_(static_cast<T (Args...)>(p.pi_))
-            {
-            }
-
-
-        /**
-            Initialization of a pointer.
-
-            @param  p New pointer to manage.
-        */
-
-        template <typename V>
-            root_ptr(root_ptr<V> const & p, dynamic_cast_tag const & t)
-            : base(p)
-            , pi_(dynamic_cast<T (Args...)>(p.pi_))
-            {
-            }
-
-
-        root_ptr & operator = (root_ptr<std::nullptr_t> const & p)
-        {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
-            pi_ = nullptr;
-
-            return static_cast<root_ptr &>(base::operator = (p));
-        }
-
-        template <size_t S>
-            root_ptr & operator = (T (p[S])(Args...))
-            {
-#ifndef BOOST_DISABLE_THREADS
-                std::scoped_lock guard(static_recursive_mutex());
-#endif
-
-                pi_ = p;
-
-                return * this;
-            }
-
-        template <typename V, typename PoolAllocator>
-            root_ptr & operator = (node<V, PoolAllocator> * p)
-            {
-#ifndef BOOST_DISABLE_THREADS
-                std::scoped_lock guard(static_recursive_mutex());
-#endif
-
-                pi_ = static_cast<V *>(p->data());
-
-                return static_cast<root_ptr &>(base::template operator = <V, PoolAllocator>(p));
-            }
-
-            root_ptr & operator = (root_ptr const & p)
-            {
-#ifndef BOOST_DISABLE_THREADS
-                std::scoped_lock guard(static_recursive_mutex());
-#endif
-
-                pi_ = p.pi_;
-
-                return static_cast<root_ptr &>(base::template operator = <T (Args...)>(p));
-            }
-
-#if 0
-        root_ptr<root_ptr<void>> operator & () const
-        {
-            return root_ptr<root_ptr<void>>(base::proxy(), this);
-        }
-#endif
-
-        operator bool () const
-        {
-            return pi_ != 0;
-        }
-
-        bool operator ! () const
-        {
-            return pi_ == 0;
-        }
-
-        operator element_type * () const
-        {
-            return pi_;
-        }
-
-        template <typename V>
-            bool operator == (root_ptr<V> const & o) const
-            {
-                return pi_ == o.pi_;
-            }
-
-        template <typename V>
-            bool operator != (root_ptr<V> const & o) const
-            {
-                return pi_ != o.pi_;
-            }
-
-            bool operator == (root_ptr<std::nullptr_t> const & o) const
-            {
-                return pi_ == nullptr;
-            }
-
-            bool operator != (root_ptr<std::nullptr_t> const & o) const
-            {
-                return pi_ != nullptr;
-            }
-
-        template <typename V>
-            bool operator < (root_ptr<V> const & o) const
-            {
-                return pi_ < o.pi_;
-            }
-
-        template <typename V>
-            bool operator > (root_ptr<V> const & o) const
-            {
-                return pi_ > o.pi_;
-            }
-
-        template <typename V>
-            bool operator <= (root_ptr<V> const & o) const
-            {
-                return pi_ <= o.pi_;
-            }
-
-        template <typename V>
-            bool operator >= (root_ptr<V> const & o) const
-            {
-                return pi_ >= o.pi_;
-            }
-
-#if 0
-        friend std::ostream & operator << (std::ostream & os, root_ptr const & o)
-        {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
-            return os << o.pi_;
-        }
-#endif
-
-        ~root_ptr()
-        {
-#ifdef BOOST_REPORT
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
-            if (base::base::get() && ! base::cyclic() && base::base::get()->explicit_delete_ == false)
-            {
-                std::cerr << "report; memory leak; " << base::base::get()->size_bytes() << std::endl;
-            }
-#endif
         }
     };
 #endif

@@ -42,8 +42,11 @@
 #include <type_traits>
 
 #ifndef BOOST_DISABLE_THREADS
+#include <mutex>
 #include <boost/thread.hpp>
 #include <boost/thread/tss.hpp>
+#include <boost/thread/thread.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 #else
 #include <memory>
 #endif
@@ -71,6 +74,11 @@ namespace boost
 
     
 struct node_proxy;
+
+
+#ifndef BOOST_DISABLE_THREADS
+static std::recursive_mutex & static_recursive_mutex();
+#endif
 
 
 template <typename T>
@@ -379,6 +387,10 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
         void * operator new (size_t s)
         {
+#ifndef BOOST_DISABLE_THREADS
+            std::scoped_lock guard(static_recursive_mutex());
+#endif
+
             void * p = static_pool().allocate(1);
 
             return p;
@@ -395,6 +407,10 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
         void * operator new (size_t s, allocator_type a)
         {
+#ifndef BOOST_DISABLE_THREADS
+            std::scoped_lock guard(static_recursive_mutex());
+#endif
+
             void * p = a.allocate(1);
 
             return p;
@@ -409,6 +425,10 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         
         void operator delete (void * p)
         {
+#ifndef BOOST_DISABLE_THREADS
+            std::scoped_lock guard(static_recursive_mutex());
+#endif
+
 	    static_pool().deallocate(static_cast<node *>(p), 1);
         }
 
@@ -422,6 +442,10 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
         void operator delete (void * p, allocator_type a)
         {
+#ifndef BOOST_DISABLE_THREADS
+            std::scoped_lock guard(static_recursive_mutex());
+#endif
+
             a.deallocate(static_cast<node *>(p), 1);
         }
 
@@ -533,6 +557,10 @@ template <typename T, size_t S, typename PoolAllocator>
 
         void * operator new (size_t s)
         {
+#ifndef BOOST_DISABLE_THREADS
+            std::scoped_lock guard(static_recursive_mutex());
+#endif
+
             void * p = static_pool().allocate(1);
 
             return p;
@@ -549,6 +577,10 @@ template <typename T, size_t S, typename PoolAllocator>
 
         void * operator new (size_t s, allocator_type a)
         {
+#ifndef BOOST_DISABLE_THREADS
+            std::scoped_lock guard(static_recursive_mutex());
+#endif
+
             void * p = a.allocate(1);
 
             return p;
@@ -563,6 +595,10 @@ template <typename T, size_t S, typename PoolAllocator>
 
         void operator delete (void * p)
         {
+#ifndef BOOST_DISABLE_THREADS
+            std::scoped_lock guard(static_recursive_mutex());
+#endif
+
             static_pool().deallocate(static_cast<node *>(p), 1);
         }
 
@@ -576,6 +612,10 @@ template <typename T, size_t S, typename PoolAllocator>
 
         void operator delete (void * p, allocator_type a)
         {
+#ifndef BOOST_DISABLE_THREADS
+            std::scoped_lock guard(static_recursive_mutex());
+#endif
+
             a.deallocate(static_cast<node *>(p), 1);
         }
 

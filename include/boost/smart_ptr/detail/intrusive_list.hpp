@@ -31,11 +31,23 @@
 #define BOOST_INTRUSIVE_LIST_HPP_INCLUDED
 
 
+#ifndef BOOST_DISABLE_THREADS
+#include <mutex>
+#include <boost/thread/recursive_mutex.hpp>
+#endif
+
+
 #include "classof.hpp"
 
 
 namespace boost
 {
+
+
+#ifndef BOOST_DISABLE_THREADS
+static std::recursive_mutex & static_recursive_mutex();
+#endif
+
 
 namespace smart_ptr
 {
@@ -60,6 +72,10 @@ struct intrusive_list_node
 
     void insert(intrusive_list_node * const p)
     {
+#ifndef BOOST_DISABLE_THREADS
+        std::scoped_lock guard(static_recursive_mutex());
+#endif
+
         p->next = this;
         p->prev = prev;
         
@@ -69,6 +85,10 @@ struct intrusive_list_node
 
     void erase()
     {
+#ifndef BOOST_DISABLE_THREADS
+        std::scoped_lock guard(static_recursive_mutex());
+#endif
+
         prev->next = next;
         next->prev = prev;
 
@@ -77,17 +97,29 @@ struct intrusive_list_node
     
     void clear()
     {
+#ifndef BOOST_DISABLE_THREADS
+        std::scoped_lock guard(static_recursive_mutex());
+#endif
+
         next = this;
         prev = this;
     }
 
     bool singleton() const
     {
+#ifndef BOOST_DISABLE_THREADS
+        std::scoped_lock guard(static_recursive_mutex());
+#endif
+
         return next == this && prev == this;
     }
     
     ~intrusive_list_node()
     {
+#ifndef BOOST_DISABLE_THREADS
+        std::scoped_lock guard(static_recursive_mutex());
+#endif
+
         erase();
     }
 };
