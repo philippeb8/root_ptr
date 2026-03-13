@@ -401,16 +401,12 @@ inline void node_proxy::reset()
 
             for (intrusive_list::iterator<root_core, & root_core::root_tag_> p = root_set_.begin(), q = root_set_.begin(); ++ q, p != q && p != root_set_.end(); p = q)
             {
-#if 0
                 if (root_core::value_type * i = p->po_)
                 {
                     p->po_ = nullptr;
 
                     delete i;
                 }
-#else
-                p->reset();
-#endif
             }
 
             destroying(false);
