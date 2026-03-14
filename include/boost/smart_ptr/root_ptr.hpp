@@ -781,16 +781,6 @@ template <typename T>
                 node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
                 throw std::out_of_range(out.str());
             }
-
-#if 0
-            if (base::get() && (base::get()->size() == 0 || pi_ < static_cast<T *>(const_cast<void *>(base::get()->data())) || pi_ >= static_cast<T *>(const_cast<void *>(base::get()->data())) + base::get()->size()))
-            {
-                std::stringstream out;
-                out << "(" << pi_ - static_cast<T *>(const_cast<void *>(base::get()->data())) << ") is out of range [0, " << base::get()->size() << "[\n";
-                node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
-                throw std::out_of_range(out.str());
-            }
-#endif
 #endif
 
             return * pi_;
@@ -824,16 +814,6 @@ template <typename T>
                 node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
                 throw std::out_of_range(out.str());
             }
-
-#if 0
-            if (base::get() && (base::get()->size() == 0 || pi_ < static_cast<T *>(const_cast<void *>(base::get()->data())) || pi_ >= static_cast<T *>(const_cast<void *>(base::get()->data())) + base::get()->size()))
-            {
-                std::stringstream out;
-                out << "(" << pi_ - static_cast<T *>(const_cast<void *>(base::get()->data())) << ") is out of range [0, " << base::get()->size() << "[\n";
-                node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
-                throw std::out_of_range(out.str());
-            }
-#endif
 #endif
 
             return pi_;
@@ -976,8 +956,18 @@ template <typename T>
                 std::scoped_lock guard(static_recursive_mutex());
 #endif
 
-                pi_ += i;
+#ifndef BOOST_NO_EXCEPTIONS
+                if (! pi_)
+                {
+                    std::stringstream out;
+                    out << "null pointer\n";
+                    node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
+                    throw std::out_of_range(out.str());
+                }
+#endif
 
+                pi_ += i;
+                
                 return * this;
             }
 
@@ -986,6 +976,16 @@ template <typename T>
             {
 #ifndef BOOST_DISABLE_THREADS
                 std::scoped_lock guard(static_recursive_mutex());
+#endif
+
+#ifndef BOOST_NO_EXCEPTIONS
+                if (! pi_)
+                {
+                    std::stringstream out;
+                    out << "null pointer\n";
+                    node_proxy::stacktrace(out, * node_proxy::top_node_proxy());
+                    throw std::out_of_range(out.str());
+                }
 #endif
 
                 pi_ -= i;
