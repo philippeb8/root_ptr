@@ -36,6 +36,7 @@
 # pragma once
 #endif
 
+#include <cstring>
 #include <limits>
 #include <utility>
 #include <iterator>
@@ -88,34 +89,6 @@ template <typename T, size_t S>
     class root_array;
 
 
-BOOST_TTI_HAS_STATIC_MEMBER_FUNCTION(__proxy)
-
-
-template <typename T, typename = void>
-struct is_container : std::false_type {};
-
-template <typename T>
-struct is_container<T, std::void_t<
-    decltype(std::declval<T&>().begin()),
-    decltype(std::declval<T&>().end()),
-    typename T::value_type  // or decltype(*std::declval<T&>().begin())
->> : std::true_type {};
-
-template <typename T, typename = void, bool = has_static_member_function___proxy<typename std::remove_reference<T>::type, typename std::remove_reference<T>::type const * (node_proxy const &, typename std::remove_reference<T>::type const *)>::value>
-    struct proxy
-    {
-        inline typename std::remove_const<typename std::remove_reference<T>::type>::type & operator () (node_proxy const & x, typename std::remove_const<typename std::remove_reference<T>::type>::type & po) const
-        {
-            return po;
-        }
-
-        inline typename std::remove_const<typename std::remove_reference<T>::type>::type const & operator () (node_proxy const & x, typename std::remove_const<typename std::remove_reference<T>::type>::type const & po) const
-        {
-            return po;
-        }
-    };
-
-
 /**
     Root class of all pointee objects.
 */
@@ -149,6 +122,10 @@ struct node_base : public boost::detail::sp_counted_base
     virtual void destroy() BOOST_SP_NOEXCEPT
     {
         delete this;
+        
+#ifdef BOOST_ZEROIZATION
+        std::memset(this, 0, sizeof(* this));
+#endif
     }
     
 protected:

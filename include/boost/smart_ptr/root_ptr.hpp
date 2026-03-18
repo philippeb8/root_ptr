@@ -405,7 +405,7 @@ inline void node_proxy::reset()
                 {
                     p->po_ = nullptr;
 
-                    delete i;
+                    i->destroy();
                 }
             }
 
