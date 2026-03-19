@@ -122,10 +122,6 @@ struct node_base : public boost::detail::sp_counted_base
     virtual void destroy() BOOST_SP_NOEXCEPT
     {
         delete this;
-        
-#ifdef BOOST_ZEROIZATION
-        std::memset(this, 0, sizeof(* this));
-#endif
     }
     
 protected:
@@ -426,7 +422,19 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             a.deallocate(static_cast<node *>(p), 1);
         }
 
-        
+
+        virtual void destroy() BOOST_SP_NOEXCEPT
+        {
+#ifdef BOOST_ZEROIZATION
+            this->~node();
+            std::memset(this, 0, sizeof(*this));
+            operator delete(this);
+#else
+            delete this;
+#endif
+        }
+
+
     private:
         /** 
             Static pool.
@@ -594,6 +602,18 @@ template <typename T, size_t S, typename PoolAllocator>
 #endif
 
             a.deallocate(static_cast<node *>(p), 1);
+        }
+
+
+        virtual void destroy() BOOST_SP_NOEXCEPT
+        {
+#ifdef BOOST_ZEROIZATION
+            this->~node();
+            std::memset(this, 0, sizeof(*this));
+            operator delete(this);
+#else
+            delete this;
+#endif
         }
 
 

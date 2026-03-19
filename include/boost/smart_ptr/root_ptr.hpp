@@ -403,8 +403,10 @@ inline void node_proxy::reset()
         {
             destroying(true);
 
-            for (intrusive_list::iterator<root_core, & root_core::root_tag_> p = root_set_.begin(), q = root_set_.begin(); ++ q, p != q && p != root_set_.end(); p = q)
+            for (intrusive_list::iterator<root_core, & root_core::root_tag_> p = root_set_.begin(), q = root_set_.begin(); p.node_ && p.node_ != p.node_->next && p != root_set_.end(); p = q)
             {
+                ++ q;
+                
                 if (root_core::value_type * i = p->po_)
                 {
                     p->po_ = nullptr;
