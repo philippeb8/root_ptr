@@ -399,11 +399,11 @@ inline void node_proxy::reset()
 
     {
         // destroy cycles remaining
-        if (! destroying() && ! root_set_.empty())
+        if (! destroying())
         {
             destroying(true);
 
-            for (intrusive_list::iterator<root_core, & root_core::root_tag_> p = root_set_.begin(), q = root_set_.begin(); p.node_ && p.node_ != p.node_->next && p != root_set_.end(); p = q)
+            for (intrusive_list::iterator<root_core, & root_core::root_tag_> p = root_set_.begin(), q = root_set_.begin(); ! root_set_.empty() && p != root_set_.end(); p = q)
             {
                 ++ q;
                 
