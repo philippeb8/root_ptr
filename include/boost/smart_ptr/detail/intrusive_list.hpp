@@ -11,7 +11,7 @@
     Phil Bouchard, Founder & CEO
     Fornux LLC
     phil@fornux.com
-    3909 S Maryland Pkwy Ste 314 #638, Las Vegas, NV, 89119
+    101 Rue Villeneuve O #2268, Montreal, Quebec, Canada, H2T 2R6
     
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ namespace boost
 
 
 #ifndef BOOST_DISABLE_THREADS
-static std::recursive_mutex & static_recursive_mutex();
+inline std::recursive_mutex & static_recursive_mutex();
 #endif
 
 
@@ -124,14 +124,6 @@ struct intrusive_list_node
     }
 };
 
-
-/**
-    Static list.
-    
-    Rewritten list template with explicit access to internal nodes.  This 
-    allows usages of tags already part of an object, used to group objects 
-    together without the need of any memory allocation.
-*/
 
 struct intrusive_list : intrusive_list_node
 {

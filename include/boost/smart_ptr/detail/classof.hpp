@@ -11,7 +11,7 @@
     Phil Bouchard, Founder & CEO
     Fornux LLC
     phil@fornux.com
-    3909 S Maryland Pkwy Ste 314 #638, Las Vegas, NV, 89119
+    101 Rue Villeneuve O #2268, Montreal, Quebec, Canada, H2T 2R6
     
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.

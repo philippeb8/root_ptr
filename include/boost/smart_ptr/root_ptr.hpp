@@ -11,7 +11,7 @@
     Phil Bouchard, Founder & CEO
     Fornux LLC
     phil@fornux.com
-    3909 S Maryland Pkwy Ste 314 #638, Las Vegas, NV, 89119
+    101 Rue Villeneuve O #2268, Montreal, Quebec, Canada, H2T 2R6
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -38,6 +38,8 @@
 
 #include <cstdint>
 #include <cstdlib>
+
+#include <exception>
 
 #include <array>
 #include <vector>
@@ -69,8 +71,7 @@ struct root_core;
 
 
 #ifndef BOOST_DISABLE_THREADS
-/** Main global mutex used for thread safety */
-static inline std::recursive_mutex & static_recursive_mutex()
+inline std::recursive_mutex & static_recursive_mutex()
 {
     static std::recursive_mutex mutex_;
 
@@ -125,10 +126,6 @@ struct node_proxy
 
     static node_proxy const ** top_node_proxy()
     {
-#ifndef BOOST_DISABLE_THREADS
-        std::scoped_lock guard(static_recursive_mutex());
-#endif
-
         static thread_local node_proxy const * p;
 
         return & p;
@@ -169,15 +166,45 @@ struct node_proxy
         Destruction of a single @c node_proxy and detaching itself from other @c node_proxy .
     */
 
-    ~node_proxy()
+    ~node_proxy() noexcept(false)
     {
+        {
 #ifndef BOOST_DISABLE_THREADS
-        std::scoped_lock guard(static_recursive_mutex());
+            std::scoped_lock guard(static_recursive_mutex());
 #endif
 
-        reset();
+            reset();
 
-        * top_node_proxy() = parent();
+            node_proxy const * & top = * top_node_proxy();
+
+            if (top == this)
+            {
+                top = parent_;
+            }
+            else
+            {
+                for (node_proxy const * c = top; c != nullptr; c = c->parent_)
+                {
+                    if (c->parent_ == this)
+                    {
+                        const_cast<node_proxy *>(c)->parent_ = parent_;
+                        
+                        break;
+                    }
+                }
+            }
+        }
+
+        std::exception_ptr & pending = smart_ptr::detail::pending_destructor_exception();
+
+        if (pending)
+        {
+            std::exception_ptr e = pending;
+            pending = nullptr;
+
+            if (std::uncaught_exceptions() == 0)
+                std::rethrow_exception(e);
+        }
     }
 
 
@@ -398,21 +425,35 @@ inline void node_proxy::reset()
 #endif
 
     {
-        // destroy cycles remaining
         if (! destroying())
         {
             destroying(true);
 
-            for (intrusive_list::iterator<root_core, & root_core::root_tag_> p = root_set_.begin(), q = root_set_.begin(); ! root_set_.empty() && p != root_set_.end(); p = q)
-            {
-                ++ q;
-                
-                if (root_core::value_type * i = p->po_)
-                {
-                    p->po_ = nullptr;
-                    p->pi_ = nullptr;
+            typedef intrusive_list::iterator<root_core, & root_core::root_tag_> iterator;
 
-                    i->destroy();
+            for (bool progress = true; progress; )
+            {
+                progress = false;
+
+                for (iterator p = root_set_.begin(); p != root_set_.end(); ++ p)
+                {
+                    if (root_core::value_type * i = p->po_)
+                    {
+                        for (iterator s = p; s != root_set_.end(); ++ s)
+                        {
+                            if (s->po_ == i)
+                            {
+                                s->po_ = nullptr;
+                                s->pi_ = nullptr;
+                            }
+                        }
+
+                        i->destroy();
+
+                        progress = true;
+
+                        break;
+                    }
                 }
             }
 
@@ -493,7 +534,7 @@ template <>
         }
 #endif
 
-        ~root_ptr()
+        ~root_ptr() noexcept(false)
         {
 #ifdef BOOST_REPORT
 #ifndef BOOST_DISABLE_THREADS
@@ -1029,7 +1070,7 @@ template <typename T>
                 return pi_ >= o.pi_;
             }
 
-        ~root_ptr()
+        ~root_ptr() noexcept(false)
         {
 #ifdef BOOST_REPORT
 #ifndef BOOST_DISABLE_THREADS
@@ -1266,7 +1307,7 @@ template <>
                 return pi_ >= o.pi_;
             }
 
-        ~root_ptr()
+        ~root_ptr() noexcept(false)
         {
 #ifdef BOOST_REPORT
 #ifndef BOOST_DISABLE_THREADS

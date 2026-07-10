@@ -11,7 +11,7 @@
     Phil Bouchard, Founder & CEO
     Fornux LLC
     phil@fornux.com
-    3909 S Maryland Pkwy Ste 314 #638, Las Vegas, NV, 89119
+    101 Rue Villeneuve O #2268, Montreal, Quebec, Canada, H2T 2R6
     
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@
 #include <boost/thread/recursive_mutex.hpp>
 #else
 #include <memory>
+#include <exception>
 #endif
 #include <boost/pool/pool.hpp>
 #include <boost/pool/pool_alloc.hpp>
@@ -78,7 +79,7 @@ struct node_proxy;
 
 
 #ifndef BOOST_DISABLE_THREADS
-static std::recursive_mutex & static_recursive_mutex();
+inline std::recursive_mutex & static_recursive_mutex();
 #endif
 
 
@@ -87,6 +88,22 @@ template <typename T>
     
 template <typename T, size_t S>
     class root_array;
+
+
+namespace smart_ptr
+{
+namespace detail
+{
+
+inline std::exception_ptr & pending_destructor_exception()
+{
+    static thread_local std::exception_ptr e;
+
+    return e;
+}
+
+} // namespace detail
+} // namespace smart_ptr
 
 
 /**
@@ -111,7 +128,7 @@ struct node_base : public boost::detail::sp_counted_base
     
     virtual void * element() = 0;
 
-    virtual ~node_base()
+    virtual ~node_base() noexcept(false)
     {
     }
 
@@ -425,13 +442,20 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
         virtual void destroy() BOOST_SP_NOEXCEPT
         {
+            try
+            {
+                this->~node();
+            }
+            catch (...)
+            {
+                if (! smart_ptr::detail::pending_destructor_exception())
+                    smart_ptr::detail::pending_destructor_exception() = std::current_exception();
+            }
+
 #ifdef BOOST_ZEROIZATION
-            this->~node();
             std::memset(this, 0, sizeof(*this));
-            operator delete(this);
-#else
-            delete this;
 #endif
+            operator delete(this);
         }
 
 
@@ -607,13 +631,20 @@ template <typename T, size_t S, typename PoolAllocator>
 
         virtual void destroy() BOOST_SP_NOEXCEPT
         {
+            try
+            {
+                this->~node();
+            }
+            catch (...)
+            {
+                if (! smart_ptr::detail::pending_destructor_exception())
+                    smart_ptr::detail::pending_destructor_exception() = std::current_exception();
+            }
+
 #ifdef BOOST_ZEROIZATION
-            this->~node();
             std::memset(this, 0, sizeof(*this));
-            operator delete(this);
-#else
-            delete this;
 #endif
+            operator delete(this);
         }
 
 
