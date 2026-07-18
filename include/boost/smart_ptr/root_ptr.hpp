@@ -6,10 +6,10 @@
     'SOURCE TO SOURCE COMPILER, COMPILATION METHOD, AND
     COMPUTER-READABLE MEDIUM FOR PREDICTABLE MEMORY MANAGEMENT'
 
-    Copyright (C) 2020-2026 Fornux LLC
+    Copyright (C) 2020-2026 Fornux Inc
 
     Phil Bouchard, Founder & CEO
-    Fornux LLC
+    Fornux Inc
     phil@fornux.com
     101 Rue Villeneuve O #2268, Montreal, Quebec, Canada, H2T 2R6
 
@@ -106,8 +106,8 @@ struct node_proxy
     /** Destruction sequence flag. */
     bool destroying_;
 
-    /** List of all pointer instances belonging to a @c node_proxy . */
-    mutable smart_ptr::detail::intrusive_list root_set_;
+    /** List of all pointee objects belonging to a @c node_proxy . */
+    mutable smart_ptr::detail::intrusive_list node_list_;
 
 
     /**
@@ -125,6 +125,14 @@ struct node_proxy
 
 
     static node_proxy const ** top_node_proxy()
+    {
+        static thread_local node_proxy const * p;
+
+        return & p;
+    }
+
+
+    static node_proxy const ** collecting()
     {
         static thread_local node_proxy const * p;
 
@@ -214,10 +222,18 @@ struct node_proxy
     }
 
 
+public:
     bool destroying() const
     {
         return destroying_;
     }
+
+    /** Enlist a pointee object as belonging to this @c node_proxy . */
+    void init(node_base * p) const
+    {
+        node_list_.push_back(& p->node_tag_);
+    }
+
 
 
     void destroying(bool b)
@@ -263,47 +279,37 @@ struct root_core
     value_type * po_;
     void const * pi_;
 
-    /** Enlists the @c node_proxy node @c root_core belongs to. */
-    mutable smart_ptr::detail::intrusive_list root_tag_;
+    /** Owning @c node_proxy (replaces the per-pointer root_tag_ ring entry:
+        one word instead of two). */
+    mutable node_proxy const * px_;
 
 
     explicit root_core(node_proxy const & x)
     : po_(nullptr)
     , pi_(nullptr)
+    , px_(& x)
     {
-#ifndef BOOST_DISABLE_THREADS
-        std::scoped_lock guard(static_recursive_mutex());
-#endif
-
-        x.root_set_.push_back(& root_tag_);
     }
 
     template <typename V, typename PoolAllocator>
         explicit root_core(node_proxy const & x, node<V, PoolAllocator> * p)
         : po_(p)
         , pi_(p->data())
+        , px_(& x)
         {
-            using namespace smart_ptr::detail;
-            
 #ifndef BOOST_DISABLE_THREADS
             std::scoped_lock guard(static_recursive_mutex());
 #endif
 
-            x.root_set_.push_back(& root_tag_);
+            x.init(p);
         }
         
     template <typename V>
         explicit root_core(node_proxy const & x, V * p)
         : po_(nullptr)
         , pi_(p)
+        , px_(& x)
         {
-            using namespace smart_ptr::detail;
-            
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
-            x.root_set_.push_back(& root_tag_);
         }
 
 
@@ -317,12 +323,8 @@ struct root_core
     root_core(root_core const & p)
     : po_(p.share())
     , pi_(p.pi_)
+    , px_(p.px_)
     {
-#ifndef BOOST_DISABLE_THREADS
-        std::scoped_lock guard(static_recursive_mutex());
-#endif
-
-        root_tag_.push_back(& p.root_tag_);
     }
 
     ~root_core()
@@ -331,13 +333,18 @@ struct root_core
         std::scoped_lock guard(static_recursive_mutex());
 #endif
 
-        reset(nullptr);
+        if (* node_proxy::collecting())
+            po_ = nullptr;              // cyclic: collection in progress; the node
+                                        // is deleted by reset(), never released here
+        else
+            reset(nullptr);
     }
 
 #if defined(BOOST_HAS_RVALUE_REFS)
     root_core(root_core && p)
     : po_(std::exchange(p.po_, nullptr))
     , pi_(std::exchange(p.pi_, nullptr))
+    , px_(p.px_)
     {
     }
 #endif
@@ -350,6 +357,9 @@ struct root_core
 #ifndef BOOST_DISABLE_THREADS
             std::scoped_lock guard(static_recursive_mutex());
 #endif
+
+            if (px_)
+                px_->init(p);
 
             reset(p);
             
@@ -371,13 +381,39 @@ struct root_core
         std::scoped_lock guard(static_recursive_mutex());
 #endif
 
+        if (px_ && p.px_ && px_ != p.px_)
+        {
+            if (p.px_->depth_ < px_->depth_)
+                proxy(* p.px_);
+            else if (px_->depth_ < p.px_->depth_)
+                p.proxy(* px_);
+        }
+
         reset(p.share());
 
         pi_ = p.pi_;
 
-        root_tag_.push_back(& p.root_tag_);
-
         return * this;
+    }
+
+    /**
+        Re-home this pointer and its reachable branch to proxy @c x
+        if @c x is longer-lived than the current owner.
+    */
+
+    void proxy(node_proxy const & x) const
+    {
+        if (! px_ || x.depth_ < px_->depth_)
+        {
+            px_ = & x;
+
+            if (po_)
+            {
+                po_->node_tag_.erase();
+                x.init(po_);
+                po_->proxy_branch(x);
+            }
+        }
     }
     
 
@@ -424,41 +460,27 @@ inline void node_proxy::reset()
     std::scoped_lock guard(static_recursive_mutex());
 #endif
 
+    if (! destroying())
     {
-        if (! destroying())
+        destroying(true);
+
+        node_proxy const * const previous = * collecting();
+        * collecting() = this;
+
+        while (! node_list_.empty())
         {
-            destroying(true);
+            typedef intrusive_list::iterator<node_base, & node_base::node_tag_> iterator;
 
-            typedef intrusive_list::iterator<root_core, & root_core::root_tag_> iterator;
+            iterator m = node_list_.begin();
 
-            for (bool progress = true; progress; )
-            {
-                progress = false;
+            m->node_tag_.erase();
 
-                for (iterator p = root_set_.begin(); p != root_set_.end(); ++ p)
-                {
-                    if (root_core::value_type * i = p->po_)
-                    {
-                        for (iterator s = p; s != root_set_.end(); ++ s)
-                        {
-                            if (s->po_ == i)
-                            {
-                                s->po_ = nullptr;
-                                s->pi_ = nullptr;
-                            }
-                        }
-
-                        i->destroy();
-
-                        progress = true;
-
-                        break;
-                    }
-                }
-            }
-
-            destroying(false);
+            m->destroy();
         }
+
+        * collecting() = previous;
+
+        destroying(false);
     }
 }
 
@@ -553,6 +575,10 @@ template <>
 template <typename T>
     class root_ptr : protected root_core
     {
+    public:
+        /** Branch re-homing must be reachable by the propagation visitor. */
+        using root_core::proxy;
+
         template <typename> friend class root_ptr;
 
         template <typename U, typename V> friend root_ptr<U> static_pointer_cast(root_ptr<V> const & p);
@@ -1549,6 +1575,22 @@ template <typename T>
     }
 
 
+
+namespace smart_ptr
+{
+namespace detail
+{
+
+/** Deferred definition: needs complete root_ptr. Branch recursion step. */
+template <typename T>
+    inline void proxy<root_ptr<T>, false>::operator () (node_proxy const & x, root_ptr<T> const & po) const
+    {
+        po.proxy(x);
+    }
+
+} // namespace detail
+} // namespace smart_ptr
+
 } // namespace boost
 
 
@@ -1572,6 +1614,8 @@ template <typename T>
             return lhs.get() == rhs.get();
         }
     };
+
+
 
 } // namespace std
 

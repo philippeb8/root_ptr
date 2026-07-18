@@ -6,10 +6,10 @@
     'SOURCE TO SOURCE COMPILER, COMPILATION METHOD, AND
     COMPUTER-READABLE MEDIUM FOR PREDICTABLE MEMORY MANAGEMENT'
     
-    Copyright (C) 2020-2026 Fornux LLC
+    Copyright (C) 2020-2026 Fornux Inc
 
     Phil Bouchard, Founder & CEO
-    Fornux LLC
+    Fornux Inc
     phil@fornux.com
     101 Rue Villeneuve O #2268, Montreal, Quebec, Canada, H2T 2R6
     
