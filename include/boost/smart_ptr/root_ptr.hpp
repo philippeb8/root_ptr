@@ -490,7 +490,7 @@ template <typename T>
 
 
 template <>
-    class root_ptr<std::nullptr_t> : protected root_core
+    class root_ptr<std::nullptr_t> : public root_core
     {
         template <typename> friend class root_ptr;
 
@@ -573,7 +573,7 @@ template <>
 
 
 template <typename T>
-    class root_ptr : protected root_core
+    class root_ptr : public root_core
     {
     public:
         /** Branch re-homing must be reachable by the propagation visitor. */
@@ -937,7 +937,9 @@ template <typename T>
             std::scoped_lock guard(static_recursive_mutex());
 #endif
 
-            return ++ static_cast<T * &>(pi_), * this;
+            pi_ = static_cast<T const *>(pi_) + 1;
+
+            return * this;
         }
 
         root_ptr & operator -- ()
@@ -946,7 +948,9 @@ template <typename T>
             std::scoped_lock guard(static_recursive_mutex());
 #endif
 
-            return -- static_cast<T * &>(pi_), * this;
+            pi_ = static_cast<T const *>(pi_) - 1;
+
+            return * this;
         }
 
         root_ptr operator ++ (int)
@@ -957,7 +961,9 @@ template <typename T>
 
             root_ptr temp(* this);
 
-            return ++ static_cast<T * &>(pi_), temp;
+            pi_ = static_cast<T const *>(pi_) + 1;
+
+            return temp;
         }
 
         root_ptr operator -- (int)
@@ -968,12 +974,14 @@ template <typename T>
 
             root_ptr temp(* this);
 
-            return -- static_cast<T * &>(pi_), temp;
+            pi_ = static_cast<T const *>(pi_) - 1;
+
+            return temp;
         }
 
         ptrdiff_t operator - (root_ptr const & o) const
         {
-            return static_cast<T * &>(pi_) - static_cast<T * &>(o.pi_);
+            return static_cast<T const *>(pi_) - static_cast<T const *>(o.pi_);
         }
 
 #if 1
@@ -1128,7 +1136,7 @@ template <typename T>
 
 
 template <>
-    class root_ptr<void> : protected root_core
+    class root_ptr<void> : public root_core
     {
         template <typename> friend class root_ptr;
 
@@ -1575,22 +1583,6 @@ template <typename T>
     }
 
 
-
-namespace smart_ptr
-{
-namespace detail
-{
-
-/** Deferred definition: needs complete root_ptr. Branch recursion step. */
-template <typename T>
-    inline void proxy<root_ptr<T>, false>::operator () (node_proxy const & x, root_ptr<T> const & po) const
-    {
-        po.proxy(x);
-    }
-
-} // namespace detail
-} // namespace smart_ptr
-
 } // namespace boost
 
 
@@ -1602,7 +1594,7 @@ template <typename T>
     {
         size_t operator() (boost::root_ptr<T> const & p) const
         {
-            return p.get();
+            return reinterpret_cast<size_t>(p.get());
         }
     };
 

@@ -107,7 +107,10 @@ template <typename T>
 template <typename T>
     struct proxy<root_ptr<T>, false>
     {
-        inline void operator () (node_proxy const & x, root_ptr<T> const & po) const;
+        inline void operator () (node_proxy const & x, root_ptr<T> const & po) const
+        {
+            po.proxy(x);
+        }
     };
 
 } // namespace detail
