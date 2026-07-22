@@ -6,7 +6,7 @@
     'SOURCE TO SOURCE COMPILER, COMPILATION METHOD, AND
     COMPUTER-READABLE MEDIUM FOR PREDICTABLE MEMORY MANAGEMENT'
     
-    Copyright (C) 2020-2026 Fornux Inc
+    Copyright (C) 2020-2026 Fornux LLC
 
     Phil Bouchard, Founder & CEO
     Fornux Inc
@@ -31,23 +31,11 @@
 #define BOOST_INTRUSIVE_STACK_HPP_INCLUDED
 
 
-#ifndef BOOST_DISABLE_THREADS
-#include <mutex>
-#include <boost/thread/recursive_mutex.hpp>
-#endif
-
-
 #include <boost/smart_ptr/detail/classof.hpp>
 
 
 namespace boost
 {
-
-
-#ifndef BOOST_DISABLE_THREADS
-static std::recursive_mutex & static_recursive_mutex();
-#endif
-
 
 namespace smart_ptr
 {
@@ -71,42 +59,34 @@ struct intrusive_stack_node
 
     void insert(intrusive_stack_node * const p)
     {
-#ifndef BOOST_DISABLE_THREADS
-        std::scoped_lock guard(static_recursive_mutex());
-#endif
-
         p->next = next;
         next = p;
     }
 
     bool singleton() const
     {
-#ifndef BOOST_DISABLE_THREADS
-        std::scoped_lock guard(static_recursive_mutex());
-#endif
-
         return next == this;
     }
 
     void erase()
     {
-#ifndef BOOST_DISABLE_THREADS
-        std::scoped_lock guard(static_recursive_mutex());
-#endif
-
         next = this;
     }
 
     ~intrusive_stack_node()
     {
-#ifndef BOOST_DISABLE_THREADS
-        std::scoped_lock guard(static_recursive_mutex());
-#endif
-
         erase();
     }
 };
 
+
+/**
+    Static stack.
+    
+    Rewritten stack template with explicit access to internal nodes.  This 
+    allows usages of tags already part of an object, used to group objects 
+    together without the need of any memory allocation.
+*/
 
 struct intrusive_stack : intrusive_stack_node
 {

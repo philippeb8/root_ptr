@@ -6,7 +6,7 @@
     'SOURCE TO SOURCE COMPILER, COMPILATION METHOD, AND
     COMPUTER-READABLE MEDIUM FOR PREDICTABLE MEMORY MANAGEMENT'
     
-    Copyright (C) 2020-2026 Fornux Inc
+    Copyright (C) 2020-2026 Fornux LLC
 
     Phil Bouchard, Founder & CEO
     Fornux Inc
@@ -36,21 +36,16 @@
 # pragma once
 #endif
 
-#include <cstring>
 #include <limits>
 #include <utility>
 #include <iterator>
 #include <type_traits>
 
 #ifndef BOOST_DISABLE_THREADS
-#include <mutex>
 #include <boost/thread.hpp>
 #include <boost/thread/tss.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/thread/recursive_mutex.hpp>
 #else
 #include <memory>
-#include <exception>
 #endif
 #include <boost/pool/pool.hpp>
 #include <boost/pool/pool_alloc.hpp>
@@ -77,73 +72,11 @@ namespace boost
     
 struct node_proxy;
 
+// Reference-counting model: root_ptr fwd-decls, and a no-op member-walk
+// visitor (node<T>::proxy() is never invoked; collection is via root_set_).
 template <typename T> class root_ptr;
-
-namespace smart_ptr {
-namespace detail {
-
-BOOST_TTI_HAS_STATIC_MEMBER_FUNCTION(__proxy)
-
-/** Branch propagation visitor. The transformer emits, per rewritten struct:
-        static T const * __proxy(node_proxy const & x, T const * p);
-    enumerating its pointer members. Types without the hook are leaves. */
-template <typename T, bool = has_static_member_function___proxy<T, T const * (node_proxy const &, T const *)>::value>
-    struct proxy
-    {
-        inline void operator () (node_proxy const &, T const &) const
-        {
-        }
-    };
-
-template <typename T>
-    struct proxy<T, true>
-    {
-        inline void operator () (node_proxy const & x, T const & po) const
-        {
-            T::__proxy(x, & po);
-        }
-    };
-
-template <typename T>
-    struct proxy<root_ptr<T>, false>
-    {
-        inline void operator () (node_proxy const & x, root_ptr<T> const & po) const
-        {
-            po.proxy(x);
-        }
-    };
-
-} // namespace detail
-} // namespace smart_ptr
-
-
-
-#ifndef BOOST_DISABLE_THREADS
-inline std::recursive_mutex & static_recursive_mutex();
-#endif
-
-
-template <typename T>
-    class root_ptr;
-    
-template <typename T, size_t S>
-    class root_array;
-
-
-namespace smart_ptr
-{
-namespace detail
-{
-
-inline std::exception_ptr & pending_destructor_exception()
-{
-    static thread_local std::exception_ptr e;
-
-    return e;
-}
-
-} // namespace detail
-} // namespace smart_ptr
+template <typename T, size_t S> class root_array;
+template <typename T, typename U = T> struct proxy { void operator()(node_proxy const &, T const &) const {} };
 
 
 /**
@@ -152,14 +85,6 @@ inline std::exception_ptr & pending_destructor_exception()
 
 struct node_base : public boost::detail::sp_counted_base
 {
-    /** Enlists this pointee object in its owning node_proxy's node_list_. */
-    mutable smart_ptr::detail::intrusive_list node_tag_;
-
-    /** Re-home this node's reachable branch to proxy x (overridden per T). */
-    virtual void proxy_branch(node_proxy const & x) const
-    {
-    }
-
 #ifdef BOOST_REPORT
     bool explicit_delete_ = false;
 #endif
@@ -176,7 +101,9 @@ struct node_base : public boost::detail::sp_counted_base
     
     virtual void * element() = 0;
 
-    virtual ~node_base() noexcept(false)
+    virtual void proxy(node_proxy const &) = 0;
+
+    virtual ~node_base()
     {
     }
 
@@ -366,6 +293,11 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         {
             return reinterpret_cast<void *>(& this->base::elem_);
         }
+
+        virtual void proxy(node_proxy const & p)
+        {
+            boost::proxy<data_type>()(p, * static_cast<data_type *>(element()));
+        }
         
         /**
             Initialization of a pointee object.
@@ -425,10 +357,6 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
         void * operator new (size_t s)
         {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
             void * p = static_pool().allocate(1);
 
             return p;
@@ -445,10 +373,6 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
         void * operator new (size_t s, allocator_type a)
         {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
             void * p = a.allocate(1);
 
             return p;
@@ -463,10 +387,6 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         
         void operator delete (void * p)
         {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
 	    static_pool().deallocate(static_cast<node *>(p), 1);
         }
 
@@ -480,38 +400,10 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
         void operator delete (void * p, allocator_type a)
         {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
             a.deallocate(static_cast<node *>(p), 1);
         }
 
-
-        virtual void proxy_branch(node_proxy const & x) const
-        {
-            smart_ptr::detail::proxy<T>()(x, * static_cast<T const *>(const_cast<node *>(this)->data()));
-        }
-
-        virtual void destroy() BOOST_SP_NOEXCEPT
-        {
-            try
-            {
-                this->~node();
-            }
-            catch (...)
-            {
-                if (! smart_ptr::detail::pending_destructor_exception())
-                    smart_ptr::detail::pending_destructor_exception() = std::current_exception();
-            }
-
-#ifdef BOOST_ZEROIZATION
-            std::memset(this, 0, sizeof(*this));
-#endif
-            operator delete(this);
-        }
-
-
+        
     private:
         /** 
             Static pool.
@@ -546,6 +438,11 @@ template <typename T, size_t S, typename PoolAllocator>
         virtual void * element()
         {
             return reinterpret_cast<void *>(& this->base::elem_);
+        }
+
+        virtual void proxy(node_proxy const & p)
+        {
+            boost::proxy<data_type>()(p, * static_cast<data_type *>(element()));
         }
 
         /**
@@ -619,10 +516,6 @@ template <typename T, size_t S, typename PoolAllocator>
 
         void * operator new (size_t s)
         {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
             void * p = static_pool().allocate(1);
 
             return p;
@@ -639,10 +532,6 @@ template <typename T, size_t S, typename PoolAllocator>
 
         void * operator new (size_t s, allocator_type a)
         {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
             void * p = a.allocate(1);
 
             return p;
@@ -657,10 +546,6 @@ template <typename T, size_t S, typename PoolAllocator>
 
         void operator delete (void * p)
         {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
             static_pool().deallocate(static_cast<node *>(p), 1);
         }
 
@@ -674,35 +559,7 @@ template <typename T, size_t S, typename PoolAllocator>
 
         void operator delete (void * p, allocator_type a)
         {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
             a.deallocate(static_cast<node *>(p), 1);
-        }
-
-
-        virtual void proxy_branch(node_proxy const & x) const
-        {
-            smart_ptr::detail::proxy<T>()(x, * static_cast<T const *>(const_cast<node *>(this)->data()));
-        }
-
-        virtual void destroy() BOOST_SP_NOEXCEPT
-        {
-            try
-            {
-                this->~node();
-            }
-            catch (...)
-            {
-                if (! smart_ptr::detail::pending_destructor_exception())
-                    smart_ptr::detail::pending_destructor_exception() = std::current_exception();
-            }
-
-#ifdef BOOST_ZEROIZATION
-            std::memset(this, 0, sizeof(*this));
-#endif
-            operator delete(this);
         }
 
 

@@ -6,7 +6,7 @@
     'SOURCE TO SOURCE COMPILER, COMPILATION METHOD, AND
     COMPUTER-READABLE MEDIUM FOR PREDICTABLE MEMORY MANAGEMENT'
     
-    Copyright (C) 2020-2026 Fornux Inc
+    Copyright (C) 2020-2026 Fornux LLC
 
     Phil Bouchard, Founder & CEO
     Fornux Inc
@@ -31,23 +31,11 @@
 #define BOOST_INTRUSIVE_LIST_HPP_INCLUDED
 
 
-#ifndef BOOST_DISABLE_THREADS
-#include <mutex>
-#include <boost/thread/recursive_mutex.hpp>
-#endif
-
-
 #include "classof.hpp"
 
 
 namespace boost
 {
-
-
-#ifndef BOOST_DISABLE_THREADS
-inline std::recursive_mutex & static_recursive_mutex();
-#endif
-
 
 namespace smart_ptr
 {
@@ -72,10 +60,6 @@ struct intrusive_list_node
 
     void insert(intrusive_list_node * const p)
     {
-#ifndef BOOST_DISABLE_THREADS
-        std::scoped_lock guard(static_recursive_mutex());
-#endif
-
         p->next = this;
         p->prev = prev;
         
@@ -85,10 +69,6 @@ struct intrusive_list_node
 
     void erase()
     {
-#ifndef BOOST_DISABLE_THREADS
-        std::scoped_lock guard(static_recursive_mutex());
-#endif
-
         prev->next = next;
         next->prev = prev;
 
@@ -97,33 +77,29 @@ struct intrusive_list_node
     
     void clear()
     {
-#ifndef BOOST_DISABLE_THREADS
-        std::scoped_lock guard(static_recursive_mutex());
-#endif
-
         next = this;
         prev = this;
     }
 
     bool singleton() const
     {
-#ifndef BOOST_DISABLE_THREADS
-        std::scoped_lock guard(static_recursive_mutex());
-#endif
-
         return next == this && prev == this;
     }
     
     ~intrusive_list_node()
     {
-#ifndef BOOST_DISABLE_THREADS
-        std::scoped_lock guard(static_recursive_mutex());
-#endif
-
         erase();
     }
 };
 
+
+/**
+    Static list.
+    
+    Rewritten list template with explicit access to internal nodes.  This 
+    allows usages of tags already part of an object, used to group objects 
+    together without the need of any memory allocation.
+*/
 
 struct intrusive_list : intrusive_list_node
 {
@@ -170,30 +146,18 @@ struct intrusive_list : intrusive_list_node
     
     void push_front(pointer i)
     {
-#ifndef BOOST_DISABLE_THREADS
-        std::scoped_lock guard(static_recursive_mutex());
-#endif
-
         i->erase();
         begin()->insert(i);
     }
     
     void push_back(pointer i)
     {
-#ifndef BOOST_DISABLE_THREADS
-        std::scoped_lock guard(static_recursive_mutex());
-#endif
-
         i->erase();
         end()->insert(i);
     }
     
     void merge(intrusive_list& x)
     {
-#ifndef BOOST_DISABLE_THREADS
-        std::scoped_lock guard(static_recursive_mutex());
-#endif
-
         if (! x.empty())
         {
             x.prev->next = next;
@@ -206,10 +170,6 @@ struct intrusive_list : intrusive_list_node
 
     void splice(intrusive_list& x)
     {
-#ifndef BOOST_DISABLE_THREADS
-        std::scoped_lock guard(static_recursive_mutex());
-#endif
-
         if (! x.empty())
         {
             x.prev->next = next;
@@ -237,28 +197,16 @@ template <typename T, intrusive_list T::* P>
 
         T & operator * () const
         { 
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
             return * classof(P, node_); 
         }
 
         T * operator -> () const
         { 
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
             return classof(P, node_); 
         }
 
         self_type & operator = (self_type const & x)
         {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
             node_ = x.node_;
             
             return * this;
@@ -266,10 +214,6 @@ template <typename T, intrusive_list T::* P>
 
         self_type & operator ++ ()
         {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
             node_ = static_cast<intrusive_list::pointer>(node_->next);
             
             return * this;
@@ -277,10 +221,6 @@ template <typename T, intrusive_list T::* P>
 
         self_type & operator -- ()
         {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
             node_ = static_cast<intrusive_list::pointer>(node_->prev);
             
             return * this;
@@ -288,19 +228,11 @@ template <typename T, intrusive_list T::* P>
 
         bool operator == (const self_type & x) const 
         { 
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
             return node_ == x.node_; 
         }
         
         bool operator != (const self_type & x) const 
         { 
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
             return node_ != x.node_; 
         }
 
@@ -311,84 +243,56 @@ template <typename T, intrusive_list T::* P>
 template <typename T, intrusive_list T::* P>
     struct intrusive_list::reverse_iterator
     {
-        typedef reverse_iterator self_type;
-        typedef intrusive_list node_type;
+      typedef reverse_iterator self_type;
+      typedef intrusive_list node_type;
 
-        reverse_iterator(intrusive_list::pointer __x)
+      reverse_iterator(intrusive_list::pointer __x)
           : node_(__x)
-        {
-        }
+      {
+      }
 
-        T & operator * () const
-        {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
+      T & operator * () const
+      {
+        return * classof(P, node_);
+      }
 
-          return * classof(P, node_);
-        }
+      T * operator -> () const
+      {
+        return classof(P, node_);
+      }
 
-        T * operator -> () const
-        {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
-            return classof(P, node_);
-        }
-
-        self_type & operator = (self_type const & x)
-        {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
-            node_ = x.node_;
+      self_type & operator = (self_type const & x)
+      {
+        node_ = x.node_;
         
-            return * this;
-        }
+        return * this;
+      }
 
-        self_type & operator ++ ()
-        {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
-            node_ = static_cast<intrusive_list::pointer>(node_->prev);
+      self_type & operator ++ ()
+      {
+        node_ = static_cast<intrusive_list::pointer>(node_->prev);
         
-            return * this;
-        }
+        return * this;
+      }
 
-        self_type & operator -- ()
-        {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
-            node_ = static_cast<intrusive_list::pointer>(node_->next);
+      self_type & operator -- ()
+      {
+        node_ = static_cast<intrusive_list::pointer>(node_->next);
         
-            return * this;
-        }
+        return * this;
+      }
 
-        bool operator == (const self_type & x) const
-        {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
+      bool operator == (const self_type & x) const
+      {
+        return node_ == x.node_;
+      }
 
-          return node_ == x.node_;
-        }
+      bool operator != (const self_type & x) const
+      {
+        return node_ != x.node_;
+      }
 
-        bool operator != (const self_type & x) const
-        {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
-            return node_ != x.node_;
-        }
-
-        node_type * node_;
+      node_type * node_;
     };
 
 
