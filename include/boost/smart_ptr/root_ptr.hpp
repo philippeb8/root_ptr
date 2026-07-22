@@ -161,11 +161,28 @@ struct node_proxy
         Destruction of a single @c node_proxy and detaching itself from other @c node_proxy .
     */
 
-    ~node_proxy()
+    ~node_proxy() noexcept(false)
     {
-        reset();
+        {
+#ifndef BOOST_DISABLE_THREADS
+            std::scoped_lock guard(static_recursive_mutex());
+#endif
 
-        * top_node_proxy() = parent();
+            reset();
+
+            * top_node_proxy() = parent();
+        }
+
+        std::exception_ptr & pending = smart_ptr::detail::pending_destructor_exception();
+
+        if (pending)
+        {
+            std::exception_ptr e = pending;
+            pending = nullptr;
+
+            if (std::uncaught_exceptions() == 0)
+                std::rethrow_exception(e);
+        }
     }
 
 
@@ -257,6 +274,10 @@ struct root_core
     root_core(root_core const & p)
     : po_(p.share())
     {
+#ifndef BOOST_DISABLE_THREADS
+        std::scoped_lock guard(static_recursive_mutex());
+#endif
+
         root_tag_.push_back(& p.root_tag_);
     }
 
@@ -267,6 +288,8 @@ struct root_core
 #endif
 
         reset(nullptr);
+
+        root_tag_.erase();
     }
 
 #if defined(BOOST_HAS_RVALUE_REFS)
@@ -363,8 +386,6 @@ inline void node_proxy::reset()
 {
     using namespace smart_ptr::detail;
 
-    // Merged robust walk: erase-front-then-reset, so releasing a root (which may
-    // free a node and unlink other roots from this set) can't invalidate the walk.
     if (! destroying())
     {
         destroying(true);

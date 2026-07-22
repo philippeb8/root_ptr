@@ -47,6 +47,9 @@
 #else
 #include <memory>
 #endif
+
+#include <exception>
+#include <cstring>
 #include <boost/pool/pool.hpp>
 #include <boost/pool/pool_alloc.hpp>
 #include <boost/numeric/interval.hpp>
@@ -79,6 +82,22 @@ template <typename T, size_t S> class root_array;
 template <typename T, typename U = T> struct proxy { void operator()(node_proxy const &, T const &) const {} };
 
 
+namespace smart_ptr
+{
+namespace detail
+{
+
+inline std::exception_ptr & pending_destructor_exception()
+{
+    static thread_local std::exception_ptr e;
+
+    return e;
+}
+
+} // namespace detail
+} // namespace smart_ptr
+
+
 /**
     Root class of all pointee objects.
 */
@@ -103,7 +122,7 @@ struct node_base : public boost::detail::sp_counted_base
 
     virtual void proxy(node_proxy const &) = 0;
 
-    virtual ~node_base()
+    virtual ~node_base() noexcept(false)
     {
     }
 
@@ -347,6 +366,27 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         {
         }
 
+        // A throwing managed destructor is caught here (destroy() is noexcept and
+        // runs during collection); the exception is stashed and rethrown by
+        // ~node_proxy() so user code can catch it instead of std::terminate.
+        virtual void destroy() BOOST_SP_NOEXCEPT
+        {
+            try
+            {
+                this->~node();
+            }
+            catch (...)
+            {
+                if (! smart_ptr::detail::pending_destructor_exception())
+                    smart_ptr::detail::pending_destructor_exception() = std::current_exception();
+            }
+
+#ifdef BOOST_ZEROIZATION
+            std::memset(this, 0, sizeof(*this));
+#endif
+            operator delete(this);
+        }
+
 
         /**
             Allocates a new @c node using the static copy of @c PoolAllocator to be used.
@@ -504,6 +544,27 @@ template <typename T, size_t S, typename PoolAllocator>
 
         virtual ~node()
         {
+        }
+
+        // A throwing managed destructor is caught here (destroy() is noexcept and
+        // runs during collection); the exception is stashed and rethrown by
+        // ~node_proxy() so user code can catch it instead of std::terminate.
+        virtual void destroy() BOOST_SP_NOEXCEPT
+        {
+            try
+            {
+                this->~node();
+            }
+            catch (...)
+            {
+                if (! smart_ptr::detail::pending_destructor_exception())
+                    smart_ptr::detail::pending_destructor_exception() = std::current_exception();
+            }
+
+#ifdef BOOST_ZEROIZATION
+            std::memset(this, 0, sizeof(*this));
+#endif
+            operator delete(this);
         }
 
 
