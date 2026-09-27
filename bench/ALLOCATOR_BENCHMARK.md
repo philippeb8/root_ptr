@@ -1,5 +1,11 @@
 # Node allocator benchmark: page allocators vs. the default pool
 
+> **Update 2026-09-27:** following this benchmark, the default node allocator is now
+> `boost::page_allocator_by_size` (`BOOST_ROOT_PTR_ALLOCATOR` in `detail/node_base.hpp`). The
+> measurements below were taken while `boost::pool_allocator` was the default, which is what
+> "the default pool" refers to throughout. `-D BOOST_ROOT_PTR_ALLOCATOR=boost::pool_allocator`
+> restores the old behaviour.
+
 Measured 2026-09-27 with `bench/allocbench.cpp` and `bench/run.sh`, for three smart pointer types:
 `boost::root_ptr`, `std::unique_ptr` and `std::shared_ptr`. The same results as charts:
 `bench/ALLOCATOR_BENCHMARK.pdf` (drawn by `bench/plot.py`).
@@ -43,11 +49,11 @@ Allocators:
 
 | name | allocator |
 |---|---|
-| `pool` | `boost::pool_allocator` (the default) |
+| `pool` | `boost::pool_allocator` (the default when measured) |
 | `fast` | `boost::fast_pool_allocator` |
 | `std` | `std::allocator` (glibc `malloc`) |
 | `page_type` | `boost::page_allocator_by_type` (pages hold one type) |
-| `page_size` | `boost::page_allocator_by_size` (pages hold one size class) |
+| `page_size` | `boost::page_allocator_by_size` (pages hold one size class; the default since 2026-09-27) |
 
 Pointer types. `run<P, A>()` takes the pointer type as a template template argument, and `make<P, A, T>()`
 selects the construction with `if constexpr`; every pointer allocates through the allocator under test:
@@ -252,10 +258,10 @@ neither standard pointer can do.
 
 ## Recommendations
 
-1. **Change the default node allocator.** `page_allocator_by_size` or `fast_pool_allocator` removes the
-   quadratic release at no cost in any single-threaded scenario measured here, and `by_size` also
-   saves memory. This is a library default, so it's the maintainer's decision;
-   `-D BOOST_ROOT_PTR_ALLOCATOR=...` already selects an allocator per build.
+1. **Change the default node allocator. Done 2026-09-27:** the default is now
+   `page_allocator_by_size`, which removes the quadratic release at no cost in any single-threaded
+   scenario measured here and also saves memory. `-D BOOST_ROOT_PTR_ALLOCATOR=...` still selects
+   another allocator per build.
 2. **Carve pages lazily.** `page_pool::grow()` threads the free list through a whole page up front,
    touching all of it. Handing out blocks from a bump pointer and only threading freed blocks would
    make a sparsely used page cost only what it holds, which is what hurts `page_allocator_by_type`.

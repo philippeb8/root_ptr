@@ -22,11 +22,11 @@ OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(DIR, 'ALLOCATOR_BENCHMA
 
 ALLOC = ['pool', 'fast', 'std', 'page_type', 'page_size']
 ALLOC_LABEL = {
-    'pool': 'boost::pool_allocator (default)',
+    'pool': 'boost::pool_allocator (former default)',
     'fast': 'boost::fast_pool_allocator',
     'std': 'std::allocator',
     'page_type': 'page_allocator_by_type',
-    'page_size': 'page_allocator_by_size',
+    'page_size': 'page_allocator_by_size (default)',
 }
 COLOR = {'pool': '#c0392b', 'fast': '#7f8c8d', 'std': '#2c3e50', 'page_type': '#e67e22', 'page_size': '#27ae60'}
 PTRS = [('root', 'boost::root_ptr'), ('unique', 'std::unique_ptr'), ('shared', 'std::shared_ptr')]
@@ -85,6 +85,25 @@ def grouped_bars(ax, groups, series, value, color, label=None, log=False, fmt='{
     ax.margins(y=0.25)
 
 
+def same_y(axes, log=False):
+    """One y range for every chart on a page: from the lowest to the highest bar of any of them,
+    with headroom for the value labels (a factor on a log axis, a fraction on a linear one)."""
+    axes = list(axes)
+    tops, bottoms = [], []
+    for ax in axes:
+        heights = [b.get_height() for b in ax.patches if b.get_height() > 0]
+        if heights:
+            tops.append(max(heights))
+            bottoms.append(min(heights))
+    if log:
+        lo, hi = min(bottoms) / 2, max(tops) * 8
+    else:
+        lo, hi = 0, max(tops) * 1.18
+    for ax in axes:
+        ax.set_ylim(lo, hi)
+        ax.tick_params(labelleft=True)
+
+
 def short(v):
     return '{:,.0f}'.format(v) if v >= 100 else '{:.1f}'.format(v)
 
@@ -93,7 +112,7 @@ with PdfPages(OUT) as pdf:
     # --------------------------------------------------------- 1. title
     fig = plt.figure(figsize=A4)
     fig.text(0.06, 0.88, 'Node allocator benchmark', fontsize=24, weight='bold')
-    fig.text(0.06, 0.83, 'Page allocators vs. the default pool, for boost::root_ptr, std::unique_ptr '
+    fig.text(0.06, 0.83, 'Page allocators vs. the former default pool, for boost::root_ptr, std::unique_ptr '
              'and std::shared_ptr', fontsize=13)
     body = [
         'Measured 2026-09-27 on an Intel Core i7-4700HQ (4 cores / 8 threads), Linux 5.15,',
@@ -102,12 +121,13 @@ with PdfPages(OUT) as pdf:
         '',
         'Findings',
         '',
-        '  - The default boost::pool_allocator is quadratic on release: its deallocate() keeps the free',
+        '  - boost::pool_allocator, the former default, is quadratic on release: its deallocate() keeps the free',
         '    list sorted (ordered_free), so releasing 200,000 objects costs 253-436 µs per object.',
         '    Every other allocator stays flat, at 40-160 ns per object.',
         '  - page_allocator_by_size is the fastest, or within 5% of it, in every single-threaded',
         '    scenario, except churn with unique_ptr and shared_ptr (std::allocator 12-17% faster).',
-        '    It uses 9-18% less memory than the default pool.',
+        '    It uses 9-18% less memory than boost::pool_allocator. It is the default node allocator',
+        '    since 2026-09-27.',
         '  - page_allocator_by_type costs 2.6-4x the time and 1.6-1.9 MB more memory than by_size',
         '    with many sparse types: each type fills a 64 KiB page of its own.',
         '  - With four threads, std::allocator is 18-38x faster than any pool for unique_ptr and',
@@ -139,7 +159,7 @@ with PdfPages(OUT) as pdf:
         ax.set_xticklabels(['{:,}'.format(v) for v in n], rotation=30)
         ax.minorticks_off()
     axes[0].set_ylabel('ns per object (log)')
-    fig.suptitle('Bulk release scaling: the default pool grows with the number of objects, '
+    fig.suptitle('Bulk release scaling: boost::pool_allocator grows with the number of objects, '
                  'the others stay flat', fontsize=13, weight='bold')
     legend_below(fig)
     fig.tight_layout(rect=(0, 0.06, 1, 0.94))
@@ -147,17 +167,18 @@ with PdfPages(OUT) as pdf:
     plt.close(fig)
 
     # --------------------------------------------------------- 3. time per scenario
-    fig, axes = plt.subplots(2, 2, figsize=A4)
+    fig, axes = plt.subplots(2, 2, figsize=A4, sharey=True)
     ax = axes[0][0]
     grouped_bars(ax, ['raw_churn', 'raw_batch'], ALLOC, lambda g, a: T.get(('raw', a, g)),
                  lambda a: COLOR[a], log=True, fmt='{:.0f}')
     ax.set_title('Allocator alone (no pointer)')
-    ax.set_ylabel('ns per operation (log)')
     for ax, (p, name) in zip([axes[0][1], axes[1][0], axes[1][1]], PTRS):
         groups = [s for s in SCEN if s != 'threads' and (p == 'root' or s != 'cycles')]
         grouped_bars(ax, groups, ALLOC, lambda g, a: T.get((p, a, g)), lambda a: COLOR[a], log=True)
         ax.set_title(name)
-        ax.set_ylabel('ns per operation (log)')
+    for row in axes:
+        row[0].set_ylabel('ns per operation (log)')
+    same_y(axes.flat, log=True)
     fig.suptitle('Time per operation, single-threaded (lower is better)', fontsize=13, weight='bold')
     legend_below(fig)
     fig.tight_layout(rect=(0, 0.05, 1, 0.95))
@@ -165,12 +186,13 @@ with PdfPages(OUT) as pdf:
     plt.close(fig)
 
     # --------------------------------------------------------- 4. memory
-    fig, axes = plt.subplots(1, 3, figsize=A4, sharey=False)
+    fig, axes = plt.subplots(1, 3, figsize=A4, sharey=True)
     for ax, (p, name) in zip(axes, PTRS):
         grouped_bars(ax, ['bulk', 'mixed', 'types'], ALLOC,
                      lambda g, a: M[(p, a, g)] / 1024.0, lambda a: COLOR[a], fmt='{:.1f}')
         ax.set_title(name)
-        ax.set_ylabel('resident memory grown, MB')
+    axes[0].set_ylabel('resident memory grown, MB')
+    same_y(axes)
     fig.suptitle('Resident memory while the objects are live (lower is better)\n'
                  'bulk: 100,000 x 48 B    mixed: 50,000 each of 16, 48 and 200 B    '
                  'types: 32 types x 100 objects', fontsize=12, weight='bold')
@@ -180,14 +202,15 @@ with PdfPages(OUT) as pdf:
     plt.close(fig)
 
     # --------------------------------------------------------- 5. pointer types compared
-    fig, axes = plt.subplots(1, 2, figsize=A4)
+    fig, axes = plt.subplots(1, 2, figsize=A4, sharey=True)
     handles = [plt.Rectangle((0, 0), 1, 1, color=PTR_COLOR[p]) for p, _ in PTRS]
     for ax, a in zip(axes, ['page_size', 'std']):
         groups = ['churn', 'bulk', 'mixed', 'cycles', 'types']
         grouped_bars(ax, groups, [p for p, _ in PTRS], lambda g, p: T.get((p, a, g)),
                      lambda p: PTR_COLOR[p], fmt='{:.0f}')
         ax.set_title('with ' + ALLOC_LABEL[a])
-        ax.set_ylabel('ns per operation')
+    axes[0].set_ylabel('ns per operation')
+    same_y(axes)
     fig.suptitle('Pointer types compared (cycles: root_ptr only - a unique_ptr cannot form one, '
                  'a shared_ptr cycle is never freed)', fontsize=12, weight='bold')
     legend_below(fig, handles, [n for _, n in PTRS], ncol=3)
@@ -212,7 +235,7 @@ with PdfPages(OUT) as pdf:
 
     info = pdf.infodict()
     info['Title'] = 'Node allocator benchmark'
-    info['Subject'] = 'Page allocators vs. the default pool for root_ptr, unique_ptr and shared_ptr'
+    info['Subject'] = 'Page allocators vs. the former default pool for root_ptr, unique_ptr and shared_ptr'
     info['Author'] = 'Services Informatiques Fornux'
 
 print(OUT)
