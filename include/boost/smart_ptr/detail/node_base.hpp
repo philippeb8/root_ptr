@@ -72,12 +72,14 @@
 /**
     @brief Allocator template used by @c node when none is given.
 
-    Defaults to @c boost::pool_allocator. Define it on the command line to run
-    a whole program on another one, e.g.
-    @c -DBOOST_ROOT_PTR_ALLOCATOR=boost::page_allocator_by_size.
+    Defaults to @c boost::page_allocator_by_size: it frees in constant time,
+    where @c boost::pool_allocator's ordered free makes releasing many nodes
+    quadratic, and it uses less memory. Define it on the command line to run a
+    whole program on another one, e.g.
+    @c -DBOOST_ROOT_PTR_ALLOCATOR=boost::pool_allocator.
 */
 #ifndef BOOST_ROOT_PTR_ALLOCATOR
-#define BOOST_ROOT_PTR_ALLOCATOR boost::pool_allocator
+#define BOOST_ROOT_PTR_ALLOCATOR boost::page_allocator_by_size
 #endif
 
 
