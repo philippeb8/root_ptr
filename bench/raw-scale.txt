@@ -1,75 +1,75 @@
-root pool 12500 22505.04 3204
-root fast 12500 121.18 3160
-root std 12500 156.32 2836
-root page_type 12500 117.67 3116
-root page_size 12500 123.88 3260
-root pool 25000 41257.50 4772
-root fast 25000 126.78 4840
-root std 25000 125.11 4632
-root page_type 25000 127.93 4464
-root page_size 25000 121.09 4580
-root pool 50000 77308.29 7864
-root fast 50000 127.65 7960
-root std 50000 144.19 7192
-root page_type 50000 164.44 7128
-root page_size 50000 258.36 7088
-root pool 100000 163410.21 13960
-root fast 100000 129.58 14080
-root std 100000 131.07 12676
-root page_type 100000 124.24 12680
-root page_size 100000 145.82 12792
-root pool 200000 435531.58 26356
-root fast 200000 131.33 26412
-root std 200000 134.20 23480
-root page_type 200000 138.72 23468
-root page_size 200000 125.23 23516
-unique pool 12500 15811.47 2476
-unique fast 12500 62.02 2476
-unique std 12500 66.84 2368
-unique page_type 12500 42.83 2516
-unique page_size 12500 72.57 2368
-unique pool 25000 26923.86 3412
-unique fast 25000 68.84 3468
-unique std 25000 59.16 3408
-unique page_type 25000 45.50 3212
-unique page_size 25000 46.55 3300
-unique pool 50000 49385.35 5016
-unique fast 50000 52.43 5136
-unique std 50000 120.15 5072
-unique page_type 50000 41.81 4568
-unique page_size 50000 52.95 4608
-unique pool 100000 99038.13 8376
-unique fast 100000 65.61 8912
-unique std 100000 102.51 8720
-unique page_type 100000 74.09 7148
-unique page_size 100000 46.47 7072
-unique pool 200000 252785.08 15620
-unique fast 200000 67.81 15704
-unique std 200000 102.02 15448
-unique page_type 200000 51.05 12664
-unique page_size 200000 58.92 12716
-shared pool 12500 22859.60 2904
-shared fast 12500 98.64 3052
-shared std 12500 82.36 2840
-shared page_type 12500 65.42 2664
-shared page_size 12500 62.41 2692
-shared pool 25000 41148.64 4060
-shared fast 25000 144.74 4024
-shared std 25000 72.96 3904
-shared page_type 25000 90.77 3724
-shared page_size 25000 75.41 3692
-shared pool 50000 78028.70 6688
-shared fast 50000 101.27 6768
-shared std 50000 105.03 6280
-shared page_type 50000 61.64 5620
-shared page_size 50000 75.46 5608
-shared pool 100000 168313.27 11372
-shared fast 100000 93.47 11444
-shared std 100000 78.31 11080
-shared page_type 100000 61.78 9476
-shared page_size 100000 64.87 9564
-shared pool 200000 428479.85 21268
-shared fast 200000 108.69 21212
-shared std 200000 81.67 20392
-shared page_type 200000 67.38 17404
-shared page_size 200000 61.68 17492
+mt root pool 12500 20886.57 3232
+mt root fast 12500 113.33 3268
+mt root std 12500 119.64 2968
+mt root page_type 12500 117.26 3176
+mt root page_size 12500 110.98 3144
+mt root pool 25000 37212.35 4616
+mt root fast 25000 116.09 4896
+mt root std 25000 116.14 4556
+mt root page_type 25000 109.84 4548
+mt root page_size 25000 109.50 4656
+mt root pool 50000 68743.63 7948
+mt root fast 50000 113.67 7952
+mt root std 50000 112.71 7280
+mt root page_type 50000 102.88 7176
+mt root page_size 50000 105.82 7092
+mt root pool 100000 140610.82 14076
+mt root fast 100000 115.53 13972
+mt root std 100000 118.40 12804
+mt root page_type 100000 107.31 12696
+mt root page_size 100000 105.77 12776
+mt root pool 200000 347740.54 26344
+mt root fast 200000 110.86 26456
+mt root std 200000 116.23 23632
+mt root page_type 200000 104.46 23572
+mt root page_size 200000 105.99 23664
+mt unique pool 12500 13813.88 2432
+mt unique fast 12500 52.19 2748
+mt unique std 12500 56.10 2292
+mt unique page_type 12500 42.14 2360
+mt unique page_size 12500 45.90 2384
+mt unique pool 25000 24315.75 3412
+mt unique fast 25000 51.63 3612
+mt unique std 25000 56.52 3380
+mt unique page_type 25000 38.66 3264
+mt unique page_size 25000 38.66 3184
+mt unique pool 50000 43783.52 5104
+mt unique fast 50000 51.66 5104
+mt unique std 50000 54.20 4864
+mt unique page_type 50000 37.35 4620
+mt unique page_size 50000 39.47 4548
+mt unique pool 100000 83708.92 8496
+mt unique fast 100000 52.84 8508
+mt unique std 100000 54.07 8720
+mt unique page_type 100000 37.92 7100
+mt unique page_size 100000 38.20 7200
+mt unique pool 200000 180424.39 15688
+mt unique fast 200000 54.42 15560
+mt unique std 200000 53.80 15576
+mt unique page_type 200000 40.29 12756
+mt unique page_size 200000 40.62 12740
+mt shared pool 12500 21026.34 2892
+mt shared fast 12500 86.24 3092
+mt shared std 12500 65.90 2892
+mt shared page_type 12500 56.94 2776
+mt shared page_size 12500 52.86 2668
+mt shared pool 25000 36155.99 4028
+mt shared fast 25000 85.39 3996
+mt shared std 25000 66.03 3948
+mt shared page_type 25000 52.96 3732
+mt shared page_size 25000 54.99 3748
+mt shared pool 50000 68391.63 6636
+mt shared fast 50000 81.72 6708
+mt shared std 50000 65.00 6292
+mt shared page_type 50000 53.55 5552
+mt shared page_size 50000 51.72 5660
+mt shared pool 100000 134446.41 11412
+mt shared fast 100000 78.62 11460
+mt shared std 100000 63.85 11080
+mt shared page_type 100000 51.21 9572
+mt shared page_size 100000 52.21 9560
+mt shared pool 200000 306791.64 21244
+mt shared fast 200000 83.16 21240
+mt shared std 200000 65.53 20344
+mt shared page_type 200000 55.83 17412
+mt shared page_size 200000 55.35 17512

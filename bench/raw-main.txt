@@ -1,500 +1,925 @@
-raw pool raw_churn 41.77
-raw fast raw_churn 17.08
-raw std raw_churn 16.07
-raw page_type raw_churn 16.79
-raw page_size raw_churn 16.84
-raw pool raw_batch 71312.40
-raw fast raw_batch 25.93
-raw std raw_batch 28.24
-raw page_type raw_batch 25.34
-raw page_size raw_batch 23.23
-root pool churn 78.18
-root fast churn 57.36
-root std churn 53.28
-root page_type churn 56.71
-root page_size churn 56.46
-root pool bulk 141279.29 13964
-root fast bulk 113.05 14076
-root std bulk 112.88 12732
-root page_type bulk 105.78 12700
-root page_size bulk 107.61 12684
-root pool mixed 96112.39 28004
-root fast mixed 151.88 28048
-root std mixed 150.06 24432
-root page_type mixed 133.20 23844
-root page_size mixed 130.99 23728
-root pool cycles 68149.16
-root fast cycles 136.45
-root std cycles 137.57
-root page_type cycles 120.63
-root page_size cycles 119.57
-root pool threads 432.82
-root fast threads 384.45
-root std threads 268.15
-root page_type threads 399.43
-root page_size threads 368.53
-root pool types 236.30 2148
-root fast types 136.42 2268
-root std types 133.04 2332
-root page_type types 338.02 3992
-root page_size types 126.36 2188
-unique pool churn 45.45
-unique fast churn 25.30
-unique std churn 14.81
-unique page_type churn 17.09
-unique page_size churn 16.71
-unique pool bulk 83474.31 8496
-unique fast bulk 51.91 8860
-unique std bulk 53.62 8588
-unique page_type bulk 48.12 7136
-unique page_size bulk 37.89 7168
-unique pool mixed 79459.59 19836
-unique fast mixed 73.61 19900
-unique std mixed 103.60 17684
-unique page_type mixed 59.67 16064
-unique page_size mixed 58.57 16240
-unique pool cycles n/a
-unique fast cycles n/a
-unique std cycles n/a
-unique page_type cycles n/a
-unique page_size cycles n/a
-unique pool threads 230.99
-unique fast threads 218.11
-unique std threads 4.15
-unique page_type threads 142.47
-unique page_size threads 151.47
-unique pool types 152.24 1876
-unique fast types 68.91 2048
-unique std types 63.13 1952
-unique page_type types 262.82 3768
-unique page_size types 69.50 1948
-shared pool churn 61.86
-shared fast churn 43.46
-shared std churn 17.54
-shared page_type churn 19.59
-shared page_size churn 19.60
-shared pool bulk 132171.80 11340
-shared fast bulk 83.12 11452
-shared std bulk 63.91 11064
-shared page_type bulk 53.13 9524
-shared page_size bulk 53.03 9508
-shared pool mixed 91031.92 23992
-shared fast mixed 103.17 24088
-shared std mixed 102.28 21096
-shared page_type mixed 77.13 19880
-shared page_size mixed 78.12 19948
-shared pool cycles n/a
-shared fast cycles n/a
-shared std cycles n/a
-shared page_type cycles n/a
-shared page_size cycles n/a
-shared pool threads 378.17
-shared fast threads 284.01
-shared std threads 4.77
-shared page_type threads 169.08
-shared page_size threads 156.53
-shared pool types 197.89 1836
-shared fast types 103.10 1860
-shared std types 71.06 1852
-shared page_type types 242.08 3808
-shared page_size types 64.36 1996
-raw pool raw_churn 40.86
-raw fast raw_churn 16.75
-raw std raw_churn 15.27
-raw page_type raw_churn 16.80
-raw page_size raw_churn 16.57
-raw pool raw_batch 69901.06
-raw fast raw_batch 27.40
-raw std raw_batch 27.87
-raw page_type raw_batch 23.69
-raw page_size raw_batch 24.05
-root pool churn 76.71
-root fast churn 57.04
-root std churn 52.89
-root page_type churn 56.76
-root page_size churn 56.35
-root pool bulk 138103.70 14004
-root fast bulk 111.95 14072
-root std bulk 114.65 12752
-root page_type bulk 105.14 12684
-root page_size bulk 108.64 12708
-root pool mixed 92810.65 27888
-root fast mixed 136.78 28132
-root std mixed 154.65 24248
-root page_type mixed 140.23 23820
-root page_size mixed 130.47 23804
-root pool cycles 67428.71
-root fast cycles 123.95
-root std cycles 170.54
-root page_type cycles 119.05
-root page_size cycles 117.12
-root pool threads 440.53
-root fast threads 366.59
-root std threads 257.50
-root page_type threads 370.00
-root page_size threads 377.11
-root pool types 231.20 2148
-root fast types 135.20 2244
-root std types 134.17 2304
-root page_type types 306.93 3888
-root page_size types 116.81 2344
-unique pool churn 45.90
-unique fast churn 25.54
-unique std churn 14.90
-unique page_type churn 17.18
-unique page_size churn 16.79
-unique pool bulk 83078.24 8540
-unique fast bulk 51.67 8540
-unique std bulk 53.80 8696
-unique page_type bulk 38.17 7116
-unique page_size bulk 37.89 7040
-unique pool mixed 78027.65 19912
-unique fast mixed 78.32 19900
-unique std mixed 91.91 17632
-unique page_type mixed 60.73 16164
-unique page_size mixed 60.83 16220
-unique pool cycles n/a
-unique fast cycles n/a
-unique std cycles n/a
-unique page_type cycles n/a
-unique page_size cycles n/a
-unique pool threads 253.72
-unique fast threads 222.55
-unique std threads 4.13
-unique page_type threads 141.86
-unique page_size threads 144.02
-unique pool types 191.26 1904
-unique fast types 61.46 2048
-unique std types 64.08 1912
-unique page_type types 245.73 3744
-unique page_size types 67.52 2124
-shared pool churn 61.84
-shared fast churn 44.56
-shared std churn 17.60
-shared page_type churn 19.60
-shared page_size churn 20.06
-shared pool bulk 135057.51 11316
-shared fast bulk 81.41 11628
-shared std bulk 64.20 11084
-shared page_type bulk 53.69 9572
-shared page_size bulk 52.55 9580
-shared pool mixed 91648.75 24064
-shared fast mixed 111.30 24108
-shared std mixed 110.98 21100
-shared page_type mixed 79.72 19880
-shared page_size mixed 78.39 19880
-shared pool cycles n/a
-shared fast cycles n/a
-shared std cycles n/a
-shared page_type cycles n/a
-shared page_size cycles n/a
-shared pool threads 393.61
-shared fast threads 300.43
-shared std threads 4.87
-shared page_type threads 148.55
-shared page_size threads 153.84
-shared pool types 217.47 1904
-shared fast types 91.24 1964
-shared std types 72.84 1880
-shared page_type types 342.28 3828
-shared page_size types 72.13 1928
-raw pool raw_churn 42.19
-raw fast raw_churn 16.69
-raw std raw_churn 16.36
-raw page_type raw_churn 16.70
-raw page_size raw_churn 16.54
-raw pool raw_batch 71101.40
-raw fast raw_batch 29.19
-raw std raw_batch 28.65
-raw page_type raw_batch 23.96
-raw page_size raw_batch 23.82
-root pool churn 77.54
-root fast churn 57.39
-root std churn 54.31
-root page_type churn 57.24
-root page_size churn 56.75
-root pool bulk 144082.47 13980
-root fast bulk 113.40 14032
-root std bulk 120.27 12668
-root page_type bulk 108.35 12736
-root page_size bulk 107.49 12740
-root pool mixed 98512.72 27956
-root fast mixed 138.46 28100
-root std mixed 155.00 24284
-root page_type mixed 131.67 23904
-root page_size mixed 133.52 23784
-root pool cycles 68608.32
-root fast cycles 124.78
-root std cycles 134.21
-root page_type cycles 116.82
-root page_size cycles 118.72
-root pool threads 448.25
-root fast threads 391.74
-root std threads 261.41
-root page_type threads 377.95
-root page_size threads 381.13
-root pool types 224.90 2208
-root fast types 142.75 2196
-root std types 136.19 2340
-root page_type types 333.11 3944
-root page_size types 122.04 2340
-unique pool churn 47.42
-unique fast churn 25.44
-unique std churn 15.11
-unique page_type churn 17.22
-unique page_size churn 17.69
-unique pool bulk 84393.31 8392
-unique fast bulk 52.87 8888
-unique std bulk 57.22 8772
-unique page_type bulk 39.19 7132
-unique page_size bulk 39.43 7132
-unique pool mixed 95397.58 19872
-unique fast mixed 85.56 19980
-unique std mixed 103.70 17680
-unique page_type mixed 63.12 16140
-unique page_size mixed 63.69 16208
-unique pool cycles n/a
-unique fast cycles n/a
-unique std cycles n/a
-unique page_type cycles n/a
-unique page_size cycles n/a
-unique pool threads 323.94
-unique fast threads 229.72
-unique std threads 4.16
-unique page_type threads 193.07
-unique page_size threads 168.90
-unique pool types 169.82 1904
-unique fast types 77.34 1952
-unique std types 67.28 1892
-unique page_type types 257.01 3692
-unique page_size types 65.96 1932
-shared pool churn 72.99
-shared fast churn 46.97
-shared std churn 19.26
-shared page_type churn 21.43
-shared page_size churn 20.96
-shared pool bulk 159677.45 11428
-shared fast bulk 99.25 11440
-shared std bulk 80.68 11116
-shared page_type bulk 62.15 9528
-shared page_size bulk 71.51 9500
-shared pool mixed 138507.36 24096
-shared fast mixed 121.22 24140
-shared std mixed 123.89 21128
-shared page_type mixed 93.54 19812
-shared page_size mixed 87.85 19924
-shared pool cycles n/a
-shared fast cycles n/a
-shared std cycles n/a
-shared page_type cycles n/a
-shared page_size cycles n/a
-shared pool threads 472.59
-shared fast threads 361.73
-shared std threads 10.10
-shared page_type threads 182.89
-shared page_size threads 188.28
-shared pool types 214.78 1900
-shared fast types 100.77 1972
-shared std types 105.09 1912
-shared page_type types 338.76 3828
-shared page_size types 80.24 1924
-raw pool raw_churn 48.64
-raw fast raw_churn 19.24
-raw std raw_churn 17.63
-raw page_type raw_churn 19.55
-raw page_size raw_churn 22.24
-raw pool raw_batch 87011.31
-raw fast raw_batch 29.74
-raw std raw_batch 33.26
-raw page_type raw_batch 26.62
-raw page_size raw_batch 40.14
-root pool churn 89.43
-root fast churn 73.38
-root std churn 62.01
-root page_type churn 81.37
-root page_size churn 66.31
-root pool bulk 174113.52 14052
-root fast bulk 118.04 14072
-root std bulk 135.68 12756
-root page_type bulk 128.70 12740
-root page_size bulk 131.38 12784
-root pool mixed 135665.49 27980
-root fast mixed 150.64 28020
-root std mixed 163.32 24372
-root page_type mixed 138.51 23808
-root page_size mixed 139.90 23872
-root pool cycles 75018.00
-root fast cycles 138.33
-root std cycles 150.16
-root page_type cycles 139.38
-root page_size cycles 137.49
-root pool threads 524.92
-root fast threads 424.96
-root std threads 353.23
-root page_type threads 449.02
-root page_size threads 454.93
-root pool types 260.19 2124
-root fast types 155.86 2244
-root std types 204.56 2324
-root page_type types 365.26 3804
-root page_size types 133.81 2288
-unique pool churn 55.00
-unique fast churn 33.38
-unique std churn 16.73
-unique page_type churn 25.34
-unique page_size churn 23.67
-unique pool bulk 94058.61 8572
-unique fast bulk 61.54 8580
-unique std bulk 59.35 8620
-unique page_type bulk 50.11 7176
-unique page_size bulk 45.99 7064
-unique pool mixed 112894.00 19796
-unique fast mixed 78.70 19932
-unique std mixed 94.74 17692
-unique page_type mixed 61.69 15988
-unique page_size mixed 60.95 16184
-unique pool cycles n/a
-unique fast cycles n/a
-unique std cycles n/a
-unique page_type cycles n/a
-unique page_size cycles n/a
-unique pool threads 284.25
-unique fast threads 248.11
-unique std threads 8.53
-unique page_type threads 186.31
-unique page_size threads 178.28
-unique pool types 170.85 1948
-unique fast types 62.40 1952
-unique std types 59.73 1912
-unique page_type types 287.01 3780
-unique page_size types 58.50 1852
-shared pool churn 65.84
-shared fast churn 45.54
-shared std churn 18.55
-shared page_type churn 20.77
-shared page_size churn 20.83
-shared pool bulk 152884.72 11392
-shared fast bulk 97.84 11468
-shared std bulk 69.41 11024
-shared page_type bulk 57.22 9544
-shared page_size bulk 59.14 9564
-shared pool mixed 127327.56 24108
-shared fast mixed 121.01 24104
-shared std mixed 117.60 20988
-shared page_type mixed 90.37 19824
-shared page_size mixed 90.23 19984
-shared pool cycles n/a
-shared fast cycles n/a
-shared std cycles n/a
-shared page_type cycles n/a
-shared page_size cycles n/a
-shared pool threads 463.76
-shared fast threads 345.85
-shared std threads 10.03
-shared page_type threads 183.08
-shared page_size threads 215.12
-shared pool types 206.97 1976
-shared fast types 91.53 1864
-shared std types 88.47 1896
-shared page_type types 283.26 3812
-shared page_size types 64.99 1912
-raw pool raw_churn 43.41
-raw fast raw_churn 18.15
-raw std raw_churn 16.72
-raw page_type raw_churn 17.60
-raw page_size raw_churn 19.09
-raw pool raw_batch 81270.69
-raw fast raw_batch 30.03
-raw std raw_batch 31.47
-raw page_type raw_batch 29.97
-raw page_size raw_batch 30.26
-root pool churn 91.74
-root fast churn 70.89
-root std churn 66.76
-root page_type churn 75.96
-root page_size churn 78.93
-root pool bulk 169414.40 13884
-root fast bulk 153.00 14148
-root std bulk 140.00 12696
-root page_type bulk 125.62 12652
-root page_size bulk 148.23 12800
-root pool mixed 141113.80 27940
-root fast mixed 148.88 28028
-root std mixed 165.28 24420
-root page_type mixed 137.54 23724
-root page_size mixed 136.07 23824
-root pool cycles 74799.89
-root fast cycles 128.89
-root std cycles 138.67
-root page_type cycles 125.79
-root page_size cycles 124.41
-root pool threads 496.33
-root fast threads 399.78
-root std threads 396.16
-root page_type threads 433.49
-root page_size threads 447.55
-root pool types 227.31 2192
-root fast types 143.00 2272
-root std types 140.11 2332
-root page_type types 344.57 3936
-root page_size types 135.66 2224
-unique pool churn 47.87
-unique fast churn 27.57
-unique std churn 15.75
-unique page_type churn 22.47
-unique page_size churn 18.67
-unique pool bulk 94057.61 8484
-unique fast bulk 52.76 8912
-unique std bulk 57.03 8668
-unique page_type bulk 39.02 7168
-unique page_size bulk 42.67 7164
-unique pool mixed 101132.72 19856
-unique fast mixed 86.06 19932
-unique std mixed 105.39 17624
-unique page_type mixed 66.09 16116
-unique page_size mixed 69.06 16220
-unique pool cycles n/a
-unique fast cycles n/a
-unique std cycles n/a
-unique page_type cycles n/a
-unique page_size cycles n/a
-unique pool threads 314.17
-unique fast threads 373.64
-unique std threads 8.71
-unique page_type threads 204.90
-unique page_size threads 157.54
-unique pool types 173.36 1912
-unique fast types 74.82 2044
-unique std types 123.90 1884
-unique page_type types 283.71 3712
-unique page_size types 59.77 1888
-shared pool churn 78.49
-shared fast churn 59.76
-shared std churn 20.64
-shared page_type churn 22.60
-shared page_size churn 22.30
-shared pool bulk 143421.54 11420
-shared fast bulk 114.75 11428
-shared std bulk 78.37 11088
-shared page_type bulk 57.54 9584
-shared page_size bulk 61.30 9572
-shared pool mixed 128537.33 24036
-shared fast mixed 120.36 24140
-shared std mixed 117.88 21088
-shared page_type mixed 90.22 19784
-shared page_size mixed 90.29 19800
-shared pool cycles n/a
-shared fast cycles n/a
-shared std cycles n/a
-shared page_type cycles n/a
-shared page_size cycles n/a
-shared pool threads 435.41
-shared fast threads 352.77
-shared std threads 10.18
-shared page_type threads 189.80
-shared page_size threads 206.46
-shared pool types 216.85 1808
-shared fast types 98.99 2048
-shared std types 80.48 1876
-shared page_type types 275.34 3672
-shared page_size types 105.41 1852
+mt raw pool raw_churn 42.57
+mt raw fast raw_churn 17.48
+mt raw std raw_churn 15.76
+mt raw page_type raw_churn 16.84
+mt raw page_size raw_churn 16.64
+mt raw pool raw_batch 76550.64
+mt raw fast raw_batch 25.74
+mt raw std raw_batch 29.24
+mt raw page_type raw_batch 26.10
+mt raw page_size raw_batch 25.43
+mt root pool churn 77.62
+mt root fast churn 57.52
+mt root std churn 52.96
+mt root page_type churn 57.01
+mt root page_size churn 58.90
+mt root pool bulk 146740.78 13984
+mt root fast bulk 122.29 14040
+mt root std bulk 115.91 12740
+mt root page_type bulk 104.24 12692
+mt root page_size bulk 106.20 12652
+mt root pool mixed 116377.67 27972
+mt root fast mixed 151.65 27972
+mt root std mixed 182.72 24312
+mt root page_type mixed 146.06 23884
+mt root page_size mixed 154.31 23756
+mt root pool cycles 74904.32
+mt root fast cycles 133.60
+mt root std cycles 145.61
+mt root page_type cycles 130.61
+mt root page_size cycles 129.13
+mt root pool threads 588.64
+mt root fast threads 474.75
+mt root std threads 373.96
+mt root page_type threads 442.97
+mt root page_size threads 426.73
+mt root pool types 312.89 2108
+mt root fast types 157.64 2196
+mt root std types 148.43 2288
+mt root page_type types 389.08 3924
+mt root page_size types 229.43 2280
+mt unique pool churn 51.58
+mt unique fast churn 28.99
+mt unique std churn 18.30
+mt unique page_type churn 20.45
+mt unique page_size churn 21.06
+mt unique pool bulk 88170.11 8388
+mt unique fast bulk 52.05 8548
+mt unique std bulk 56.37 8684
+mt unique page_type bulk 38.58 7176
+mt unique page_size bulk 43.14 7196
+mt unique pool mixed 90039.48 19836
+mt unique fast mixed 77.60 19916
+mt unique std mixed 88.12 17624
+mt unique page_type mixed 59.11 16088
+mt unique page_size mixed 59.39 16228
+mt unique pool cycles n/a
+mt unique fast cycles n/a
+mt unique std cycles n/a
+mt unique page_type cycles n/a
+mt unique page_size cycles n/a
+mt unique pool threads 345.52
+mt unique fast threads 230.57
+mt unique std threads 4.16
+mt unique page_type threads 172.42
+mt unique page_size threads 227.67
+mt unique pool types 187.02 1912
+mt unique fast types 63.81 2060
+mt unique std types 70.36 1836
+mt unique page_type types 247.16 3696
+mt unique page_size types 57.12 1944
+mt shared pool churn 64.66
+mt shared fast churn 45.83
+mt shared std churn 18.87
+mt shared page_type churn 20.38
+mt shared page_size churn 20.23
+mt shared pool bulk 146392.02 11352
+mt shared fast bulk 79.70 11436
+mt shared std bulk 64.36 11076
+mt shared page_type bulk 56.66 9456
+mt shared page_size bulk 51.58 9616
+mt shared pool mixed 105003.96 24096
+mt shared fast mixed 111.04 24112
+mt shared std mixed 105.15 21056
+mt shared page_type mixed 77.87 19916
+mt shared page_size mixed 78.45 19988
+mt shared pool cycles n/a
+mt shared fast cycles n/a
+mt shared std cycles n/a
+mt shared page_type cycles n/a
+mt shared page_size cycles n/a
+mt shared pool threads 368.78
+mt shared fast threads 336.52
+mt shared std threads 5.67
+mt shared page_type threads 214.41
+mt shared page_size threads 146.34
+mt shared pool types 195.06 1932
+mt shared fast types 91.69 1964
+mt shared std types 91.07 1948
+mt shared page_type types 258.39 3720
+mt shared page_size types 71.43 1948
+st raw pool raw_churn 27.98
+st raw fast raw_churn 3.33
+st raw std raw_churn 15.56
+st raw page_type raw_churn 3.91
+st raw page_size raw_churn 3.95
+st raw pool raw_batch 76306.74
+st raw fast raw_batch 23.54
+st raw std raw_batch 27.26
+st raw page_type raw_batch 21.08
+st raw page_size raw_batch 21.74
+st root pool churn 36.53
+st root fast churn 11.10
+st root std churn 19.96
+st root page_type churn 9.34
+st root page_size churn 9.46
+st root pool bulk 141720.98 13956
+st root fast bulk 69.75 14064
+st root std bulk 76.52 12620
+st root page_type bulk 66.00 12700
+st root page_size bulk 72.10 12784
+st root pool mixed 96490.34 27928
+st root fast mixed 96.83 27928
+st root std mixed 114.66 24244
+st root page_type mixed 89.93 23696
+st root page_size mixed 83.83 23784
+st root pool cycles 68354.44
+st root fast cycles 54.53
+st root std cycles 63.81
+st root page_type cycles 43.80
+st root page_size cycles 43.45
+st root pool types 189.39 2120
+st root fast types 88.14 2120
+st root std types 81.06 2288
+st root page_type types 264.95 3868
+st root page_size types 73.80 2212
+st unique pool churn 27.78
+st unique fast churn 3.39
+st unique std churn 15.81
+st unique page_type churn 5.83
+st unique page_size churn 5.80
+st unique pool bulk 88948.86 8348
+st unique fast bulk 46.80 8440
+st unique std bulk 58.05 8600
+st unique page_type bulk 39.54 7160
+st unique page_size bulk 35.56 7268
+st unique pool mixed 85935.42 19840
+st unique fast mixed 61.11 19820
+st unique std mixed 87.72 17644
+st unique page_type mixed 55.97 16056
+st unique page_size mixed 56.20 16068
+st unique pool cycles n/a
+st unique fast cycles n/a
+st unique std cycles n/a
+st unique page_type cycles n/a
+st unique page_size cycles n/a
+st unique pool types 157.34 1832
+st unique fast types 39.90 1900
+st unique std types 63.52 1900
+st unique page_type types 239.64 3796
+st unique page_size types 44.52 1912
+st shared pool churn 30.24
+st shared fast churn 4.64
+st shared std churn 17.46
+st shared page_type churn 9.63
+st shared page_size churn 9.28
+st shared pool bulk 137830.13 11184
+st shared fast bulk 49.78 11360
+st shared std bulk 65.71 11140
+st shared page_type bulk 46.08 9452
+st shared page_size bulk 45.99 9556
+st shared pool mixed 97382.01 24008
+st shared fast mixed 82.39 23968
+st shared std mixed 108.01 21056
+st shared page_type mixed 74.62 19856
+st shared page_size mixed 75.88 19832
+st shared pool cycles n/a
+st shared fast cycles n/a
+st shared std cycles n/a
+st shared page_type cycles n/a
+st shared page_size cycles n/a
+st shared pool types 174.96 1932
+st shared fast types 62.03 1940
+st shared std types 79.35 1916
+st shared page_type types 285.20 3700
+st shared page_size types 65.73 1884
+mt raw pool raw_churn 45.42
+mt raw fast raw_churn 27.50
+mt raw std raw_churn 18.00
+mt raw page_type raw_churn 19.54
+mt raw page_size raw_churn 26.29
+mt raw pool raw_batch 79394.33
+mt raw fast raw_batch 24.71
+mt raw std raw_batch 27.82
+mt raw page_type raw_batch 24.16
+mt raw page_size raw_batch 23.09
+mt root pool churn 77.07
+mt root fast churn 58.44
+mt root std churn 53.42
+mt root page_type churn 57.91
+mt root page_size churn 56.86
+mt root pool bulk 150587.05 13920
+mt root fast bulk 120.95 13964
+mt root std bulk 114.06 12728
+mt root page_type bulk 107.01 12840
+mt root page_size bulk 106.48 12640
+mt root pool mixed 109192.06 28084
+mt root fast mixed 139.67 28028
+mt root std mixed 155.94 24376
+mt root page_type mixed 131.88 23732
+mt root page_size mixed 131.61 23904
+mt root pool cycles 70858.55
+mt root fast cycles 174.53
+mt root std cycles 146.58
+mt root page_type cycles 168.26
+mt root page_size cycles 129.32
+mt root pool threads 514.31
+mt root fast threads 424.24
+mt root std threads 344.65
+mt root page_type threads 427.41
+mt root page_size threads 394.84
+mt root pool types 219.81 2180
+mt root fast types 129.19 2252
+mt root std types 126.14 2308
+mt root page_type types 345.52 3900
+mt root page_size types 117.89 2308
+mt unique pool churn 46.94
+mt unique fast churn 25.76
+mt unique std churn 14.96
+mt unique page_type churn 17.50
+mt unique page_size churn 17.03
+mt unique pool bulk 89900.74 8864
+mt unique fast bulk 55.60 8540
+mt unique std bulk 55.41 8712
+mt unique page_type bulk 40.25 7160
+mt unique page_size bulk 40.98 7192
+mt unique pool mixed 87715.21 19860
+mt unique fast mixed 74.45 19864
+mt unique std mixed 88.54 17696
+mt unique page_type mixed 59.51 16108
+mt unique page_size mixed 61.28 16096
+mt unique pool cycles n/a
+mt unique fast cycles n/a
+mt unique std cycles n/a
+mt unique page_type cycles n/a
+mt unique page_size cycles n/a
+mt unique pool threads 229.22
+mt unique fast threads 245.87
+mt unique std threads 4.11
+mt unique page_type threads 150.54
+mt unique page_size threads 145.85
+mt unique pool types 179.61 1936
+mt unique fast types 59.34 1960
+mt unique std types 64.40 1904
+mt unique page_type types 244.19 3748
+mt unique page_size types 73.35 2048
+mt shared pool churn 62.09
+mt shared fast churn 43.35
+mt shared std churn 17.66
+mt shared page_type churn 19.82
+mt shared page_size churn 19.38
+mt shared pool bulk 144652.99 11360
+mt shared fast bulk 79.09 11500
+mt shared std bulk 63.59 11084
+mt shared page_type bulk 50.87 9568
+mt shared page_size bulk 51.11 9532
+mt shared pool mixed 104512.09 23992
+mt shared fast mixed 109.65 24048
+mt shared std mixed 111.58 21204
+mt shared page_type mixed 139.42 19796
+mt shared page_size mixed 123.66 19872
+mt shared pool cycles n/a
+mt shared fast cycles n/a
+mt shared std cycles n/a
+mt shared page_type cycles n/a
+mt shared page_size cycles n/a
+mt shared pool threads 362.35
+mt shared fast threads 277.70
+mt shared std threads 9.23
+mt shared page_type threads 163.62
+mt shared page_size threads 158.07
+mt shared pool types 214.59 1976
+mt shared fast types 133.37 1876
+mt shared std types 73.65 1852
+mt shared page_type types 252.77 3780
+mt shared page_size types 70.61 1848
+st raw pool raw_churn 27.30
+st raw fast raw_churn 3.33
+st raw std raw_churn 16.13
+st raw page_type raw_churn 4.48
+st raw page_size raw_churn 3.92
+st raw pool raw_batch 73733.15
+st raw fast raw_batch 38.40
+st raw std raw_batch 55.57
+st raw page_type raw_batch 23.53
+st raw page_size raw_batch 20.45
+st root pool churn 36.36
+st root fast churn 11.65
+st root std churn 20.70
+st root page_type churn 11.51
+st root page_size churn 9.62
+st root pool bulk 145115.97 14060
+st root fast bulk 77.94 14040
+st root std bulk 81.40 12744
+st root page_type bulk 79.49 12720
+st root page_size bulk 79.71 12700
+st root pool mixed 137577.72 27904
+st root fast mixed 96.62 28040
+st root std mixed 119.17 24212
+st root page_type mixed 85.62 23852
+st root page_size mixed 86.51 23768
+st root pool cycles 71612.73
+st root fast cycles 51.54
+st root std cycles 67.25
+st root page_type cycles 44.03
+st root page_size cycles 46.73
+st root pool types 183.02 2156
+st root fast types 83.26 2120
+st root std types 82.80 2276
+st root page_type types 272.64 3844
+st root page_size types 69.27 2152
+st unique pool churn 27.46
+st unique fast churn 3.31
+st unique std churn 15.91
+st unique page_type churn 5.82
+st unique page_size churn 5.83
+st unique pool bulk 85059.59 8524
+st unique fast bulk 38.29 8556
+st unique std bulk 59.68 8572
+st unique page_type bulk 33.38 7244
+st unique page_size bulk 34.32 7176
+st unique pool mixed 76245.22 19800
+st unique fast mixed 66.34 19824
+st unique std mixed 97.01 17740
+st unique page_type mixed 59.42 16124
+st unique page_size mixed 58.22 16128
+st unique pool cycles n/a
+st unique fast cycles n/a
+st unique std cycles n/a
+st unique page_type cycles n/a
+st unique page_size cycles n/a
+st unique pool types 145.76 1868
+st unique fast types 84.11 1860
+st unique std types 62.72 1920
+st unique page_type types 348.99 3692
+st unique page_size types 48.39 1884
+st shared pool churn 32.82
+st shared fast churn 4.83
+st shared std churn 18.55
+st shared page_type churn 9.85
+st shared page_size churn 9.53
+st shared pool bulk 148175.19 11348
+st shared fast bulk 55.82 11320
+st shared std bulk 85.43 11024
+st shared page_type bulk 52.98 9512
+st shared page_size bulk 48.92 9548
+st shared pool mixed 114902.31 24056
+st shared fast mixed 77.34 24036
+st shared std mixed 105.79 21140
+st shared page_type mixed 71.96 19820
+st shared page_size mixed 74.29 19820
+st shared pool cycles n/a
+st shared fast cycles n/a
+st shared std cycles n/a
+st shared page_type cycles n/a
+st shared page_size cycles n/a
+st shared pool types 168.25 1968
+st shared fast types 55.51 1852
+st shared std types 75.99 1984
+st shared page_type types 268.13 3820
+st shared page_size types 60.75 1904
+mt raw pool raw_churn 43.24
+mt raw fast raw_churn 17.14
+mt raw std raw_churn 15.68
+mt raw page_type raw_churn 16.81
+mt raw page_size raw_churn 16.89
+mt raw pool raw_batch 71141.38
+mt raw fast raw_batch 25.53
+mt raw std raw_batch 31.08
+mt raw page_type raw_batch 25.33
+mt raw page_size raw_batch 24.52
+mt root pool churn 78.33
+mt root fast churn 56.78
+mt root std churn 53.58
+mt root page_type churn 56.82
+mt root page_size churn 57.10
+mt root pool bulk 142832.82 13936
+mt root fast bulk 113.51 14080
+mt root std bulk 115.60 12724
+mt root page_type bulk 105.32 12720
+mt root page_size bulk 107.45 12820
+mt root pool mixed 100748.86 27996
+mt root fast mixed 142.74 28048
+mt root std mixed 152.77 24332
+mt root page_type mixed 129.53 23860
+mt root page_size mixed 128.07 23728
+mt root pool cycles 68706.21
+mt root fast cycles 129.60
+mt root std cycles 136.75
+mt root page_type cycles 119.60
+mt root page_size cycles 120.47
+mt root pool threads 411.66
+mt root fast threads 375.69
+mt root std threads 259.32
+mt root page_type threads 383.58
+mt root page_size threads 390.00
+mt root pool types 232.60 2212
+mt root fast types 180.71 2196
+mt root std types 135.06 2292
+mt root page_type types 325.50 3824
+mt root page_size types 120.85 2288
+mt unique pool churn 47.71
+mt unique fast churn 26.12
+mt unique std churn 15.32
+mt unique page_type churn 18.13
+mt unique page_size churn 17.68
+mt unique pool bulk 84153.30 8848
+mt unique fast bulk 52.68 8556
+mt unique std bulk 55.67 8744
+mt unique page_type bulk 40.13 7204
+mt unique page_size bulk 39.65 7124
+mt unique pool mixed 80728.81 19828
+mt unique fast mixed 74.23 19884
+mt unique std mixed 101.87 17536
+mt unique page_type mixed 60.67 16196
+mt unique page_size mixed 60.36 16148
+mt unique pool cycles n/a
+mt unique fast cycles n/a
+mt unique std cycles n/a
+mt unique page_type cycles n/a
+mt unique page_size cycles n/a
+mt unique pool threads 247.08
+mt unique fast threads 221.41
+mt unique std threads 4.16
+mt unique page_type threads 142.28
+mt unique page_size threads 147.98
+mt unique pool types 160.57 1900
+mt unique fast types 58.02 1856
+mt unique std types 62.27 1936
+mt unique page_type types 366.23 3804
+mt unique page_size types 58.86 1924
+mt shared pool churn 62.01
+mt shared fast churn 44.05
+mt shared std churn 17.92
+mt shared page_type churn 19.63
+mt shared page_size churn 19.60
+mt shared pool bulk 138642.08 11360
+mt shared fast bulk 78.98 11432
+mt shared std bulk 66.44 11108
+mt shared page_type bulk 52.64 9572
+mt shared page_size bulk 51.66 9572
+mt shared pool mixed 98903.40 24148
+mt shared fast mixed 105.31 23992
+mt shared std mixed 106.88 21060
+mt shared page_type mixed 76.76 19848
+mt shared page_size mixed 79.05 19944
+mt shared pool cycles n/a
+mt shared fast cycles n/a
+mt shared std cycles n/a
+mt shared page_type cycles n/a
+mt shared page_size cycles n/a
+mt shared pool threads 367.88
+mt shared fast threads 300.16
+mt shared std threads 5.26
+mt shared page_type threads 140.90
+mt shared page_size threads 147.51
+mt shared pool types 217.21 1840
+mt shared fast types 91.76 2024
+mt shared std types 68.39 1920
+mt shared page_type types 243.96 3768
+mt shared page_size types 71.59 1780
+st raw pool raw_churn 27.60
+st raw fast raw_churn 3.29
+st raw std raw_churn 15.48
+st raw page_type raw_churn 4.53
+st raw page_size raw_churn 4.00
+st raw pool raw_batch 70463.77
+st raw fast raw_batch 23.32
+st raw std raw_batch 27.96
+st raw page_type raw_batch 21.04
+st raw page_size raw_batch 21.37
+st root pool churn 36.73
+st root fast churn 10.78
+st root std churn 20.16
+st root page_type churn 9.38
+st root page_size churn 9.22
+st root pool bulk 141680.72 13916
+st root fast bulk 69.74 14012
+st root std bulk 79.16 12592
+st root page_type bulk 65.77 12700
+st root page_size bulk 62.66 12720
+st root pool mixed 99023.15 28048
+st root fast mixed 98.00 27992
+st root std mixed 120.85 24296
+st root page_type mixed 84.02 23788
+st root page_size mixed 83.21 23836
+st root pool cycles 69162.35
+st root fast cycles 57.11
+st root std cycles 63.04
+st root page_type cycles 45.92
+st root page_size cycles 43.11
+st root pool types 172.96 2116
+st root fast types 89.95 2092
+st root std types 86.60 2192
+st root page_type types 268.60 3884
+st root page_size types 87.35 2272
+st unique pool churn 27.20
+st unique fast churn 3.38
+st unique std churn 15.65
+st unique page_type churn 5.82
+st unique page_size churn 5.79
+st unique pool bulk 83742.92 8448
+st unique fast bulk 36.49 8492
+st unique std bulk 55.15 8532
+st unique page_type bulk 33.10 7104
+st unique page_size bulk 32.86 7120
+st unique pool mixed 83186.13 19684
+st unique fast mixed 59.53 19820
+st unique std mixed 94.63 17576
+st unique page_type mixed 57.97 16036
+st unique page_size mixed 55.73 16116
+st unique pool cycles n/a
+st unique fast cycles n/a
+st unique std cycles n/a
+st unique page_type cycles n/a
+st unique page_size cycles n/a
+st unique pool types 161.10 1824
+st unique fast types 51.10 1920
+st unique std types 71.60 1924
+st unique page_type types 255.80 3748
+st unique page_size types 43.85 1764
+st shared pool churn 32.42
+st shared fast churn 4.78
+st shared std churn 18.14
+st shared page_type churn 9.98
+st shared page_size churn 9.26
+st shared pool bulk 135623.57 11340
+st shared fast bulk 49.11 11380
+st shared std bulk 64.69 11096
+st shared page_type bulk 51.02 9544
+st shared page_size bulk 46.38 9500
+st shared pool mixed 94109.09 23932
+st shared fast mixed 73.31 23952
+st shared std mixed 105.35 21064
+st shared page_type mixed 74.42 19796
+st shared page_size mixed 74.08 19792
+st shared pool cycles n/a
+st shared fast cycles n/a
+st shared std cycles n/a
+st shared page_type cycles n/a
+st shared page_size cycles n/a
+st shared pool types 168.19 1844
+st shared fast types 57.97 1988
+st shared std types 79.19 1884
+st shared page_type types 270.52 3692
+st shared page_size types 63.69 1912
+mt raw pool raw_churn 41.67
+mt raw fast raw_churn 16.86
+mt raw std raw_churn 15.70
+mt raw page_type raw_churn 16.64
+mt raw page_size raw_churn 16.41
+mt raw pool raw_batch 70398.52
+mt raw fast raw_batch 26.88
+mt raw std raw_batch 27.23
+mt raw page_type raw_batch 24.16
+mt raw page_size raw_batch 24.41
+mt root pool churn 78.78
+mt root fast churn 57.48
+mt root std churn 54.18
+mt root page_type churn 56.53
+mt root page_size churn 57.81
+mt root pool bulk 139396.24 14040
+mt root fast bulk 110.69 13956
+mt root std bulk 116.77 12848
+mt root page_type bulk 105.83 12780
+mt root page_size bulk 108.86 12748
+mt root pool mixed 100366.29 27976
+mt root fast mixed 142.05 28024
+mt root std mixed 162.87 24284
+mt root page_type mixed 132.02 23848
+mt root page_size mixed 132.65 23740
+mt root pool cycles 68429.63
+mt root fast cycles 125.79
+mt root std cycles 134.01
+mt root page_type cycles 119.80
+mt root page_size cycles 120.79
+mt root pool threads 434.83
+mt root fast threads 380.71
+mt root std threads 246.94
+mt root page_type threads 380.61
+mt root page_size threads 375.76
+mt root pool types 240.24 2104
+mt root fast types 135.32 2288
+mt root std types 136.54 2368
+mt root page_type types 312.54 3948
+mt root page_size types 128.13 2324
+mt unique pool churn 46.06
+mt unique fast churn 25.35
+mt unique std churn 15.19
+mt unique page_type churn 18.01
+mt unique page_size churn 17.10
+mt unique pool bulk 83682.04 8364
+mt unique fast bulk 50.95 8548
+mt unique std bulk 54.11 8720
+mt unique page_type bulk 38.80 7236
+mt unique page_size bulk 39.52 7056
+mt unique pool mixed 79092.09 19880
+mt unique fast mixed 73.88 19936
+mt unique std mixed 90.98 17696
+mt unique page_type mixed 61.68 16068
+mt unique page_size mixed 60.07 16264
+mt unique pool cycles n/a
+mt unique fast cycles n/a
+mt unique std cycles n/a
+mt unique page_type cycles n/a
+mt unique page_size cycles n/a
+mt unique pool threads 231.11
+mt unique fast threads 224.44
+mt unique std threads 4.33
+mt unique page_type threads 146.47
+mt unique page_size threads 153.65
+mt unique pool types 182.34 1904
+mt unique fast types 63.65 2040
+mt unique std types 57.69 1968
+mt unique page_type types 249.88 3784
+mt unique page_size types 62.64 1820
+mt shared pool churn 63.00
+mt shared fast churn 43.75
+mt shared std churn 17.58
+mt shared page_type churn 19.94
+mt shared page_size churn 19.39
+mt shared pool bulk 133014.22 11412
+mt shared fast bulk 80.50 11500
+mt shared std bulk 65.61 11072
+mt shared page_type bulk 55.50 9556
+mt shared page_size bulk 53.88 9532
+mt shared pool mixed 96237.35 24088
+mt shared fast mixed 107.30 24020
+mt shared std mixed 125.13 21020
+mt shared page_type mixed 79.39 19780
+mt shared page_size mixed 78.02 19872
+mt shared pool cycles n/a
+mt shared fast cycles n/a
+mt shared std cycles n/a
+mt shared page_type cycles n/a
+mt shared page_size cycles n/a
+mt shared pool threads 349.89
+mt shared fast threads 288.22
+mt shared std threads 4.98
+mt shared page_type threads 147.21
+mt shared page_size threads 148.39
+mt shared pool types 191.80 1984
+mt shared fast types 95.13 1920
+mt shared std types 82.26 1992
+mt shared page_type types 288.77 3716
+mt shared page_size types 67.28 2008
+st raw pool raw_churn 27.15
+st raw fast raw_churn 3.28
+st raw std raw_churn 15.50
+st raw page_type raw_churn 3.95
+st raw page_size raw_churn 3.93
+st raw pool raw_batch 70324.90
+st raw fast raw_batch 22.98
+st raw std raw_batch 28.44
+st raw page_type raw_batch 21.95
+st raw page_size raw_batch 21.94
+st root pool churn 36.13
+st root fast churn 11.09
+st root std churn 20.27
+st root page_type churn 10.67
+st root page_size churn 11.03
+st root pool bulk 140783.81 14016
+st root fast bulk 70.59 14056
+st root std bulk 83.32 12672
+st root page_type bulk 63.51 12696
+st root page_size bulk 65.72 12568
+st root pool mixed 96567.34 27952
+st root fast mixed 95.63 28060
+st root std mixed 119.81 24244
+st root page_type mixed 84.90 23816
+st root page_size mixed 84.57 23892
+st root pool cycles 68627.30
+st root fast cycles 53.41
+st root std cycles 63.38
+st root page_type cycles 45.34
+st root page_size cycles 56.61
+st root pool types 241.76 2184
+st root fast types 104.73 2316
+st root std types 98.59 1792
+st root page_type types 250.46 3876
+st root page_size types 79.22 2216
+st unique pool churn 28.89
+st unique fast churn 3.22
+st unique std churn 15.62
+st unique page_type churn 5.75
+st unique page_size churn 6.18
+st unique pool bulk 84997.89 8424
+st unique fast bulk 36.84 8452
+st unique std bulk 54.36 8656
+st unique page_type bulk 36.96 7092
+st unique page_size bulk 32.65 7180
+st unique pool mixed 77067.00 19856
+st unique fast mixed 68.15 19820
+st unique std mixed 92.08 17568
+st unique page_type mixed 55.15 16124
+st unique page_size mixed 54.99 16128
+st unique pool cycles n/a
+st unique fast cycles n/a
+st unique std cycles n/a
+st unique page_type cycles n/a
+st unique page_size cycles n/a
+st unique pool types 148.74 1896
+st unique fast types 43.69 1852
+st unique std types 83.05 1912
+st unique page_type types 257.27 3724
+st unique page_size types 53.82 1840
+st shared pool churn 30.32
+st shared fast churn 4.68
+st shared std churn 19.19
+st shared page_type churn 9.99
+st shared page_size churn 9.54
+st shared pool bulk 137483.70 11284
+st shared fast bulk 61.67 11360
+st shared std bulk 71.45 11060
+st shared page_type bulk 54.79 9496
+st shared page_size bulk 51.11 9448
+st shared pool mixed 99869.42 24072
+st shared fast mixed 79.59 24164
+st shared std mixed 111.38 21092
+st shared page_type mixed 71.33 19784
+st shared page_size mixed 76.50 19812
+st shared pool cycles n/a
+st shared fast cycles n/a
+st shared std cycles n/a
+st shared page_type cycles n/a
+st shared page_size cycles n/a
+st shared pool types 169.40 1820
+st shared fast types 60.23 1968
+st shared std types 74.73 1936
+st shared page_type types 289.43 3868
+st shared page_size types 60.36 1904
+mt raw pool raw_churn 45.83
+mt raw fast raw_churn 17.59
+mt raw std raw_churn 16.44
+mt raw page_type raw_churn 17.54
+mt raw page_size raw_churn 28.00
+mt raw pool raw_batch 79694.95
+mt raw fast raw_batch 25.99
+mt raw std raw_batch 28.18
+mt raw page_type raw_batch 27.28
+mt raw page_size raw_batch 29.25
+mt root pool churn 81.54
+mt root fast churn 60.35
+mt root std churn 62.94
+mt root page_type churn 60.37
+mt root page_size churn 58.72
+mt root pool bulk 156394.88 14096
+mt root fast bulk 112.23 14036
+mt root std bulk 116.49 12732
+mt root page_type bulk 103.97 12712
+mt root page_size bulk 106.38 12792
+mt root pool mixed 94960.26 27856
+mt root fast mixed 140.16 28072
+mt root std mixed 150.03 24416
+mt root page_type mixed 129.18 23844
+mt root page_size mixed 139.88 23856
+mt root pool cycles 67753.20
+mt root fast cycles 124.31
+mt root std cycles 131.14
+mt root page_type cycles 118.02
+mt root page_size cycles 122.13
+mt root pool threads 463.74
+mt root fast threads 389.54
+mt root std threads 264.26
+mt root page_type threads 376.54
+mt root page_size threads 369.54
+mt root pool types 222.22 2172
+mt root fast types 134.04 2212
+mt root std types 142.08 2244
+mt root page_type types 342.29 3892
+mt root page_size types 129.31 2180
+mt unique pool churn 46.46
+mt unique fast churn 26.55
+mt unique std churn 15.58
+mt unique page_type churn 17.45
+mt unique page_size churn 17.65
+mt unique pool bulk 84289.67 8452
+mt unique fast bulk 52.79 8504
+mt unique std bulk 55.59 8720
+mt unique page_type bulk 42.00 7176
+mt unique page_size bulk 40.19 7072
+mt unique pool mixed 78367.58 19780
+mt unique fast mixed 74.29 19900
+mt unique std mixed 104.21 17668
+mt unique page_type mixed 59.84 16052
+mt unique page_size mixed 60.16 16236
+mt unique pool cycles n/a
+mt unique fast cycles n/a
+mt unique std cycles n/a
+mt unique page_type cycles n/a
+mt unique page_size cycles n/a
+mt unique pool threads 225.23
+mt unique fast threads 213.52
+mt unique std threads 4.10
+mt unique page_type threads 157.47
+mt unique page_size threads 142.11
+mt unique pool types 154.02 1880
+mt unique fast types 60.66 1952
+mt unique std types 58.32 1996
+mt unique page_type types 241.99 3792
+mt unique page_size types 50.38 1896
+mt shared pool churn 61.50
+mt shared fast churn 43.17
+mt shared std churn 17.45
+mt shared page_type churn 19.25
+mt shared page_size churn 19.77
+mt shared pool bulk 133635.90 11380
+mt shared fast bulk 81.78 11488
+mt shared std bulk 63.97 11108
+mt shared page_type bulk 54.60 9648
+mt shared page_size bulk 51.89 9580
+mt shared pool mixed 93016.32 24116
+mt shared fast mixed 108.39 24164
+mt shared std mixed 113.15 21136
+mt shared page_type mixed 76.06 19940
+mt shared page_size mixed 78.18 19920
+mt shared pool cycles n/a
+mt shared fast cycles n/a
+mt shared std cycles n/a
+mt shared page_type cycles n/a
+mt shared page_size cycles n/a
+mt shared pool threads 390.81
+mt shared fast threads 295.58
+mt shared std threads 4.79
+mt shared page_type threads 148.56
+mt shared page_size threads 148.50
+mt shared pool types 191.36 1888
+mt shared fast types 96.18 2048
+mt shared std types 72.80 1864
+mt shared page_type types 258.59 3660
+mt shared page_size types 78.04 1996
+st raw pool raw_churn 26.49
+st raw fast raw_churn 3.28
+st raw std raw_churn 15.44
+st raw page_type raw_churn 4.16
+st raw page_size raw_churn 3.88
+st raw pool raw_batch 70657.71
+st raw fast raw_batch 22.05
+st raw std raw_batch 27.62
+st raw page_type raw_batch 21.26
+st raw page_size raw_batch 21.45
+st root pool churn 35.53
+st root fast churn 10.55
+st root std churn 20.04
+st root page_type churn 9.42
+st root page_size churn 9.30
+st root pool bulk 142652.65 13896
+st root fast bulk 67.18 14012
+st root std bulk 76.69 12624
+st root page_type bulk 62.42 12728
+st root page_size bulk 63.46 12780
+st root pool mixed 104372.59 27992
+st root fast mixed 96.78 28088
+st root std mixed 114.99 24104
+st root page_type mixed 84.58 23816
+st root page_size mixed 84.96 23728
+st root pool cycles 68168.46
+st root fast cycles 54.27
+st root std cycles 63.35
+st root page_type cycles 43.64
+st root page_size cycles 42.96
+st root pool types 183.73 2076
+st root fast types 81.08 2252
+st root std types 84.66 2264
+st root page_type types 248.67 3796
+st root page_size types 73.66 2168
+st unique pool churn 27.15
+st unique fast churn 3.33
+st unique std churn 15.94
+st unique page_type churn 6.07
+st unique page_size churn 6.00
+st unique pool bulk 83468.88 8480
+st unique fast bulk 34.95 8488
+st unique std bulk 54.30 8648
+st unique page_type bulk 34.33 7148
+st unique page_size bulk 35.51 7132
+st unique pool mixed 82786.04 19780
+st unique fast mixed 70.07 19844
+st unique std mixed 92.79 17624
+st unique page_type mixed 56.81 16136
+st unique page_size mixed 56.99 16072
+st unique pool cycles n/a
+st unique fast cycles n/a
+st unique std cycles n/a
+st unique page_type cycles n/a
+st unique page_size cycles n/a
+st unique pool types 156.57 1844
+st unique fast types 42.35 1904
+st unique std types 61.79 1924
+st unique page_type types 249.36 3640
+st unique page_size types 46.85 1880
+st shared pool churn 32.55
+st shared fast churn 4.78
+st shared std churn 17.88
+st shared page_type churn 9.81
+st shared page_size churn 9.49
+st shared pool bulk 133414.68 11324
+st shared fast bulk 47.13 11340
+st shared std bulk 65.09 10928
+st shared page_type bulk 45.71 9512
+st shared page_size bulk 47.80 9544
+st shared pool mixed 87947.34 23916
+st shared fast mixed 74.25 24012
+st shared std mixed 107.16 21040
+st shared page_type mixed 70.68 19728
+st shared page_size mixed 70.17 19712
+st shared pool cycles n/a
+st shared fast cycles n/a
+st shared std cycles n/a
+st shared page_type cycles n/a
+st shared page_size cycles n/a
+st shared pool types 175.78 1700
+st shared fast types 57.87 1796
+st shared std types 71.13 1820
+st shared page_type types 243.38 3656
+st shared page_size types 62.62 1848

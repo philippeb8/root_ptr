@@ -36,19 +36,25 @@ SCEN = ['churn', 'bulk', 'mixed', 'cycles', 'threads', 'types']
 # ------------------------------------------------------------------ data
 t = collections.defaultdict(list)
 m = collections.defaultdict(list)
+# raw-main.txt: <build> <pointer> <allocator> <scenario> <ns> [<kB>]; build is
+# mt (thread support, the default) or st (BOOST_DISABLE_THREADS)
 for line in open(os.path.join(DIR, 'raw-main.txt')):
     f = line.split()
-    if f[3] == 'n/a':
+    if f[4] == 'n/a':
         continue
-    t[(f[0], f[1], f[2])].append(float(f[3]))
-    if len(f) > 4:
-        m[(f[0], f[1], f[2])].append(int(f[4]))
-T = {k: statistics.median(v) for k, v in t.items()}
-M = {k: statistics.median(v) for k, v in m.items()}
+    t[tuple(f[:4])].append(float(f[4]))
+    if len(f) > 5:
+        m[tuple(f[:4])].append(int(f[5]))
+TB = {k: statistics.median(v) for k, v in t.items()}
+MB = {k: statistics.median(v) for k, v in m.items()}
+# the existing pages show the default build
+T = {k[1:]: v for k, v in TB.items() if k[0] == 'mt'}
+M = {k[1:]: v for k, v in MB.items() if k[0] == 'mt'}
+ST = {k[1:]: v for k, v in TB.items() if k[0] == 'st'}
 
 scale = collections.defaultdict(dict)
 for line in open(os.path.join(DIR, 'raw-scale.txt')):
-    p, a, n, ns = line.split()[:4]
+    b, p, a, n, ns = line.split()[:5]
     scale[(p, a)][int(n)] = float(ns)
 
 plt.rcParams.update({'font.size': 9, 'axes.titlesize': 11, 'axes.titleweight': 'bold',
@@ -116,28 +122,30 @@ with PdfPages(OUT) as pdf:
              'and std::shared_ptr', fontsize=13)
     body = [
         'Measured 2026-09-27 on an Intel Core i7-4700HQ (4 cores / 8 threads), Linux 5.15,',
-        'clang 23 -O2, libstdc++ 12, glibc 2.35. Median of 5 runs; every (pointer, allocator,',
-        'scenario) triple runs in a fresh process. Full tables and method: ALLOCATOR_BENCHMARK.md.',
+        'clang 23 -O2, libstdc++ 12, glibc 2.35. Median of 5 runs; every combination runs in a',
+        'fresh process. Two builds: with thread support (default) and with BOOST_DISABLE_THREADS.',
+        'Full tables and method: ALLOCATOR_BENCHMARK.md.',
         '',
         'Findings',
         '',
-        '  - boost::pool_allocator, the former default, is quadratic on release: its deallocate() keeps the free',
-        '    list sorted (ordered_free), so releasing 200,000 objects costs 253-436 µs per object.',
-        '    Every other allocator stays flat, at 40-160 ns per object.',
-        '  - page_allocator_by_size is the fastest, or within 5% of it, in every single-threaded',
-        '    scenario, except churn with unique_ptr and shared_ptr (std::allocator 12-17% faster).',
-        '    It uses 9-18% less memory than boost::pool_allocator. It is the default node allocator',
-        '    since 2026-09-27.',
-        '  - page_allocator_by_type costs 2.6-4x the time and 1.6-1.9 MB more memory than by_size',
+        '  - boost::pool_allocator, the former default, is quadratic on release (ordered_free):',
+        '    releasing 200,000 objects costs 180-348 µs per object; the others stay at 37-120 ns.',
+        '  - page_allocator_by_size, now the default, is fastest or within 3% on bulk, mixed and',
+        '    cycle release in both builds, and uses 9-18% less memory than boost::pool_allocator.',
+        '    Churn: std::allocator is 8-15% faster with thread support; fast_pool_allocator is',
+        '    1.75-2x faster for unique_ptr/shared_ptr without it.',
+        '  - Thread support is root_ptr\'s largest cost: without it, churn drops 57.8 -> 9.5 ns',
+        '    (6.1x), cycles 122 -> 44 ns per node. root_ptr then matches shared_ptr on churn.',
+        '  - page_allocator_by_type costs 2.7-4.2x the time and 1.6-1.9 MB more memory than by_size',
         '    with many sparse types: each type fills a 64 KiB page of its own.',
-        '  - With four threads, std::allocator is 18-38x faster than any pool for unique_ptr and',
-        '    shared_ptr; for root_ptr the global mutex narrows the gap to 1.4x.',
-        '  - root_ptr costs about 3x unique_ptr in time and 1.8x in memory; it alone reclaims cycles.',
+        '  - With four threads, std::allocator is 28-36x faster than any pool for unique_ptr and',
+        '    shared_ptr; for root_ptr the global mutex narrows the gap to 1.5x.',
         '',
-        'Pages',
+        'Pages (with thread support unless noted)',
         '',
         '  2  Bulk release scaling      3  Time per scenario      4  Resident memory',
-        '  5  Pointer types compared    6  Threads',
+        '  5  Pointer types compared    6  Threads                7  Without thread support',
+        '  8  What thread support costs',
     ]
     fig.text(0.06, 0.76, '\n'.join(body), fontsize=11, va='top', family='monospace')
     pdf.savefig(fig)
@@ -179,7 +187,8 @@ with PdfPages(OUT) as pdf:
     for row in axes:
         row[0].set_ylabel('ns per operation (log)')
     same_y(axes.flat, log=True)
-    fig.suptitle('Time per operation, single-threaded (lower is better)', fontsize=13, weight='bold')
+    fig.suptitle('Time per operation, single-threaded scenarios, built with thread support (lower is better)',
+                 fontsize=13, weight='bold')
     legend_below(fig)
     fig.tight_layout(rect=(0, 0.05, 1, 0.95))
     pdf.savefig(fig)
@@ -230,6 +239,47 @@ with PdfPages(OUT) as pdf:
              'every root_ptr operation takes a global mutex', ha='center', fontsize=10, style='italic')
     legend_below(fig)
     fig.tight_layout(rect=(0, 0.06, 1, 0.9))
+    pdf.savefig(fig)
+    plt.close(fig)
+
+    # --------------------------------------------------------- 7. without thread support
+    fig, axes = plt.subplots(2, 2, figsize=A4, sharey=True)
+    ax = axes[0][0]
+    grouped_bars(ax, ['raw_churn', 'raw_batch'], ALLOC, lambda g, a: ST.get(('raw', a, g)),
+                 lambda a: COLOR[a], log=True, fmt='{:.0f}')
+    ax.set_title('Allocator alone (no pointer)')
+    for ax, (p, name) in zip([axes[0][1], axes[1][0], axes[1][1]], PTRS):
+        groups = [s for s in SCEN if s != 'threads' and (p == 'root' or s != 'cycles')]
+        grouped_bars(ax, groups, ALLOC, lambda g, a: ST.get((p, a, g)), lambda a: COLOR[a], log=True)
+        ax.set_title(name)
+    for row in axes:
+        row[0].set_ylabel('ns per operation (log)')
+    same_y(axes.flat, log=True)
+    fig.suptitle('Time per operation, built with BOOST_DISABLE_THREADS (lower is better)\n'
+                 'no root_ptr mutex, plain reference counts, no pool mutexes', fontsize=12, weight='bold')
+    legend_below(fig)
+    fig.tight_layout(rect=(0, 0.05, 1, 0.92))
+    pdf.savefig(fig)
+    plt.close(fig)
+
+    # --------------------------------------------------------- 8. what thread support costs
+    fig, axes = plt.subplots(2, 2, figsize=A4, sharey=True)
+    for ax, (p, name) in zip(axes.flat, [('raw', 'Allocator alone (no pointer)')] + PTRS):
+        groups = (['raw_churn', 'raw_batch'] if p == 'raw'
+                  else [s for s in SCEN if s != 'threads' and (p == 'root' or s != 'cycles')])
+        grouped_bars(ax, groups, ALLOC,
+                     lambda g, a: (T[(p, a, g)] / ST[(p, a, g)]) if (p, a, g) in T and (p, a, g) in ST else None,
+                     lambda a: COLOR[a], fmt='{:.1f}x')
+        ax.axhline(1.0, color='black', lw=0.8)
+        ax.set_title(name)
+    for row in axes:
+        row[0].set_ylabel('time with / without thread support')
+    same_y(axes.flat)
+    fig.suptitle('What thread support costs: time with thread support divided by time with '
+                 'BOOST_DISABLE_THREADS\n(1.0x = no cost; higher = thread support is more expensive)',
+                 fontsize=12, weight='bold')
+    legend_below(fig)
+    fig.tight_layout(rect=(0, 0.05, 1, 0.92))
     pdf.savefig(fig)
     plt.close(fig)
 

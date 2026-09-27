@@ -6,7 +6,8 @@
 //     scenario:  raw_churn raw_batch churn bulk mixed cycles threads types
 //
 // Prints "<ns per operation> [<resident kB grown>]", or "n/a" when the scenario
-// does not apply to the pointer. Every scenario runs in a process of its own,
+// does not apply to the pointer (or, for threads, to a build with
+// BOOST_DISABLE_THREADS). Every scenario runs in a process of its own,
 // so memory freed by one scenario is never reused by the next; bench/run.sh
 // repeats the runs and reports medians.
 //
@@ -257,9 +258,14 @@ static bool run(std::string const & scenario, long arg)
         else
             std::printf("n/a\n");
     }
-    // threads: 4 threads, each churning objects (in its own proxy for root_ptr)
+    // threads: 4 threads, each churning objects (in its own proxy for root_ptr).
+    // Not in a build without thread support (BOOST_DISABLE_THREADS): nothing is locked.
     else if (scenario == "threads")
     {
+#if ! defined(BOOST_HAS_THREADS)
+        std::printf("n/a\n");
+        return true;
+#endif
         const long n = size(250000);
         const int threads = 4;
         std::printf("%.2f\n", ns_per_op(threads * n, [&] {
