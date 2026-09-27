@@ -1,18 +1,18 @@
 /**
-    \file
-    \brief Boost detail/node_base.hpp header file.
-    
+    @file
+    @brief Nodes that own the objects managed by @c boost::root_ptr.
+
     Patent US11288049B2
     'SOURCE TO SOURCE COMPILER, COMPILATION METHOD, AND
     COMPUTER-READABLE MEDIUM FOR PREDICTABLE MEMORY MANAGEMENT'
-    
-    Copyright (C) 2020-2026 Fornux LLC
 
-    Phil Bouchard, Founder & CEO
-    Fornux Inc
+    @copyright Copyright (C) 2020-2026 Services Informatiques Fornux
+
+    @author Phil Bouchard, Founder & CEO
+    Services Informatiques Fornux
     phil@fornux.com
-    101 Rue Villeneuve O #2268, Montreal, Quebec, Canada, H2T 2R6
-    
+    20 Poirier St., Gatineau, Quebec, Canada, J8V 1A6
+
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -67,6 +67,18 @@
 #include <boost/tti/has_static_member_function.hpp>
 
 #include <boost/smart_ptr/detail/intrusive_list.hpp>
+#include <boost/smart_ptr/page_allocator.hpp>
+
+/**
+    @brief Allocator template used by @c node when none is given.
+
+    Defaults to @c boost::pool_allocator. Define it on the command line to run
+    a whole program on another one, e.g.
+    @c -DBOOST_ROOT_PTR_ALLOCATOR=boost::page_allocator_by_size.
+*/
+#ifndef BOOST_ROOT_PTR_ALLOCATOR
+#define BOOST_ROOT_PTR_ALLOCATOR boost::pool_allocator
+#endif
 
 
 namespace boost
@@ -75,11 +87,10 @@ namespace boost
     
 struct node_proxy;
 
-// Reference-counting model: root_ptr fwd-decls, and a no-op member-walk
-// visitor (node<T>::proxy() is never invoked; collection is via root_set_).
+// Forward declarations. Collection is driven by the root sets of node_proxy
+// and by reference counts; no per-class member visitor is needed.
 template <typename T> class root_ptr;
 template <typename T, size_t S> class root_array;
-template <typename T, typename U = T> struct proxy { void operator()(node_proxy const &, T const &) const {} };
 
 
 namespace smart_ptr
@@ -87,6 +98,19 @@ namespace smart_ptr
 namespace detail
 {
 
+/** @brief Whether the first type of @c Args is @c A, ignoring references and cv-qualifiers. */
+template <typename A, typename... Args>
+    struct leads_with : std::false_type {};
+
+template <typename A, typename First, typename... Rest>
+    struct leads_with<A, First, Rest...> : std::is_same<A, typename std::decay<First>::type> {};
+
+/**
+    @brief Exception thrown by a managed destructor during collection.
+
+    node::destroy() is noexcept, so it stores the exception here and
+    ~node_proxy() rethrows it where user code can catch it.
+*/
 inline std::exception_ptr & pending_destructor_exception()
 {
     static thread_local std::exception_ptr e;
@@ -98,9 +122,7 @@ inline std::exception_ptr & pending_destructor_exception()
 } // namespace smart_ptr
 
 
-/**
-    Root class of all pointee objects.
-*/
+/** @brief Root class of all pointee objects. */
 
 struct node_base : public boost::detail::sp_counted_base
 {
@@ -120,8 +142,7 @@ struct node_base : public boost::detail::sp_counted_base
     
     virtual void * element() = 0;
 
-    virtual void proxy(node_proxy const &) = 0;
-
+    /** @brief Destructor; @c noexcept(false) so that a throwing managed destructor reaches node::destroy(). */
     virtual ~node_base() noexcept(false)
     {
     }
@@ -184,8 +205,16 @@ protected:
     
 
 /**
-    Pointee object wrapper.
+    @brief Tag selecting in-place construction of the element from a callable.
+
+    The callable returns a prvalue that initializes the element directly
+    (guaranteed copy elision), so the element needs neither a copy nor a
+    move constructor.
 */
+
+struct emplace_tag {};
+
+/** @brief Pointee object wrapper. */
 
 template <typename T>
     class node_element : public node_base
@@ -194,6 +223,12 @@ template <typename T>
         typedef T data_type;
 
         
+        template <typename F>
+            node_element(emplace_tag, F && f)
+            : elem_{f()}
+            {
+            }
+
         template <typename... Args>
             node_element(Args &&... args)
             : elem_{std::forward<Args>(args)...}
@@ -217,7 +252,7 @@ template <typename T>
         
 
     protected:
-        /** Pointee object.*/
+        /// Pointee object.
         data_type elem_;
     };
 
@@ -228,6 +263,19 @@ template <typename T, size_t S>
     public:
         typedef std::array<T, S> data_type;
 
+
+        /**
+            @brief Builds the whole @c std::array in place from the prvalue returned by @p f.
+
+            Used for every array initializer: forwarding one argument per element
+            makes the compiler fail on very large tables.
+        */
+
+        template <typename F>
+            node_element(emplace_tag, F && f)
+            : elem_{f()}
+            {
+            }
 
         template <typename... Args>
             node_element(Args &&... args)
@@ -252,7 +300,7 @@ template <typename T, size_t S>
         
         
     protected:
-        /** Pointee object.*/
+        /// Pointee object.
         data_type elem_;
     };
 
@@ -287,25 +335,28 @@ template <typename T>
         
         
     protected:
-        /** Pointee object.*/
+        /// Pointee object.
         data_type elem_;
     };
 
 
 /**
-    Pointee object & allocator wrapper.
-    
-    Main class used to instanciate pointee objects and a copy of the allocator desired.
+    @brief Pointee object and allocator wrapper.
+
+    Main class used to instantiate pointee objects, with a copy of the
+    desired allocator.
 */
 
-template <typename T, typename PoolAllocator = pool_allocator<T> >
+template <typename T, typename PoolAllocator = BOOST_ROOT_PTR_ALLOCATOR<T> >
     class node : public node_element<T>
     {
         typedef node_element<T> base;
         
     public:
         typedef T data_type;
-        typedef typename PoolAllocator::template rebind< node<T, PoolAllocator> >::other allocator_type;
+        /// The allocator, rebound to this node type. allocator_traits works for any
+        /// allocator; std::allocator has no rebind member since C++20.
+        typedef typename std::allocator_traits<PoolAllocator>::template rebind_alloc< node<T, PoolAllocator> > allocator_type;
 
         
         virtual void * element()
@@ -313,16 +364,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             return reinterpret_cast<void *>(& this->base::elem_);
         }
 
-        virtual void proxy(node_proxy const & p)
-        {
-            boost::proxy<data_type>()(p, * static_cast<data_type *>(element()));
-        }
-        
-        /**
-            Initialization of a pointee object.
-            
-            @note Will use a static copy of the allocator which has no parameter.
-        */
+        /** @brief Constructs the pointee object using the static allocator. */
         
         node() 
         : a_(static_pool())
@@ -331,9 +373,9 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         
 
         /**
-            Initialization of a pointee object.
-            
-            @param  a   Allocator to copy.
+            @brief Constructs the pointee object.
+
+            @param a Allocator to copy.
         */
         
         node(allocator_type const & a) 
@@ -342,7 +384,9 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         }
 
 
-        template <typename... Args>
+        /// Excluded when the first argument is the allocator: the overload below takes it.
+        template <typename... Args,
+                  typename std::enable_if<! smart_ptr::detail::leads_with<allocator_type, Args...>::value, int>::type = 0>
             node(Args &&... args)
             : a_(static_pool())
             , node_element<T>{std::forward<Args>(args)...}
@@ -358,19 +402,23 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
             }
 
         
-        /**
-            Destructor.
-        */
+        /** @brief Destructor. */
         
         virtual ~node()
         {
         }
 
-        // A throwing managed destructor is caught here (destroy() is noexcept and
-        // runs during collection); the exception is stashed and rethrown by
-        // ~node_proxy() so user code can catch it instead of std::terminate.
+        /**
+            @brief Destroys the pointee object.
+
+            A throwing destructor is caught and stored; ~node_proxy() rethrows it. The
+            memory goes back to the allocator the node was built with.
+        */
         virtual void destroy() BOOST_SP_NOEXCEPT
         {
+            // ~node() destroys a_, so keep a copy to free the memory with.
+            allocator_type a(a_);
+
             try
             {
                 this->~node();
@@ -384,15 +432,15 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 #ifdef BOOST_ZEROIZATION
             std::memset(this, 0, sizeof(*this));
 #endif
-            operator delete(this);
+            a.deallocate(this, 1);
         }
 
 
         /**
-            Allocates a new @c node using the static copy of @c PoolAllocator to be used.
-            
-            @param  s   Disregarded.
-            @return     Pointer of the new @c node.
+            @brief Allocates a node from the static allocator.
+
+            @param s Ignored.
+            @return Address of the new node.
         */
 
         void * operator new (size_t s)
@@ -404,11 +452,11 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
 
         /**
-            Allocates a new @c node .
-            
-            @param  s   Disregarded.
-            @param  a   Copy of @c PoolAllocator to be used.
-            @return     Pointer of the new @c node.
+            @brief Allocates a node from @p a.
+
+            @param s Ignored.
+            @param a Allocator to use.
+            @return Address of the new node.
         */
 
         void * operator new (size_t s, allocator_type a)
@@ -420,9 +468,9 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
 
         /**
-            Deallocates a @c node from @c PoolAllocator .
-            
-            @param  p   Address of the @c node to deallocate.
+            @brief Deallocates a node from the static allocator.
+
+            @param p Address of the node.
         */
         
         void operator delete (void * p)
@@ -432,10 +480,10 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
 
         /**
-            Deallocates a @c node from @c PoolAllocator .
+            @brief Deallocates a node from @p a.
 
-            @param  p   Address of the @c node to deallocate.
-            @param  a   Copy of @c PoolAllocator to be used.
+            @param p Address of the node.
+            @param a Allocator to use.
         */
 
         void operator delete (void * p, allocator_type a)
@@ -445,12 +493,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
 
         
     private:
-        /** 
-            Static pool.
-            
-            This is where all @c node are allocated when @c PoolAllocator is not 
-            explicitly specified in the constructor. 
-        */
+        /** @brief Static allocator, used when none is given to the constructor. */
          
         static allocator_type & static_pool()
         {
@@ -460,7 +503,7 @@ template <typename T, typename PoolAllocator = pool_allocator<T> >
         }
 
 
-        /** Copy of the @c PoolAllocator to be used. */
+        /// Copy of the allocator in use.
         allocator_type a_;        
     };
 
@@ -472,7 +515,8 @@ template <typename T, size_t S, typename PoolAllocator>
 
     public:
         typedef std::array<T, S> data_type;
-        typedef typename PoolAllocator::template rebind< node<std::array<T, S>, PoolAllocator> >::other allocator_type;
+        /// The allocator, rebound to this node type.
+        typedef typename std::allocator_traits<PoolAllocator>::template rebind_alloc< node<std::array<T, S>, PoolAllocator> > allocator_type;
 
 
         virtual void * element()
@@ -480,16 +524,7 @@ template <typename T, size_t S, typename PoolAllocator>
             return reinterpret_cast<void *>(& this->base::elem_);
         }
 
-        virtual void proxy(node_proxy const & p)
-        {
-            boost::proxy<data_type>()(p, * static_cast<data_type *>(element()));
-        }
-
-        /**
-            Initialization of a pointee object.
-
-            @note Will use a static copy of the allocator which has no parameter.
-        */
+        /** @brief Constructs the pointee object using the static allocator. */
 
         node()
             : a_(static_pool())
@@ -498,9 +533,9 @@ template <typename T, size_t S, typename PoolAllocator>
 
 
         /**
-            Initialization of a pointee object.
+            @brief Constructs the pointee object.
 
-            @param  a   Allocator to copy.
+            @param a Allocator to copy.
         */
 
         node(allocator_type const & a)
@@ -509,7 +544,9 @@ template <typename T, size_t S, typename PoolAllocator>
             }
 
 
-        template <typename... Args>
+        /// Excluded when the first argument is the allocator: the overload below takes it.
+        template <typename... Args,
+                  typename std::enable_if<! smart_ptr::detail::leads_with<allocator_type, Args...>::value, int>::type = 0>
             node(Args &&... args)
                 : a_(static_pool())
                 , node_element<data_type>{std::forward<Args>(args)...}
@@ -538,19 +575,23 @@ template <typename T, size_t S, typename PoolAllocator>
                 }
 
 
-        /**
-            Destructor.
-        */
+        /** @brief Destructor. */
 
         virtual ~node()
         {
         }
 
-        // A throwing managed destructor is caught here (destroy() is noexcept and
-        // runs during collection); the exception is stashed and rethrown by
-        // ~node_proxy() so user code can catch it instead of std::terminate.
+        /**
+            @brief Destroys the pointee object.
+
+            A throwing destructor is caught and stored; ~node_proxy() rethrows it. The
+            memory goes back to the allocator the node was built with.
+        */
         virtual void destroy() BOOST_SP_NOEXCEPT
         {
+            // ~node() destroys a_, so keep a copy to free the memory with.
+            allocator_type a(a_);
+
             try
             {
                 this->~node();
@@ -564,15 +605,15 @@ template <typename T, size_t S, typename PoolAllocator>
 #ifdef BOOST_ZEROIZATION
             std::memset(this, 0, sizeof(*this));
 #endif
-            operator delete(this);
+            a.deallocate(this, 1);
         }
 
 
         /**
-            Allocates a new @c node using the static copy of @c PoolAllocator to be used.
+            @brief Allocates a node from the static allocator.
 
-            @param  s   Disregarded.
-            @return     Pointer of the new @c node.
+            @param s Ignored.
+            @return Address of the new node.
         */
 
         void * operator new (size_t s)
@@ -584,11 +625,11 @@ template <typename T, size_t S, typename PoolAllocator>
 
 
         /**
-            Allocates a new @c node .
+            @brief Allocates a node from @p a.
 
-            @param  s   Disregarded.
-            @param  a   Copy of @c PoolAllocator to be used.
-            @return     Pointer of the new @c node.
+            @param s Ignored.
+            @param a Allocator to use.
+            @return Address of the new node.
         */
 
         void * operator new (size_t s, allocator_type a)
@@ -600,9 +641,9 @@ template <typename T, size_t S, typename PoolAllocator>
 
 
         /**
-            Deallocates a @c node from @c PoolAllocator .
+            @brief Deallocates a node from the static allocator.
 
-            @param  p   Address of the @c node to deallocate.
+            @param p Address of the node.
         */
 
         void operator delete (void * p)
@@ -612,10 +653,10 @@ template <typename T, size_t S, typename PoolAllocator>
 
 
         /**
-            Deallocates a @c node from @c PoolAllocator .
+            @brief Deallocates a node from @p a.
 
-            @param  p   Address of the @c node to deallocate.
-            @param  a   Copy of @c PoolAllocator to be used.
+            @param p Address of the node.
+            @param a Allocator to use.
         */
 
         void operator delete (void * p, allocator_type a)
@@ -625,12 +666,7 @@ template <typename T, size_t S, typename PoolAllocator>
 
 
     private:
-        /**
-            Static pool.
-
-            This is where all @c node are allocated when @c PoolAllocator is not
-            explicitly specified in the constructor.
-        */
+        /** @brief Static allocator, used when none is given to the constructor. */
 
         static allocator_type & static_pool()
         {
@@ -640,7 +676,7 @@ template <typename T, size_t S, typename PoolAllocator>
         }
 
 
-        /** Copy of the @c PoolAllocator to be used. */
+        /// Copy of the allocator in use.
         allocator_type a_;
     };
 

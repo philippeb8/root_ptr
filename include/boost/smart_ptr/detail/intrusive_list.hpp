@@ -1,18 +1,18 @@
 /**
-    \file
-    Boost intrusive_list.hpp header file.
+    @file
+    @brief Intrusive doubly linked circular list.
 
     Patent US11288049B2
     'SOURCE TO SOURCE COMPILER, COMPILATION METHOD, AND
     COMPUTER-READABLE MEDIUM FOR PREDICTABLE MEMORY MANAGEMENT'
-    
-    Copyright (C) 2020-2026 Fornux LLC
 
-    Phil Bouchard, Founder & CEO
-    Fornux Inc
+    @copyright Copyright (C) 2020-2026 Services Informatiques Fornux
+
+    @author Phil Bouchard, Founder & CEO
+    Services Informatiques Fornux
     phil@fornux.com
-    101 Rue Villeneuve O #2268, Montreal, Quebec, Canada, H2T 2R6
-    
+    20 Poirier St., Gatineau, Quebec, Canada, J8V 1A6
+
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -44,6 +44,7 @@ namespace detail
 {
 
 
+/** @brief Node of an @c intrusive_list; a single node links to itself. */
 struct intrusive_list_node
 {
     intrusive_list_node * next;
@@ -94,11 +95,10 @@ struct intrusive_list_node
 
 
 /**
-    Static list.
-    
-    Rewritten list template with explicit access to internal nodes.  This 
-    allows usages of tags already part of an object, used to group objects 
-    together without the need of any memory allocation.
+    @brief Intrusive doubly linked circular list.
+
+    The nodes are members of the listed objects, so grouping objects needs
+    no memory allocation.
 */
 
 struct intrusive_list : intrusive_list_node
@@ -184,6 +184,7 @@ struct intrusive_list : intrusive_list_node
 };
 
 
+/** @brief Iterator over the objects whose member @c P is linked in the list. */
 template <typename T, intrusive_list T::* P>
     struct intrusive_list::iterator
     {
@@ -240,6 +241,7 @@ template <typename T, intrusive_list T::* P>
     };
 
 
+/** @brief Reverse iterator over the objects whose member @c P is linked in the list. */
 template <typename T, intrusive_list T::* P>
     struct intrusive_list::reverse_iterator
     {

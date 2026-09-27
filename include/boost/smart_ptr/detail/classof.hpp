@@ -1,18 +1,18 @@
 /**
-    \file
-    Boost classof.hpp header file.
+    @file
+    @brief Address helpers for objects and their members.
 
     Patent US11288049B2
     'SOURCE TO SOURCE COMPILER, COMPILATION METHOD, AND
     COMPUTER-READABLE MEDIUM FOR PREDICTABLE MEMORY MANAGEMENT'
-    
-    Copyright (C) 2020-2026 Fornux LLC
 
-    Phil Bouchard, Founder & CEO
-    Fornux Inc
+    @copyright Copyright (C) 2020-2026 Services Informatiques Fornux
+
+    @author Phil Bouchard, Founder & CEO
+    Services Informatiques Fornux
     phil@fornux.com
-    101 Rue Villeneuve O #2268, Montreal, Quebec, Canada, H2T 2R6
-    
+    20 Poirier St., Gatineau, Quebec, Canada, J8V 1A6
+
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -48,12 +48,9 @@ namespace detail
 
 
 /**
-    Block address helper.
+    @brief Address of a non-polymorphic object.
 
-    Returns the absolute address of a non-polymorphic object.
-    
-    @note
-    Expects template value given by @c is_polymorphic::value.
+    @note Selected by @c is_polymorphic<U>::value.
 */
 
 template <bool>
@@ -69,11 +66,7 @@ template <bool>
     };
 
 
-/**
-    Block address helper.
-
-    Returns the absolute address of a polymorphic object.
-*/
+/** @brief Address of the most-derived object of a polymorphic object. */
 
 template <>
     struct rootof<true>
@@ -89,9 +82,11 @@ template <>
 
     
 /**
-    Class member upshift.
-    
-    Finds the address of a class given member credentials.
+    @brief Address of the object that contains a member.
+
+    @param q Pointer to the member.
+    @param p Address of the member.
+    @return Address of the enclosing object.
 */
 
 template <typename T, typename U>
