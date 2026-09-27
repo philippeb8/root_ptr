@@ -1,7 +1,8 @@
 # Node allocator benchmark: page allocators vs. the default pool
 
 Measured 2026-09-27 with `bench/allocbench.cpp` and `bench/run.sh`, for three smart pointer types:
-`boost::root_ptr`, `std::unique_ptr` and `std::shared_ptr`.
+`boost::root_ptr`, `std::unique_ptr` and `std::shared_ptr`. The same results as charts:
+`bench/ALLOCATOR_BENCHMARK.pdf` (drawn by `bench/plot.py`).
 
 ## Summary
 
@@ -266,6 +267,7 @@ neither standard pointer can do.
 ```sh
 bench/run.sh 5            # measure everything and print the tables (about 15 minutes)
 bench/run.sh --tables     # reprint the tables from bench/raw-main.txt and bench/raw-scale.txt
+bench/plot.py             # draw the charts from the same files into bench/ALLOCATOR_BENCHMARK.pdf
 # a single measurement:
 clang++ -std=c++20 -O2 -DNDEBUG -DBOOST_ERROR_CODE_HEADER_ONLY -isystem /opt/fornux/superset/usr/include \
     bench/allocbench.cpp -o allocbench -lboost_thread -lpthread
