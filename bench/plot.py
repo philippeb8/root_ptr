@@ -37,7 +37,8 @@ SCEN = ['churn', 'bulk', 'mixed', 'cycles', 'threads', 'types']
 t = collections.defaultdict(list)
 m = collections.defaultdict(list)
 # raw-main.txt: <build> <pointer> <allocator> <scenario> <ns> [<kB>]; build is
-# mt (thread support, the default) or st (BOOST_DISABLE_THREADS)
+# mt (thread support, the default), st (BOOST_DISABLE_THREADS), sl (striped
+# locks), tc (per-thread caches) or tcsl (both)
 for line in open(os.path.join(DIR, 'raw-main.txt')):
     f = line.split()
     if f[4] == 'n/a':
@@ -52,6 +53,8 @@ T = {k[1:]: v for k, v in TB.items() if k[0] == 'mt'}
 M = {k[1:]: v for k, v in MB.items() if k[0] == 'mt'}
 ST = {k[1:]: v for k, v in TB.items() if k[0] == 'st'}
 SL = {k[1:]: v for k, v in TB.items() if k[0] == 'sl'}
+TC = {k[1:]: v for k, v in TB.items() if k[0] == 'tc'}
+TCSL = {k[1:]: v for k, v in TB.items() if k[0] == 'tcsl'}
 
 scale = collections.defaultdict(dict)
 for line in open(os.path.join(DIR, 'raw-scale.txt')):
@@ -124,30 +127,31 @@ with PdfPages(OUT) as pdf:
     body = [
         'Measured 2026-09-27 on an Intel Core i7-4700HQ (4 cores / 8 threads), Linux 5.15,',
         'clang 23 -O2, libstdc++ 12, glibc 2.35. Median of 5 runs; every combination runs in a',
-        'fresh process. Three builds: with thread support (default), with BOOST_DISABLE_THREADS,',
-        'and with BOOST_ROOT_PTR_STRIPED_LOCKS. Full tables and method: ALLOCATOR_BENCHMARK.md.',
+        'fresh process. Five builds: with thread support (default), BOOST_DISABLE_THREADS,',
+        'BOOST_ROOT_PTR_STRIPED_LOCKS, BOOST_PAGE_ALLOCATOR_THREAD_CACHE, and the last two',
+        'together. Full tables and method: ALLOCATOR_BENCHMARK.md.',
         '',
         'Findings',
         '',
         '  - boost::pool_allocator, the former default, is quadratic on release (ordered_free):',
-        '    releasing 200,000 objects costs 204-425 µs per object; the others stay at 39-150 ns.',
+        '    releasing 200,000 objects costs 229-438 us per object; the others stay at 39-171 ns.',
         '  - The page allocators are fastest on bulk, mixed and cycle release; page_allocator_by_size,',
-        '    now the default, uses 9-18% less memory than boost::pool_allocator. Churn: std::allocator',
-        '    is 5-14% faster with thread support; fast_pool_allocator 1.8-2x without it.',
-        '  - Thread support is root_ptr\'s largest cost: without it, churn drops 59.6 -> 10.3 ns',
-        '    (5.8x), cycles 126 -> 52 ns per node.',
-        '  - Striped locks: with 4 threads and std::allocator, root_ptr goes 305 -> 31 ns (9.8x),',
-        '    but single-threaded code is 1.25-3.3x slower. Off by default.',
-        '  - page_allocator_by_type costs 2.5-4.8x the time and 1.6-1.8 MB more memory than by_size',
+        '    now the default, uses 9-19% less memory than boost::pool_allocator.',
+        '  - Per-thread caches (opt-in): 4 threads go 157 -> 1.9 ns per unique_ptr and 149 -> 2.4 ns',
+        '    per shared_ptr (std::allocator: 4.1 / 4.8); striped root_ptr 289 -> 27 ns; churn 2.3-3.1x.',
+        '  - Thread support is root_ptr\'s largest cost: without it, churn drops 56.2 -> 9.4 ns',
+        '    (6.0x), cycles 120 -> 46 ns per node.',
+        '  - Striped locks: with 4 threads and std::allocator, root_ptr goes 271 -> 30 ns (9.0x),',
+        '    but single-threaded code is 1.33-3.35x slower. Off by default.',
+        '  - page_allocator_by_type costs 2.4-4.9x the time and 1.6-1.8 MB more memory than by_size',
         '    with many sparse types: each type fills a 64 KiB page of its own.',
-        '  - With four threads, std::allocator is 34-38x faster than page_allocator_by_size for',
-        '    unique_ptr and shared_ptr.',
         '',
         'Pages (with thread support unless noted)',
         '',
         '  2  Bulk release scaling      3  Time per scenario      4  Resident memory',
         '  5  Pointer types compared    6  Threads                7  Without thread support',
-        '  8  What thread support costs  9  Striped locks (root_ptr)',
+        '  8  What thread support costs  9  Striped locks (root_ptr)  10  Per-thread caches',
+        ' 11  Four threads, every build',
     ]
     fig.text(0.06, 0.76, '\n'.join(body), fontsize=11, va='top', family='monospace')
     pdf.savefig(fig)
@@ -170,7 +174,7 @@ with PdfPages(OUT) as pdf:
         ax.minorticks_off()
     axes[0].set_ylabel('ns per object (log)')
     fig.suptitle('Bulk release scaling: boost::pool_allocator grows with the number of objects, '
-                 'the others stay flat', fontsize=13, weight='bold')
+                 'the others stay flat\n(lower is better)', fontsize=13, weight='bold')
     legend_below(fig)
     fig.tight_layout(rect=(0, 0.06, 1, 0.94))
     pdf.savefig(fig)
@@ -222,8 +226,9 @@ with PdfPages(OUT) as pdf:
         ax.set_title('with ' + ALLOC_LABEL[a])
     axes[0].set_ylabel('ns per operation')
     same_y(axes)
-    fig.suptitle('Pointer types compared (cycles: root_ptr only - a unique_ptr cannot form one, '
-                 'a shared_ptr cycle is never freed)', fontsize=12, weight='bold')
+    fig.suptitle('Pointer types compared, time per operation (lower is better)\n'
+                 'cycles: root_ptr only - a unique_ptr cannot form one, a shared_ptr cycle is never freed',
+                 fontsize=12, weight='bold')
     legend_below(fig, handles, [n for _, n in PTRS], ncol=3)
     fig.tight_layout(rect=(0, 0.06, 1, 0.94))
     pdf.savefig(fig)
@@ -237,7 +242,7 @@ with PdfPages(OUT) as pdf:
     ax.set_ylabel('ns per operation, wall clock / all operations (log)')
     fig.suptitle('4 threads, each creating and dropping 250,000 objects (lower is better)',
                  fontsize=13, weight='bold', y=0.97)
-    fig.text(0.5, 0.915, "glibc's per-thread caches take no lock; each page pool has one mutex; "
+    fig.text(0.5, 0.915, "without BOOST_PAGE_ALLOCATOR_THREAD_CACHE: glibc's per-thread caches take no lock; each page pool has one mutex;\n"
              'every root_ptr operation takes a global mutex', ha='center', fontsize=10, style='italic')
     legend_below(fig)
     fig.tight_layout(rect=(0, 0.06, 1, 0.9))
@@ -278,7 +283,7 @@ with PdfPages(OUT) as pdf:
         row[0].set_ylabel('time with / without thread support')
     same_y(axes.flat)
     fig.suptitle('What thread support costs: time with thread support divided by time with '
-                 'BOOST_DISABLE_THREADS\n(1.0x = no cost; higher = thread support is more expensive)',
+                 'BOOST_DISABLE_THREADS (lower is better)\n1.0x = thread support costs nothing; above 1.0x it makes the code slower',
                  fontsize=12, weight='bold')
     legend_below(fig)
     fig.tight_layout(rect=(0, 0.05, 1, 0.92))
@@ -294,12 +299,70 @@ with PdfPages(OUT) as pdf:
                  lambda a: COLOR[a], log=True, fmt='{:.2f}x')
     ax.axhline(1.0, color='black', lw=0.8)
     ax.set_ylabel('time with the global lock / time with striped locks (log)')
-    fig.suptitle('boost::root_ptr with BOOST_ROOT_PTR_STRIPED_LOCKS: above 1.0x the striped locks are faster',
-                 fontsize=13, weight='bold', y=0.97)
+    fig.suptitle('boost::root_ptr with BOOST_ROOT_PTR_STRIPED_LOCKS (higher is better)\n'
+                 'time with the global lock / time with striped locks: above 1.0x the striped locks are faster',
+                 fontsize=12, weight='bold', y=0.985)
     fig.text(0.5, 0.915, 'about 8 lock operations per object instead of 3: slower single-threaded, '
              'faster with four threads unless the allocator itself serializes', ha='center',
              fontsize=10, style='italic')
     legend_below(fig)
+    fig.tight_layout(rect=(0, 0.06, 1, 0.9))
+    pdf.savefig(fig)
+    plt.close(fig)
+
+    # --------------------------------------------------------- 10. per-thread caches
+    fig, axes = plt.subplots(2, 2, figsize=A4, sharey=True)
+    for ax, (p, name) in zip(axes.flat, [('raw', 'Allocator alone (no pointer)')] + PTRS):
+        groups = ['raw_churn', 'raw_batch'] if p == 'raw' else [s for s in SCEN if p == 'root' or s != 'cycles']
+        grouped_bars(ax, groups, ALLOC,
+                     lambda g, a: (T[(p, a, g)] / TC[(p, a, g)]) if (p, a, g) in T and (p, a, g) in TC else None,
+                     lambda a: COLOR[a], log=True, fmt='{:.2f}x')
+        ax.axhline(1.0, color='black', lw=0.8)
+        ax.set_title(name)
+    for row in axes:
+        row[0].set_ylabel('time without / with the caches (log)')
+    same_y(axes.flat, log=True)
+    fig.suptitle('Per-thread caches (BOOST_PAGE_ALLOCATOR_THREAD_CACHE) (higher is better)\n'
+                 'time without / with the caches: above 1.0x the caches are faster\n'
+                 'only the page allocators have them; the other allocators are the control',
+                 fontsize=12, weight='bold')
+    legend_below(fig)
+    fig.tight_layout(rect=(0, 0.05, 1, 0.89))
+    pdf.savefig(fig)
+    plt.close(fig)
+
+    # --------------------------------------------------------- 11. four threads, every build
+    fig, ax = plt.subplots(figsize=A4)
+    builds = [('mt', T, 'global lock'), ('tc', TC, 'global lock\n+ caches'),
+              ('sl', SL, 'striped locks'), ('tcsl', TCSL, 'striped locks\n+ caches')]
+    x, ticks, labels, w = 0.0, [], [], 0.38
+    for p, name in PTRS:
+        start = x
+        for b, data, label in builds:
+            if (p, 'std', 'threads') not in data:
+                continue                    # striped locks: root_ptr only
+            for i, a in enumerate(('std', 'page_size')):
+                v = data[(p, a, 'threads')]
+                bar = ax.bar(x + (i - 0.5) * w, v, w, color=COLOR[a])[0]
+                ax.annotate('{:.1f}'.format(v), (bar.get_x() + w / 2, v), ha='center', va='bottom',
+                            fontsize=7, xytext=(0, 2), textcoords='offset points')
+            ticks.append(x)
+            labels.append(label if p == 'root' else {'mt': 'default', 'tc': 'with caches'}[b])
+            x += 1
+        ax.text((start + x - 1) / 2, -0.16, name, transform=ax.get_xaxis_transform(), ha='center',
+                fontsize=11, weight='bold')
+        x += 0.7
+    ax.set_xticks(ticks)
+    ax.set_xticklabels(labels, fontsize=8)
+    ax.set_yscale('log')
+    ax.margins(y=0.25)
+    ax.set_ylabel('ns per operation, wall clock / all operations (log)')
+    fig.suptitle('4 threads, each creating and dropping 250,000 objects, in every build (lower is better)',
+                 fontsize=13, weight='bold', y=0.97)
+    fig.text(0.5, 0.915, 'striped locks apply to root_ptr only; the caches are the page allocators\' '
+             '(std::allocator is the control)', ha='center', fontsize=10, style='italic')
+    legend_below(fig, [plt.Rectangle((0, 0), 1, 1, color=COLOR[a]) for a in ('std', 'page_size')],
+                 [ALLOC_LABEL[a] for a in ('std', 'page_size')], ncol=2)
     fig.tight_layout(rect=(0, 0.06, 1, 0.9))
     pdf.savefig(fig)
     plt.close(fig)
