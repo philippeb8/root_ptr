@@ -1,13 +1,15 @@
 #!/bin/bash
-# Builds bench/allocbench.cpp twice - with thread support ("mt", the default) and
-# with BOOST_DISABLE_THREADS ("st": no root_ptr mutex, plain reference counts,
-# no pool mutexes) - and prints, as Markdown:
+# Builds bench/allocbench.cpp three times - with thread support ("mt", the
+# default), with BOOST_DISABLE_THREADS ("st": no root_ptr mutex, plain reference
+# counts, no pool mutexes) and with BOOST_ROOT_PTR_STRIPED_LOCKS ("sl": root_ptr's
+# global mutex replaced by address-striped locks) - and prints, as Markdown:
 #   1. the mt build: the allocator alone, then per pointer type (root_ptr,
 #      unique_ptr, shared_ptr) the median of REPEAT runs of every scenario for
 #      every allocator, time and memory; the pointer types side by side; and how
 #      bulk release scales with the number of objects (one run per size);
 #   2. the st build: the same time tables, single-threaded scenarios only;
-#   3. what thread support costs: mt vs. st per scenario.
+#   3. what thread support costs: mt vs. st per scenario;
+#   4. striped locks: mt vs. sl for root_ptr (the only pointer that uses them).
 # Every (build, pointer, allocator, scenario) runs in a fresh process. The raw
 # measurements are kept in bench/raw-main.txt and bench/raw-scale.txt;
 # "bench/run.sh --tables" reprints the tables from them without measuring.
@@ -24,6 +26,7 @@ rm -f "$MAIN" "$SCALE"
 FLAGS="-std=c++20 -O2 -DNDEBUG -DBOOST_ERROR_CODE_HEADER_ONLY -isystem /opt/fornux/superset/usr/include"
 clang++ $FLAGS "$DIR/allocbench.cpp" -o "$TMP/mt" -lboost_thread -lpthread
 clang++ $FLAGS -DBOOST_DISABLE_THREADS "$DIR/allocbench.cpp" -o "$TMP/st" -lboost_thread -lpthread
+clang++ $FLAGS -DBOOST_ROOT_PTR_STRIPED_LOCKS "$DIR/allocbench.cpp" -o "$TMP/sl" -lboost_thread -lpthread
 
 POINTERS="root unique shared"
 ALLOCATORS="pool fast std page_type page_size"
@@ -32,13 +35,14 @@ SCENARIOS="churn bulk mixed cycles threads types"
 SIZES="12500 25000 50000 100000 200000"
 
 for r in $(seq 1 "$REPEAT"); do
-  for b in mt st; do
-    for s in $RAW; do
+  for b in mt st sl; do
+    [ "$b" = sl ] || for s in $RAW; do
       for a in $ALLOCATORS; do      # interleaved, so drift hits every allocator alike
         echo "$b raw $a $s $("$TMP/$b" root "$a" "$s")" >> "$MAIN"
       done
     done
     for p in $POINTERS; do
+      [ "$b" = sl ] && [ "$p" != root ] && continue
       for s in $SCENARIOS; do
         [ "$b" = st ] && [ "$s" = threads ] && continue
         for a in $ALLOCATORS; do
@@ -122,6 +126,14 @@ time_table('st', 'raw', ['raw_churn', 'raw_batch'])
 for p, name in ptrs:
     print('\n### `%s`\n\nTime, ns per operation (speed-up over `pool` in parentheses):\n' % name)
     time_table('st', p, single)
+
+print('\n## Striped locks (`BOOST_ROOT_PTR_STRIPED_LOCKS`)\n')
+print('`boost::root_ptr` only. Time, ns per operation, global lock / striped locks (ratio: above 1.00x the striped build is faster):\n')
+print(head('scenario', alloc))
+for s in scen:
+    print('| %s | %s |' % (s, ' | '.join('%.1f / %.1f (%.2fx)' % (med(('mt', 'root', a, s)), med(('sl', 'root', a, s)),
+                                                                    med(('mt', 'root', a, s)) / med(('sl', 'root', a, s)))
+                                          for a in alloc)))
 
 print('\n## What thread support costs\n')
 print('Time, ns per operation, with thread support / with `BOOST_DISABLE_THREADS` (ratio):\n')

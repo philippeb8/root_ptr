@@ -51,6 +51,7 @@ MB = {k: statistics.median(v) for k, v in m.items()}
 T = {k[1:]: v for k, v in TB.items() if k[0] == 'mt'}
 M = {k[1:]: v for k, v in MB.items() if k[0] == 'mt'}
 ST = {k[1:]: v for k, v in TB.items() if k[0] == 'st'}
+SL = {k[1:]: v for k, v in TB.items() if k[0] == 'sl'}
 
 scale = collections.defaultdict(dict)
 for line in open(os.path.join(DIR, 'raw-scale.txt')):
@@ -123,29 +124,30 @@ with PdfPages(OUT) as pdf:
     body = [
         'Measured 2026-09-27 on an Intel Core i7-4700HQ (4 cores / 8 threads), Linux 5.15,',
         'clang 23 -O2, libstdc++ 12, glibc 2.35. Median of 5 runs; every combination runs in a',
-        'fresh process. Two builds: with thread support (default) and with BOOST_DISABLE_THREADS.',
-        'Full tables and method: ALLOCATOR_BENCHMARK.md.',
+        'fresh process. Three builds: with thread support (default), with BOOST_DISABLE_THREADS,',
+        'and with BOOST_ROOT_PTR_STRIPED_LOCKS. Full tables and method: ALLOCATOR_BENCHMARK.md.',
         '',
         'Findings',
         '',
         '  - boost::pool_allocator, the former default, is quadratic on release (ordered_free):',
-        '    releasing 200,000 objects costs 180-348 µs per object; the others stay at 37-120 ns.',
-        '  - page_allocator_by_size, now the default, is fastest or within 3% on bulk, mixed and',
-        '    cycle release in both builds, and uses 9-18% less memory than boost::pool_allocator.',
-        '    Churn: std::allocator is 8-15% faster with thread support; fast_pool_allocator is',
-        '    1.75-2x faster for unique_ptr/shared_ptr without it.',
-        '  - Thread support is root_ptr\'s largest cost: without it, churn drops 57.8 -> 9.5 ns',
-        '    (6.1x), cycles 122 -> 44 ns per node. root_ptr then matches shared_ptr on churn.',
-        '  - page_allocator_by_type costs 2.7-4.2x the time and 1.6-1.9 MB more memory than by_size',
+        '    releasing 200,000 objects costs 204-425 µs per object; the others stay at 39-150 ns.',
+        '  - The page allocators are fastest on bulk, mixed and cycle release; page_allocator_by_size,',
+        '    now the default, uses 9-18% less memory than boost::pool_allocator. Churn: std::allocator',
+        '    is 5-14% faster with thread support; fast_pool_allocator 1.8-2x without it.',
+        '  - Thread support is root_ptr\'s largest cost: without it, churn drops 59.6 -> 10.3 ns',
+        '    (5.8x), cycles 126 -> 52 ns per node.',
+        '  - Striped locks: with 4 threads and std::allocator, root_ptr goes 305 -> 31 ns (9.8x),',
+        '    but single-threaded code is 1.25-3.3x slower. Off by default.',
+        '  - page_allocator_by_type costs 2.5-4.8x the time and 1.6-1.8 MB more memory than by_size',
         '    with many sparse types: each type fills a 64 KiB page of its own.',
-        '  - With four threads, std::allocator is 28-36x faster than any pool for unique_ptr and',
-        '    shared_ptr; for root_ptr the global mutex narrows the gap to 1.5x.',
+        '  - With four threads, std::allocator is 34-38x faster than page_allocator_by_size for',
+        '    unique_ptr and shared_ptr.',
         '',
         'Pages (with thread support unless noted)',
         '',
         '  2  Bulk release scaling      3  Time per scenario      4  Resident memory',
         '  5  Pointer types compared    6  Threads                7  Without thread support',
-        '  8  What thread support costs',
+        '  8  What thread support costs  9  Striped locks (root_ptr)',
     ]
     fig.text(0.06, 0.76, '\n'.join(body), fontsize=11, va='top', family='monospace')
     pdf.savefig(fig)
@@ -280,6 +282,25 @@ with PdfPages(OUT) as pdf:
                  fontsize=12, weight='bold')
     legend_below(fig)
     fig.tight_layout(rect=(0, 0.05, 1, 0.92))
+    pdf.savefig(fig)
+    plt.close(fig)
+
+    # --------------------------------------------------------- 9. striped locks
+    fig, ax = plt.subplots(figsize=A4)
+    groups = [s for s in SCEN]
+    grouped_bars(ax, groups, ALLOC,
+                 lambda g, a: (T[('root', a, g)] / SL[('root', a, g)])
+                 if ('root', a, g) in T and ('root', a, g) in SL else None,
+                 lambda a: COLOR[a], log=True, fmt='{:.2f}x')
+    ax.axhline(1.0, color='black', lw=0.8)
+    ax.set_ylabel('time with the global lock / time with striped locks (log)')
+    fig.suptitle('boost::root_ptr with BOOST_ROOT_PTR_STRIPED_LOCKS: above 1.0x the striped locks are faster',
+                 fontsize=13, weight='bold', y=0.97)
+    fig.text(0.5, 0.915, 'about 8 lock operations per object instead of 3: slower single-threaded, '
+             'faster with four threads unless the allocator itself serializes', ha='center',
+             fontsize=10, style='italic')
+    legend_below(fig)
+    fig.tight_layout(rect=(0, 0.06, 1, 0.9))
     pdf.savefig(fig)
     plt.close(fig)
 
