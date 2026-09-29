@@ -1,7 +1,8 @@
-// Node allocator benchmark for boost::root_ptr, std::unique_ptr and std::shared_ptr.
+// Node allocator benchmark for boost::root_ptr, std::unique_ptr, std::shared_ptr and
+// boost::shared_node_ptr.
 //
 //   allocbench <pointer> <allocator> <scenario> [n]
-//     pointer:   root unique shared
+//     pointer:   root unique shared snode
 //     allocator: pool fast std page_type page_size
 //     scenario:  raw_churn raw_batch churn bulk mixed cycles threads types
 //
@@ -14,10 +15,14 @@
 // Every pointer allocates through the allocator under test:
 //   root_ptr    root_ptr<T>(x, new node<T, A<T>>(...))
 //   shared_ptr  std::allocate_shared<T>(A<T>(), ...)
+//   shared_node_ptr  shared_node_ptr<T>(x, new node<T, A<T>>(...)), as the
+//               transformer emits it under FCXXSS_SHARED_PTR: a std::shared_ptr
+//               owning the same node root_ptr would
 //   unique_ptr  allocate_unique<T>(A<T>(), ...), with a deleter that frees
 //               through the same allocator (the standard has no
 //               allocator-aware make_unique)
 #include <boost/smart_ptr/root_ptr.hpp>
+#include <boost/smart_ptr/shared_node_ptr.hpp>
 #include <boost/smart_ptr/page_allocator.hpp>
 #include <boost/pool/pool_alloc.hpp>
 #include <chrono>
@@ -99,6 +104,8 @@ pointer_t<P, A, T> make(boost::node_proxy const & x, Args &&... args)
         return std::allocate_shared<T>(A<T>(), std::forward<Args>(args)...);
     else if constexpr (is_same_template<P, std::unique_ptr>::value)
         return allocate_unique<T>(A<T>(), std::forward<Args>(args)...);
+    else if constexpr (is_same_template<P, boost::shared_node_ptr>::value)
+        return boost::shared_node_ptr<T>(x, new boost::node<T, A<T>>(std::forward<Args>(args)...));
     else
         static_assert(! sizeof(T *), "unsupported pointer type");
 }
@@ -238,7 +245,8 @@ static bool run(std::string const & scenario, long arg)
         std::printf("%.2f %ld\n", t, grown);
     }
     // cycles: n two-node cycles, reclaimed with their proxy. Only root_ptr can:
-    // a unique_ptr cannot form a cycle and a shared_ptr cycle is never freed.
+    // a unique_ptr cannot form a cycle and a shared_ptr (or shared_node_ptr)
+    // cycle is never freed.
     else if (scenario == "cycles")
     {
         if constexpr (is_root)
@@ -323,6 +331,7 @@ int main(int argc, char ** argv)
     bool ok = p == "root"   ? run_allocator<boost::root_ptr>(a, s, n)
             : p == "unique" ? run_allocator<std::unique_ptr>(a, s, n)
             : p == "shared" ? run_allocator<std::shared_ptr>(a, s, n)
+            : p == "snode"  ? run_allocator<boost::shared_node_ptr>(a, s, n)
             : false;
     if (! ok)
     {

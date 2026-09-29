@@ -16,16 +16,44 @@
 # Every (build, pointer, allocator, scenario) runs in a fresh process. The raw
 # measurements are kept in bench/raw-main.txt and bench/raw-scale.txt;
 # "bench/run.sh --tables" reprints the tables from them without measuring.
+# Pointers: root (boost::root_ptr), unique and shared (std::shared_ptr); the
+# striped builds measure root_ptr only.
 #   usage: bench/run.sh [repeat | --tables]
+#          bench/run.sh --snode [repeat]
+#            measures boost::shared_node_ptr (what FCXXSS_SHARED_PTR emits)
+#            against boost::root_ptr, interleaved in ONE run (builds mt, st,
+#            tc), into bench/raw-snode.txt: that section compares them with each
+#            other only, never with the main run's rows.
 set -e
+SNODE=""
+if [ "$1" = --snode ]; then SNODE=1; shift; fi
 REPEAT="${1:-5}"
 DIR="$(cd "$(dirname "$0")" && pwd)"
 MAIN="$DIR/raw-main.txt"
 SCALE="$DIR/raw-scale.txt"
+SNODEF="$DIR/raw-snode.txt"
 TMP="$(mktemp -d)"
 
+# Every measurement waits for a cool CPU: this machine throttles (Intel
+# powerclamp idle injection, 'kidle_inj' threads) under the benchmark's own
+# four-thread load, which made a whole run about 3x slower in places. It waits
+# while any kidle_inj thread exists or the package is at BENCH_MAX_TEMP
+# (millidegrees C, default 70000) or hotter.
+BENCH_MAX_TEMP="${BENCH_MAX_TEMP:-70000}"
+PKG=""
+for z in /sys/class/thermal/thermal_zone*; do
+  [ "$(cat $z/type 2>/dev/null)" = x86_pkg_temp ] && PKG="$z/temp"
+done
+cool() {
+  while ps -eo comm | grep -q kidle_inj ||
+        { [ -n "$PKG" ] && [ "$(cat $PKG)" -ge "$BENCH_MAX_TEMP" ]; }; do
+    sleep 2
+  done
+}
+measure() { cool; "$@"; }
+
 if [ "$REPEAT" != --tables ]; then
-rm -f "$MAIN" "$SCALE"
+if [ -n "$SNODE" ]; then rm -f "$SNODEF"; else rm -f "$MAIN" "$SCALE"; fi
 FLAGS="-std=c++20 -O2 -DNDEBUG -DBOOST_ERROR_CODE_HEADER_ONLY -isystem /opt/fornux/superset/usr/include"
 clang++ $FLAGS "$DIR/allocbench.cpp" -o "$TMP/mt" -lboost_thread -lpthread
 clang++ $FLAGS -DBOOST_DISABLE_THREADS "$DIR/allocbench.cpp" -o "$TMP/st" -lboost_thread -lpthread
@@ -39,11 +67,25 @@ RAW="raw_churn raw_batch"
 SCENARIOS="churn bulk mixed cycles threads types"
 SIZES="12500 25000 50000 100000 200000"
 
+if [ -n "$SNODE" ]; then
+for r in $(seq 1 "$REPEAT"); do
+  for b in mt st tc; do
+    for s in $SCENARIOS; do
+      [ "$b" = st ] && [ "$s" = threads ] && continue
+      for a in $ALLOCATORS; do
+        for p in root snode; do
+          echo "$b $p $a $s $(measure "$TMP/$b" "$p" "$a" "$s")" >> "$SNODEF"
+        done
+      done
+    done
+  done
+done
+else
 for r in $(seq 1 "$REPEAT"); do
   for b in mt st sl tc tcsl; do
     case $b in sl|tcsl) ;; *) for s in $RAW; do
       for a in $ALLOCATORS; do      # interleaved, so drift hits every allocator alike
-        echo "$b raw $a $s $("$TMP/$b" root "$a" "$s")" >> "$MAIN"
+        echo "$b raw $a $s $(measure "$TMP/$b" root "$a" "$s")" >> "$MAIN"
       done
     done ;; esac
     for p in $POINTERS; do
@@ -51,7 +93,7 @@ for r in $(seq 1 "$REPEAT"); do
       for s in $SCENARIOS; do
         [ "$b" = st ] && [ "$s" = threads ] && continue
         for a in $ALLOCATORS; do
-          echo "$b $p $a $s $("$TMP/$b" "$p" "$a" "$s")" >> "$MAIN"
+          echo "$b $p $a $s $(measure "$TMP/$b" "$p" "$a" "$s")" >> "$MAIN"
         done
       done
     done
@@ -60,13 +102,14 @@ done
 for p in $POINTERS; do
   for n in $SIZES; do
     for a in $ALLOCATORS; do
-      echo "mt $p $a $n $("$TMP/mt" "$p" "$a" bulk "$n")" >> "$SCALE"
+      echo "mt $p $a $n $(measure "$TMP/mt" "$p" "$a" bulk "$n")" >> "$SCALE"
     done
   done
 done
 fi
+fi
 
-python3 - "$MAIN" "$SCALE" <<'EOF'
+python3 - "$MAIN" "$SCALE" "$SNODEF" <<'EOF'
 import sys, statistics, collections
 alloc = ['pool', 'fast', 'std', 'page_type', 'page_size']
 ptrs = [('root', 'boost::root_ptr'), ('unique', 'std::unique_ptr'), ('shared', 'std::shared_ptr')]
@@ -175,6 +218,42 @@ for p, name in [('raw', 'allocator alone')] + ptrs:
             print('| %s | %s |' % (s, ' | '.join('n/a' for a in alloc))); continue
         print('| %s | %s |' % (s, ' | '.join('%.1f / %.1f (%.2fx)' % (med(('mt', p, a, s)), med(('st', p, a, s)),
                                                                         med(('mt', p, a, s)) / med(('st', p, a, s))) for a in alloc)))
+    print()
+
+import os
+if len(sys.argv) > 3 and os.path.exists(sys.argv[3]):
+    u = collections.defaultdict(list); um = collections.defaultdict(list); una = set()
+    for line in open(sys.argv[3]):
+        f = line.split()
+        key = tuple(f[:4])
+        if f[4] == 'n/a': una.add(key); continue
+        u[key].append(float(f[4]))
+        if len(f) > 5: um[key].append(int(f[5]))
+    umed = lambda k: statistics.median(u[k])
+    print('## `boost::shared_node_ptr` against `boost::root_ptr`\n')
+    print('A run of its own (bench/run.sh --snode, bench/raw-snode.txt), both pointers interleaved: compare them '
+          'with each other only. Time, ns per operation, `shared_node_ptr` / `root_ptr` (ratio: above 1.00x '
+          '`shared_node_ptr` is slower):\n')
+    for b, title in [('mt', 'With thread support'), ('st', 'With `BOOST_DISABLE_THREADS`'),
+                     ('tc', 'With `BOOST_PAGE_ALLOCATOR_THREAD_CACHE`')]:
+        print('%s:\n' % title)
+        print(head('scenario', alloc))
+        for s in scen:
+            if b == 'st' and s == 'threads': continue
+            cells = []
+            for a in alloc:
+                if (b, 'snode', a, s) in una:
+                    cells.append('n/a / %.1f' % umed((b, 'root', a, s)))
+                else:
+                    cells.append('%.1f / %.1f (%.2fx)' % (umed((b, 'snode', a, s)), umed((b, 'root', a, s)),
+                                                          umed((b, 'snode', a, s)) / umed((b, 'root', a, s))))
+            print('| %s | %s |' % (s, ' | '.join(cells)))
+        print()
+    print('Resident memory grown, kB, `shared_node_ptr` / `root_ptr` (with thread support):\n')
+    print(head('scenario', alloc))
+    for s in ['bulk', 'mixed', 'types']:
+        print('| %s | %s |' % (s, ' | '.join('%d / %d' % (statistics.median(um[('mt', 'snode', a, s)]),
+                                                          statistics.median(um[('mt', 'root', a, s)])) for a in alloc)))
     print()
 EOF
 rm -rf "$TMP"

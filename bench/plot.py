@@ -56,6 +56,17 @@ SL = {k[1:]: v for k, v in TB.items() if k[0] == 'sl'}
 TC = {k[1:]: v for k, v in TB.items() if k[0] == 'tc'}
 TCSL = {k[1:]: v for k, v in TB.items() if k[0] == 'tcsl'}
 
+# raw-snode.txt: boost::shared_node_ptr and boost::root_ptr measured in one run
+# of their own (run.sh --snode), compared with each other only
+SN = {}
+if os.path.exists(os.path.join(DIR, 'raw-snode.txt')):
+    sn = collections.defaultdict(list)
+    for line in open(os.path.join(DIR, 'raw-snode.txt')):
+        f = line.split()
+        if f[4] != 'n/a':
+            sn[tuple(f[:4])].append(float(f[4]))
+    SN = {k: statistics.median(v) for k, v in sn.items()}
+
 scale = collections.defaultdict(dict)
 for line in open(os.path.join(DIR, 'raw-scale.txt')):
     b, p, a, n, ns = line.split()[:5]
@@ -145,13 +156,15 @@ with PdfPages(OUT) as pdf:
         '    but single-threaded code is 1.33-3.35x slower. Off by default.',
         '  - page_allocator_by_type costs 2.4-4.9x the time and 1.6-1.8 MB more memory than by_size',
         '    with many sparse types: each type fills a 64 KiB page of its own.',
+        '  - shared_node_ptr (FCXXSS_SHARED_PTR, measured 2026-09-28 against root_ptr): churn equal,',
+        '    release up to 1.2x slower, 16-25% more memory; 4 threads 1.8x faster (24x with thread caches).',
         '',
         'Pages (with thread support unless noted)',
         '',
         '  2  Bulk release scaling      3  Time per scenario      4  Resident memory',
         '  5  Pointer types compared    6  Threads                7  Without thread support',
         '  8  What thread support costs  9  Striped locks (root_ptr)  10  Per-thread caches',
-        ' 11  Four threads, every build',
+        ' 11  Four threads, every build  12  shared_node_ptr against root_ptr',
     ]
     fig.text(0.06, 0.76, '\n'.join(body), fontsize=11, va='top', family='monospace')
     pdf.savefig(fig)
@@ -366,6 +379,28 @@ with PdfPages(OUT) as pdf:
     fig.tight_layout(rect=(0, 0.06, 1, 0.9))
     pdf.savefig(fig)
     plt.close(fig)
+
+    # --------------------------------------------------------- 12. shared_node_ptr against root_ptr
+    if SN:
+        fig, axes = plt.subplots(1, 3, figsize=A4, sharey=True)
+        for ax, (b, title) in zip(axes, [('mt', 'with thread support'), ('st', 'BOOST_DISABLE_THREADS'),
+                                         ('tc', 'thread caches')]):
+            groups = [s for s in SCEN if s != 'cycles' and not (b == 'st' and s == 'threads')]
+            grouped_bars(ax, groups, ALLOC,
+                         lambda g, a: (SN[(b, 'snode', a, g)] / SN[(b, 'root', a, g)])
+                         if (b, 'snode', a, g) in SN and (b, 'root', a, g) in SN else None,
+                         lambda a: COLOR[a], log=True, fmt='{:.2f}x')
+            ax.axhline(1.0, color='black', lw=0.8)
+            ax.set_title(title)
+        axes[0].set_ylabel('time shared_node_ptr / time root_ptr (log)')
+        same_y(axes, log=True)
+        fig.suptitle('boost::shared_node_ptr (FCXXSS_SHARED_PTR) against boost::root_ptr (lower is better)\n'
+                     'below 1.0x shared_node_ptr is faster; one run of their own - cycles: a shared_ptr never frees one',
+                     fontsize=12, weight='bold')
+        legend_below(fig)
+        fig.tight_layout(rect=(0, 0.06, 1, 0.9))
+        pdf.savefig(fig)
+        plt.close(fig)
 
     info = pdf.infodict()
     info['Title'] = 'Node allocator benchmark'

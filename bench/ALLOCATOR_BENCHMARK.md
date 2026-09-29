@@ -4,6 +4,15 @@
 > `boost::page_allocator_by_size` (`BOOST_ROOT_PTR_ALLOCATOR` in `detail/node_base.hpp`). In the
 > tables, `pool` is `boost::pool_allocator`, the default when the benchmark was first run;
 > `-D BOOST_ROOT_PTR_ALLOCATOR=boost::pool_allocator` restores it.
+>
+> **Update 2026-09-28:** two library changes since the measurement.
+> - `node_proxy` no longer releases objects that escaped its scope (a returned node, the members of
+>   an escaping one). Measured before/after on the same source and in the same session, interleaved:
+>   churn, bulk, mixed and types within run-to-run noise (−6% to +3%), cycles +2% with thread support
+>   and 0% without (11 runs). The `root_ptr` rows below are therefore still the 2026-09-27 ones.
+> - `boost::shared_node_ptr` (`FCXXSS_SHARED_PTR`) is new: a section of its own compares it with
+>   `root_ptr`, both measured in one run of their own, since this machine measured 10–20% slower
+>   that day than on 2026-09-27 (the unchanged `root_ptr` churn: 62.8 vs. 56.2 ns).
 
 Measured 2026-09-27 with `bench/allocbench.cpp` and `bench/run.sh`, for three smart pointer types
 (`boost::root_ptr`, `std::unique_ptr`, `std::shared_ptr`) and five builds: with thread support (the
@@ -51,6 +60,13 @@ default), with `BOOST_DISABLE_THREADS`, with `BOOST_ROOT_PTR_STRIPED_LOCKS`, wit
 - **`root_ptr` against the standard pointers:** with thread support it costs 3.4× `unique_ptr` and
   2.9× `shared_ptr` per churn. Without thread support it costs 1.5× `unique_ptr` and 1.03× `shared_ptr`,
   in 1.8× the memory of `unique_ptr`. It is the only one of the three that reclaims cycles.
+- **`boost::shared_node_ptr` (what `FCXXSS_SHARED_PTR` emits) against `root_ptr`:** churn costs the
+  same (0.92–1.07× across the allocators other than `pool`), release 1.00–1.21× as much, and it holds the
+  same objects in 16–25% more memory: a `std::shared_ptr` control block per object on top of the node.
+  Without a global lock it scales: with four threads it is 1.8× faster than `root_ptr` on the page
+  allocators, and 17–24× faster with `std::allocator` or the per-thread caches (12.5 ns). It gains
+  nothing from `BOOST_DISABLE_THREADS` (1.4–3.3× slower than `root_ptr` there), and a cycle through
+  it is never released.
 - **`page_allocator_by_type` costs more with many sparse types:** 32 types of 100 objects each take
   2.4× to 4.9× the time of `by_size` and 1.6–1.8 MB more memory. Each type fills a 64 KiB page of its
   own, and a new page is fully touched when its free list is built.
@@ -117,7 +133,10 @@ across allocators so that drift in machine load affects them all alike. Time is 
 operation, including the release of every object; in `threads` it is the wall clock divided by the
 operations of all four threads. Memory is the growth of resident set size (RSS, from
 `/proc/self/statm`) while the objects are live, including the process's first-use costs, visible as a
-floor of about 1.9 MB in `types`. An empty `asm volatile` barrier marks every created object as used:
+floor of about 1.9 MB in `types`. Since 2026-09-28 `run.sh` waits before every measurement until the CPU is not throttled (no
+`kidle_inj` idle-injection threads) and its package is below 70 °C (`BENCH_MAX_TEMP`): this laptop
+throttles under the benchmark's own four-thread load, and a first `shared_node_ptr` run that did
+(60% of it throttled, up to 3× slower) was discarded. An empty `asm volatile` barrier marks every created object as used:
 without it, clang removed the whole `new`/`delete` pair for `unique_ptr` with `std::allocator`.
 
 ## Results
@@ -423,6 +442,50 @@ Time, ns per operation, with thread support / with `BOOST_DISABLE_THREADS` (rati
 | cycles | n/a | n/a | n/a | n/a | n/a |
 | types | 206.0 / 163.4 (1.26x) | 104.1 / 62.6 (1.66x) | 72.8 / 75.2 (0.97x) | 271.6 / 277.4 (0.98x) | 73.8 / 68.3 (1.08x) |
 
+### `boost::shared_node_ptr` against `boost::root_ptr`
+
+A run of its own (bench/run.sh --snode, bench/raw-snode.txt), both pointers interleaved: compare them with each other only. Time, ns per operation, `shared_node_ptr` / `root_ptr` (ratio: above 1.00x `shared_node_ptr` is slower):
+
+With thread support:
+
+| scenario | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| churn | 80.7 / 86.5 (0.93x) | 58.5 / 63.4 (0.92x) | 51.6 / 55.4 (0.93x) | 63.6 / 59.5 (1.07x) | 62.9 / 63.0 (1.00x) |
+| bulk | 148616.6 / 146216.4 (1.02x) | 150.0 / 142.7 (1.05x) | 156.2 / 145.2 (1.08x) | 147.8 / 133.8 (1.10x) | 147.4 / 127.8 (1.15x) |
+| mixed | 99659.8 / 101480.3 (0.98x) | 190.4 / 169.3 (1.12x) | 211.4 / 210.5 (1.00x) | 176.5 / 161.1 (1.10x) | 175.5 / 157.2 (1.12x) |
+| cycles | n/a / 71146.7 | n/a / 154.8 | n/a / 165.7 | n/a / 148.9 | n/a / 148.2 |
+| threads | 253.4 / 465.6 (0.54x) | 228.2 / 397.2 (0.57x) | 17.1 / 299.2 (0.06x) | 220.6 / 399.7 (0.55x) | 229.1 / 406.9 (0.56x) |
+| types | 289.5 / 276.4 (1.05x) | 169.6 / 169.2 (1.00x) | 179.0 / 171.3 (1.05x) | 405.4 / 382.8 (1.06x) | 176.2 / 145.7 (1.21x) |
+
+With `BOOST_DISABLE_THREADS`:
+
+| scenario | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| churn | 61.1 / 43.3 (1.41x) | 28.6 / 12.5 (2.28x) | 48.6 / 25.7 (1.90x) | 32.8 / 10.4 (3.15x) | 36.0 / 11.0 (3.29x) |
+| bulk | 144937.9 / 147492.0 (0.98x) | 123.7 / 82.6 (1.50x) | 141.9 / 95.0 (1.49x) | 117.0 / 76.2 (1.54x) | 118.9 / 76.5 (1.55x) |
+| mixed | 106002.4 / 103550.5 (1.02x) | 157.6 / 114.7 (1.37x) | 197.8 / 139.9 (1.41x) | 147.3 / 101.7 (1.45x) | 142.4 / 100.1 (1.42x) |
+| cycles | n/a / 69882.3 | n/a / 63.8 | n/a / 77.4 | n/a / 53.9 | n/a / 52.5 |
+| types | 270.9 / 223.0 (1.21x) | 146.4 / 107.1 (1.37x) | 162.7 / 109.3 (1.49x) | 377.3 / 316.1 (1.19x) | 137.4 / 87.2 (1.58x) |
+
+With `BOOST_PAGE_ALLOCATOR_THREAD_CACHE`:
+
+| scenario | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| churn | 74.0 / 85.1 (0.87x) | 47.9 / 57.4 (0.83x) | 51.6 / 55.8 (0.93x) | 43.3 / 44.4 (0.98x) | 39.5 / 45.9 (0.86x) |
+| bulk | 151576.5 / 144192.3 (1.05x) | 152.5 / 143.3 (1.06x) | 156.6 / 142.0 (1.10x) | 150.3 / 132.1 (1.14x) | 151.1 / 132.5 (1.14x) |
+| mixed | 99018.6 / 101265.6 (0.98x) | 184.2 / 167.4 (1.10x) | 210.0 / 189.5 (1.11x) | 161.0 / 159.1 (1.01x) | 173.4 / 159.7 (1.09x) |
+| cycles | n/a / 70028.0 | n/a / 153.6 | n/a / 165.1 | n/a / 138.4 | n/a / 143.1 |
+| threads | 278.2 / 438.0 (0.64x) | 222.5 / 391.4 (0.57x) | 15.2 / 297.9 (0.05x) | 12.6 / 289.9 (0.04x) | 12.5 / 294.8 (0.04x) |
+| types | 293.8 / 286.2 (1.03x) | 170.1 / 167.5 (1.02x) | 175.1 / 161.1 (1.09x) | 376.1 / 373.9 (1.01x) | 160.8 / 135.8 (1.18x) |
+
+Resident memory grown, kB, `shared_node_ptr` / `root_ptr` (with thread support):
+
+| scenario | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| bulk | 17236 / 14008 | 17268 / 14068 | 15732 / 12732 | 15980 / 12764 | 15952 / 12732 |
+| mixed | 32600 / 27992 | 32592 / 28084 | 29196 / 24356 | 28368 / 23848 | 28380 / 23836 |
+| types | 2248 / 2168 | 2320 / 2264 | 2260 / 2308 | 4176 / 3892 | 2280 / 2224 |
+
 ## Analysis
 
 **`boost::pool_allocator`.** It keeps its free list sorted by address, so each `deallocate` is a
@@ -481,6 +544,16 @@ cycles and types move by 0.92–1.17×, the same spread as the allocators that h
 and per pool it allocated from, returned when the thread exits. A thread that only frees (a consumer)
 never caches, and returns every block to the pool directly.
 
+**`shared_node_ptr`.** It is a `std::shared_ptr` that owns the transformer's node: every object costs
+the node allocation `root_ptr` makes plus a `shared_ptr` control block from `std::allocator`, so
+release takes 1.00–1.21× as long and memory grows 16–25% (bulk: 15.6 vs. 12.4 MB with
+`page_allocator_by_size`). In exchange it takes no global lock: four threads run 1.8× faster than
+`root_ptr` on the page allocators, whose own mutex then limits both, and 17–24× faster once the
+allocator does not serialize either (`std::allocator`, or the per-thread caches: 12.5 vs. 295 ns).
+`BOOST_DISABLE_THREADS` does not reach it: libstdc++ keeps atomic counts in a program linked with
+threads, and the control block still comes from `malloc`, so there it is 1.4–3.3× slower than a
+`root_ptr` that has dropped its mutex. It reclaims no cycles.
+
 **Threads.** For `unique_ptr` and `shared_ptr`, glibc's per-thread caches make `std::allocator` 31–38×
 faster than `page_allocator_by_size` without its own caches: all four threads allocate the same type, so they contend
 on a single page pool's mutex (or Boost's singleton-pool mutex). For `root_ptr` with its default
@@ -523,13 +596,14 @@ standard pointer can do.
 ```sh
 bench/run.sh 5            # measure all five builds and print the tables (about 40 minutes)
 bench/run.sh --tables     # reprint the tables from bench/raw-main.txt and bench/raw-scale.txt
+bench/run.sh --snode 5    # shared_node_ptr against root_ptr, in a run of their own (bench/raw-snode.txt)
 bench/plot.py             # draw the charts from the same files into bench/ALLOCATOR_BENCHMARK.pdf
 # a single measurement:
 clang++ -std=c++20 -O2 -DNDEBUG -DBOOST_ERROR_CODE_HEADER_ONLY -isystem /opt/fornux/superset/usr/include \
     bench/allocbench.cpp -o allocbench -lboost_thread -lpthread
     # add -DBOOST_DISABLE_THREADS, -DBOOST_ROOT_PTR_STRIPED_LOCKS and/or
     # -DBOOST_PAGE_ALLOCATOR_THREAD_CACHE for the other builds
-./allocbench shared page_size bulk     # <pointer> <allocator> <scenario> [n]
+./allocbench shared page_size bulk     # <pointer> <allocator> <scenario> [n]; pointer: root unique shared snode
 ```
 
 The raw measurements behind these tables are in `bench/raw-main.txt` (one line per run: build,
