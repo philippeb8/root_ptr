@@ -1,611 +1,1088 @@
-# Node allocator benchmark: page allocators vs. the default pool
+# Node allocator benchmark: the whole matrix
 
-> **Update 2026-09-27:** following this benchmark, the default node allocator is now
-> `boost::page_allocator_by_size` (`BOOST_ROOT_PTR_ALLOCATOR` in `detail/node_base.hpp`). In the
-> tables, `pool` is `boost::pool_allocator`, the default when the benchmark was first run;
-> `-D BOOST_ROOT_PTR_ALLOCATOR=boost::pool_allocator` restores it.
->
-> **Update 2026-09-28:** two library changes since the measurement.
-> - `node_proxy` no longer releases objects that escaped its scope (a returned node, the members of
->   an escaping one). Measured before/after on the same source and in the same session, interleaved:
->   churn, bulk, mixed and types within run-to-run noise (−6% to +3%), cycles +2% with thread support
->   and 0% without (11 runs). The `root_ptr` rows below are therefore still the 2026-09-27 ones.
-> - `boost::shared_node_ptr` (`FCXXSS_SHARED_PTR`) is new: a section of its own compares it with
->   `root_ptr`, both measured in one run of their own, since this machine measured 10–20% slower
->   that day than on 2026-09-27 (the unchanged `root_ptr` churn: 62.8 vs. 56.2 ns).
-
-Measured 2026-09-27 with `bench/allocbench.cpp` and `bench/run.sh`, for three smart pointer types
-(`boost::root_ptr`, `std::unique_ptr`, `std::shared_ptr`) and five builds: with thread support (the
-default), with `BOOST_DISABLE_THREADS`, with `BOOST_ROOT_PTR_STRIPED_LOCKS`, with
-`BOOST_PAGE_ALLOCATOR_THREAD_CACHE`, and with both of the last two. The same results as charts:
-`bench/ALLOCATOR_BENCHMARK.pdf` (drawn by `bench/plot.py`).
+Every build (macro combination) x allocator x pointer type x scenario, measured in one run with `bench/allocbench.cpp` and `bench/run.sh`; this file and `ALLOCATOR_BENCHMARK.pdf` (the same matrices as colour pages) are written by `bench/report.py`. The previous report (2026-09-27/28, measured in separate runs) is kept in `bench/archive-2026-09-27/`.
 
 ## Summary
 
-- **`boost::pool_allocator` is quadratic when many objects are released.** Its `deallocate` calls
-  `ordered_free`, which walks the free list to keep it sorted (`simple_segregated_storage::find_prev`
-  in Boost.Pool). This does not depend on the pointer type or the build: releasing 200,000 objects at
-  once costs 229–438 µs per object, and the cost per object grows ×1.7 to ×2.6 each time the count
-  doubles. Every other allocator stays flat, at 39–171 ns per object (single runs).
-- **The page allocators are the fastest in every bulk, mixed-size and cycle release, in both
-  single-threaded builds** (`by_size` within −4% to +7% of `by_type`). Compared with `pool` they are
-  570× to 2,900× faster there, and `page_allocator_by_size` holds the same objects in 9–19% less memory.
-  Churn (one object created and dropped at a time) is the exception:
-  - with thread support, `std::allocator` is 5–16% faster (glibc's per-thread cache takes no lock,
-    while a page pool takes its mutex). The per-thread caches reverse this (next point);
-  - without thread support, `fast_pool_allocator` is 1.8–2.1× faster for `unique_ptr` and `shared_ptr`;
-    for `root_ptr` the page allocators stay fastest.
-- **Per-thread caches (`BOOST_PAGE_ALLOCATOR_THREAD_CACHE`) remove the page pool's mutex from the
-  common path.**
-  - With four threads, `page_allocator_by_size` goes from 157 to 1.9 ns per `unique_ptr` and from
-    149 to 2.4 ns per `shared_ptr`, 2.2× and 2.0× faster than `std::allocator` (4.1 and 4.8 ns).
-  - Combined with striped locks, `root_ptr` goes from 289 to 27 ns, against 30 ns with
-    `std::allocator`.
-  - Churn is 2.3–3.1× faster for the allocator alone and the standard pointers, and 1.2–1.3× for
-    `root_ptr`. With the caches, churn with thread support costs what it costs without thread support
-    (6.1 vs. 6.2 ns per `unique_ptr`).
-  - Bulk, mixed, cycle and type scenarios and resident memory do not change beyond run-to-run noise.
-  - The option is off by default for now.
-- **Thread support is the largest single cost for `root_ptr`.** Built with `BOOST_DISABLE_THREADS`,
-  `root_ptr` churn drops from 56.2 to 9.4 ns (6.0×), bulk release from 109.0 to 63.9 ns and cycles from
-  119.6 to 45.8 ns per node, with `page_allocator_by_size`. The saving is the global `root_ptr` mutex,
-  atomic reference counts and the page pool's mutex. `std::allocator` alone and with the standard
-  pointers stays within run-to-run noise (0.92–1.06×): glibc and libstdc++ ignore the macro.
-- **Striped locks (`BOOST_ROOT_PTR_STRIPED_LOCKS`) trade single-threaded speed for scaling.** With
-  four threads and `std::allocator`, `root_ptr` goes from 271 to 30 ns per object (9.0×). With the
-  pool allocators the gain is only 1.3–1.4×, because their own mutex then serializes the threads; the
-  per-thread caches lift the page allocators to 10.7× (27 ns). Single-threaded, every scenario is
-  1.33× to 3.35× slower: about 8 lock operations per object instead of 3. The option stays off by
-  default.
-- **`root_ptr` against the standard pointers:** with thread support it costs 3.4× `unique_ptr` and
-  2.9× `shared_ptr` per churn. Without thread support it costs 1.5× `unique_ptr` and 1.03× `shared_ptr`,
-  in 1.8× the memory of `unique_ptr`. It is the only one of the three that reclaims cycles.
-- **`boost::shared_node_ptr` (what `FCXXSS_SHARED_PTR` emits) against `root_ptr`:** churn costs the
-  same (0.92–1.07× across the allocators other than `pool`), release 1.00–1.21× as much, and it holds the
-  same objects in 16–25% more memory: a `std::shared_ptr` control block per object on top of the node.
-  Without a global lock it scales: with four threads it is 1.8× faster than `root_ptr` on the page
-  allocators, and 17–24× faster with `std::allocator` or the per-thread caches (12.5 ns). It gains
-  nothing from `BOOST_DISABLE_THREADS` (1.4–3.3× slower than `root_ptr` there), and a cycle through
-  it is never released.
-- **`page_allocator_by_type` costs more with many sparse types:** 32 types of 100 objects each take
-  2.4× to 4.9× the time of `by_size` and 1.6–1.8 MB more memory. Each type fills a 64 KiB page of its
-  own, and a new page is fully touched when its free list is built.
-- **Without the caches, `std::allocator` is far faster with four threads for `unique_ptr` and
-  `shared_ptr`**: 4–5 ns per object, 31–38× faster than `page_allocator_by_size` (149–157 ns). With
-  `root_ptr` and its global lock the gap is 1.4× (271 vs. 387 ns).
+- The default allocator, page_allocator_by_size, is the fastest or within 10% of the fastest in 114 of the 140 measured (build, pointer, scenario) cells. It loses by a wide margin only with 4 threads and no thread caches, where every allocation takes the page pool's mutex: std::allocator (glibc, per-thread arenas) is 36x faster for unique_ptr (5.0 vs. 182.9 ns), 28x for shared_ptr, 19x for shared_node_ptr, and 1.24x for root_ptr behind its global lock (313 vs. 389 ns).
+- boost::pool_allocator is quadratic when many objects are released: its deallocate keeps the free list sorted (ordered_free). Releasing 100,000 objects together costs 85-144 us per object for every pointer and build, and about 2x more each time the count doubles (189-402 us at 200,000). Every other allocator stays at 41-255 ns in every build. The allocator alone shows it too: a batch costs 70.7 us per block against 28.9 ns.
+- Thread support (the default) is root_ptr's largest single cost: with BOOST_DISABLE_THREADS and page_allocator_by_size, churn drops from 58.0 to 9.4 ns (6.2x), cycles from 139.6 to 50.9 ns per node (2.7x) and bulk release from 133.4 to 74.8 ns (1.8x): the global root_ptr mutex, atomic counts and the pool mutex go away. shared_node_ptr churn drops 2.2x (61.8 to 28.7 ns), unique_ptr 3.2x (18.6 to 5.8 ns, the page pool's mutex); std::allocator itself does not change (16.3 vs. 15.8 ns).
+- Striped locks (BOOST_ROOT_PTR_STRIPED_LOCKS) trade single-threaded speed for scaling. With 4 threads, root_ptr goes from 313 to 29.7 ns per object with std::allocator (10.5x), and from 309 to 30.2 ns with page_allocator_by_size plus thread caches (10.2x); without the caches the page pool's mutex caps the gain at 1.36x. Single-threaded every root_ptr scenario is slower: 1.5x to 2.6x (geometric means), e.g. churn 58.0 to 120.2 ns and cycles 139.6 to 451.1 ns. shared_node_ptr takes no root_ptr lock and does not change (0.99-1.04x).
+- Per-thread caches (BOOST_PAGE_ALLOCATOR_THREAD_CACHE) take the page pool's mutex off the common path. With 4 threads and page_allocator_by_size: unique_ptr 182.9 to 3.4 ns, shared_ptr 166.5 to 4.3 ns, shared_node_ptr 238.9 to 12.4 ns - now level with or faster than std::allocator (5.1, 5.8, 15.2 ns); root_ptr needs striped locks as well (above). Churn: the allocator alone 3.1x faster (17.1 to 5.5 ns), unique_ptr 2.9x, shared_ptr 2.7x, shared_node_ptr 1.6x, root_ptr 1.3x. Bulk, mixed, types, cycles and resident memory do not change (0.99-1.04x).
+- Zeroization (BOOST_ZEROIZATION) costs nothing measurable: the geometric mean of time without / with it is 0.97-1.01x for every pointer and scenario, and single cells scatter within run-to-run noise (0.72-1.22x). Clearing a 72-248 byte node is small next to a 50-150 ns release. (Checked separately that the macro is active: a released node reads back as zeros.)
+- root_ptr against the standard pointers (page_allocator_by_size): churn costs 3.1x unique_ptr and 2.6x shared_ptr with thread support (58.0 vs. 18.6 and 22.7 ns), 1.6x and 1.0x without (9.4 vs. 5.8 and 9.3 ns). It holds 100,000 objects in 12.5 MB against 7.0 MB (unique_ptr) and 9.3 MB (shared_ptr). It is the only one of them that reclaims cycles.
+- shared_node_ptr (what FCXXSS_SHARED_PTR emits) against root_ptr, both on page_allocator_by_size: single-threaded with thread support it costs 1.06-1.15x as much (churn 61.8 vs. 58.0 ns) and holds the same objects in 19-25% more memory (a control block per object on top of the node). With 4 threads it has no global lock: 1.6x faster (239 vs. 389 ns), 24x with std::allocator and 25x with the thread caches (12.4 vs. 309 ns). Without thread support it is the slower one: churn 3.1x (28.7 vs. 9.4 ns). A cycle through it is never released.
+- page_allocator_by_type costs more with many sparse types: 32 types of 100 objects each take 2.1x to 4.3x the time of page_allocator_by_size and 1.6-1.9 MB more memory (3.8-4.2 MB against 1.9-2.3 MB), because each type fills a 64 KiB page of its own.
+- Noise: the slowest of a cell's 5 runs is 1.21x its fastest at the median (1.36x at the 90th percentile, up to 4x in the 4-thread scenario), so the medians are reported, and differences below about 10% are not significant. The run took 2.5 hours on a shared desktop machine.
 
 ## Setup
 
-| | |
+|  |  |
 |---|---|
-| CPU | Intel Core i7-4700HQ, 4 cores / 8 threads, 2.4 GHz |
-| Memory | 16 GB |
-| OS | Linux 5.15 (Ubuntu 22.04) |
-| Compiler | clang 23 (`-std=c++20 -O2 -DNDEBUG`), libstdc++ 12, glibc 2.35, Boost.Pool from `/usr/include` |
-| Library | `/opt/fornux/superset/usr/include` (root_ptr.hpp, node_base.hpp and page_allocator.hpp as of 2026-09-27) |
-| Load | Shared desktop machine (browser, Xorg); load average 2.0 at the start of the run (the run took 40 minutes) |
+| Measured | 2026-09-29 21:32 to 2026-09-30 00:02 |
+| CPU | Intel(R) Core(TM) i7-4700HQ CPU @ 2.40GHz, 8 logical CPUs |
+| OS | Linux 5.15.0-194-generic |
+| Compiler | clang version 23.0.0git, glibc 2.35 |
+| Flags | `-std=c++20 -O2 -DNDEBUG -DBOOST_ERROR_CODE_HEADER_ONLY -isystem /opt/fornux/superset/usr/include` |
+| Load | load average 15.14 13.21 9.03 at the start, 1.19 1.54 1.72 at the end |
+| Method | median of 5 runs; every measurement in a fresh process, after the CPU has cooled (this machine throttles under the four-thread load); loops ordered scenario > allocator > build > pointer so drift hits every build alike |
 
-Builds. `run.sh` compiles `allocbench.cpp` five times:
+### Builds
 
-| build | defines | what changes |
-|---|---|---|
-| with thread support (default) | none | `root_ptr` locks a global recursive mutex on every operation; node reference counts are atomic; Boost pools and page pools lock a mutex |
-| without thread support | `BOOST_DISABLE_THREADS` | no `root_ptr` lock; plain reference counts (`sp_counted_base_nt`); Boost pools use `null_mutex`; page pools use a no-op mutex. `std::allocator` (glibc) and `std::shared_ptr`'s counts (libstdc++) do not change. Single-threaded scenarios only |
-| striped locks | `BOOST_ROOT_PTR_STRIPED_LOCKS` | `root_ptr`'s global mutex is replaced by 1024 spin locks indexed by root address: a root's ring links and pointers are guarded by its stripe, a ring change takes the stripes of the roots involved and of their neighbours, and a node is released only after every stripe is unlocked. Measured for `root_ptr` only, which is the only pointer that uses them |
-| per-thread caches | `BOOST_PAGE_ALLOCATOR_THREAD_CACHE` | every thread that allocates from a page pool keeps up to 16 KiB of its free blocks (8 to 256 blocks), and moves half of that to or from the pool under its mutex at once; a thread that exits returns its blocks. Only the page allocators change: the other allocators are the control |
-| striped locks and per-thread caches | both | both of the above; measured for `root_ptr` only |
+The macros that change what the benchmark runs. Striped locks and thread caches are inactive without threads, hence 8 builds with threads and 2 without. `BOOST_NO_EXCEPTIONS` only changes `root_ptr`'s static and dynamic cast constructors, which no scenario uses.
 
-Allocators:
+| build | `BOOST_DISABLE_THREADS` | `BOOST_ROOT_PTR_STRIPED_LOCKS` | `BOOST_PAGE_ALLOCATOR_THREAD_CACHE` | `BOOST_ZEROIZATION` | pointers measured |
+|---|---|---|---|---|---|
+| threads (default) |  |  |  |  | all |
+| threads + striped |  | yes |  |  | `root_ptr`, `shared_node_ptr` |
+| threads + caches |  |  | yes |  | all |
+| threads + striped + caches |  | yes | yes |  | `root_ptr`, `shared_node_ptr` |
+| threads + zero |  |  |  | yes | `root_ptr`, `shared_node_ptr` |
+| threads + striped + zero |  | yes |  | yes | `root_ptr`, `shared_node_ptr` |
+| threads + caches + zero |  |  | yes | yes | `root_ptr`, `shared_node_ptr` |
+| threads + striped + caches + zero |  | yes | yes | yes | `root_ptr`, `shared_node_ptr` |
+| no threads | yes |  |  |  | all |
+| no threads + zero | yes |  |  | yes | `root_ptr`, `shared_node_ptr` |
 
-| name | allocator |
+| macro | what changes |
 |---|---|
-| `pool` | `boost::pool_allocator` (the default when first measured) |
-| `fast` | `boost::fast_pool_allocator` |
-| `std` | `std::allocator` (glibc `malloc`) |
-| `page_type` | `boost::page_allocator_by_type` (pages hold one type) |
-| `page_size` | `boost::page_allocator_by_size` (pages hold one size class; the default since 2026-09-27) |
+| `BOOST_DISABLE_THREADS` | no `root_ptr` lock; plain reference counts; Boost pools use `null_mutex`; page pools a no-op mutex. `std::allocator` (glibc) and `std::shared_ptr`'s counts (libstdc++) do not change |
+| `BOOST_ROOT_PTR_STRIPED_LOCKS` | `root_ptr`'s global mutex replaced by 1024 spin locks indexed by root address |
+| `BOOST_PAGE_ALLOCATOR_THREAD_CACHE` | each thread keeps up to 16 KiB of free blocks of every page pool, moving half at once to or from the pool under its mutex; only the page allocators change |
+| `BOOST_ZEROIZATION` | every node is cleared (`memset`) before its memory is released |
 
-Pointer types. `run<P, A>()` takes the pointer type as a template template argument, and `make<P, A, T>()`
-selects the construction with `if constexpr`; every pointer allocates through the allocator under test:
+`std::unique_ptr`, `std::shared_ptr` and the allocator alone use no node and no `root_ptr` lock, so striped locks and zeroization do not change their code: they are measured in the three builds where it can differ (threads, threads + caches, no threads), and the tables show those values in *italics* for the equivalent builds.
 
-| pointer | construction | block for a 48-byte payload | handle |
-|---|---|---|---|
-| `boost::root_ptr` | `root_ptr<T>(x, new node<T, A<T>>(...))` | 72 B (`node<T, A>`) | 32 B |
-| `std::shared_ptr` | `std::allocate_shared<T>(A<T>(), ...)` | 64 B (control block + object) | 16 B |
-| `std::unique_ptr` | `allocate_unique<T>(A<T>(), ...)`, a helper whose deleter frees through the same allocator (the standard has no allocator-aware `make_unique`) | 48 B | 8 B |
+### Allocators, pointers, scenarios
 
-Scenarios. "Medium" is a 48-byte payload.
-
-| scenario | what one operation is |
+| allocator |  |
 |---|---|
-| `raw_churn` | allocator only, no pointer: allocate one node-sized block and free it at once (4,000,000 times) |
-| `raw_batch` | allocator only, no pointer: allocate 100,000 blocks, then free them in allocation order |
-| `churn` | create a pointer to a new Medium object and drop it (1,000,000 times) |
-| `bulk` | 100,000 live Medium objects, all released together at the end of the scope |
-| `mixed` | 50,000 each of 16-, 48- and 200-byte payloads interleaved, released together |
-| `cycles` | 25,000 two-node cycles, reclaimed with their `node_proxy`; `root_ptr` only (a `unique_ptr` cannot form a cycle, and a `shared_ptr` cycle is never freed) |
-| `threads` | 4 threads, each creating and dropping 250,000 objects (in its own `node_proxy` for `root_ptr`); not in the build without thread support |
-| `types` | 32 distinct types of equal size, 100 live objects of each, released together |
+| pool | `boost::pool_allocator` |
+| fast | `boost::fast_pool_allocator` |
+| std | `std::allocator` |
+| page_type | `boost::page_allocator_by_type` |
+| page_size | `boost::page_allocator_by_size`, the default |
 
-Method: every (build, pointer, allocator, scenario) combination runs in a fresh process, so memory
-freed by one scenario is never reused by the next. Tables report the median of 5 runs, interleaved
-across allocators so that drift in machine load affects them all alike. Time is wall clock per
-operation, including the release of every object; in `threads` it is the wall clock divided by the
-operations of all four threads. Memory is the growth of resident set size (RSS, from
-`/proc/self/statm`) while the objects are live, including the process's first-use costs, visible as a
-floor of about 1.9 MB in `types`. Since 2026-09-28 `run.sh` waits before every measurement until the CPU is not throttled (no
-`kidle_inj` idle-injection threads) and its package is below 70 °C (`BENCH_MAX_TEMP`): this laptop
-throttles under the benchmark's own four-thread load, and a first `shared_node_ptr` run that did
-(60% of it throttled, up to 3× slower) was discarded. An empty `asm volatile` barrier marks every created object as used:
-without it, clang removed the whole `new`/`delete` pair for `unique_ptr` with `std::allocator`.
+| pointer | construction |
+|---|---|
+| `boost::root_ptr` | `root_ptr<T>(x, new node<T, A<T>>(...))` |
+| `boost::shared_node_ptr` | `shared_node_ptr<T>(x, new node<T, A<T>>(...))` - what `FCXXSS_SHARED_PTR` emits: a `std::shared_ptr` owning the same node |
+| `std::unique_ptr` | `allocate_unique<T>(A<T>(), ...)`, a helper whose deleter frees through the same allocator |
+| `std::shared_ptr` | `std::allocate_shared<T>(A<T>(), ...)` |
+| allocator alone | one node-sized block (72 B) from the allocator, no pointer |
 
-## Results
+| scenario | one operation |
+|---|---|
+| raw_churn | allocate and free one 72-byte block, 4,000,000 times |
+| raw_batch | allocate 100,000 blocks, then free them in order |
+| churn | create and drop one 48-byte object, 1,000,000 times |
+| bulk | 100,000 live 48-byte objects, released together |
+| mixed | 50,000 each of 16, 48 and 200 bytes, interleaved, released together |
+| cycles | 25,000 two-node cycles, reclaimed with their proxy (root_ptr only) |
+| threads | 4 threads, each creating and dropping 250,000 objects (wall clock / all operations) |
+| types | 32 types of equal size, 100 live objects of each |
 
-### Built with thread support (the default)
+## Time per operation
 
-#### Allocator alone
+ns per operation, median (lower is better). Rows: builds; columns: allocators. *Italics*: the value of the equivalent build (see Builds).
 
-Time, ns per operation (speed-up over `pool` in parentheses):
+### churn
 
-| scenario | pool | fast | std | page_type | page_size |
+create and drop one 48-byte object, 1,000,000 times.
+
+`boost::root_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
 |---|---|---|---|---|---|
-| raw_churn | 40.6 (1.00x) | 17.5 (2.32x) | 15.5 (2.63x) | 16.6 (2.44x) | 16.8 (2.42x) |
-| raw_batch | 69462.3 (1.00x) | 25.6 (2710.20x) | 27.6 (2513.11x) | 24.2 (2864.42x) | 25.4 (2734.74x) |
+| threads (default) | 79.1 | 57.6 | 58.8 | 58.4 | 58.0 |
+| threads + striped | 142 | 127 | 120 | 117 | 120 |
+| threads + caches | 81.7 | 57.7 | 59.8 | 44.5 | 44.8 |
+| threads + striped + caches | 128 | 114 | 119 | 111 | 106 |
+| threads + zero | 77.1 | 63.7 | 54.1 | 64.9 | 59.3 |
+| threads + striped + zero | 140 | 114 | 113 | 116 | 117 |
+| threads + caches + zero | 79.0 | 59.6 | 53.2 | 44.6 | 47.3 |
+| threads + striped + caches + zero | 130 | 117 | 115 | 105 | 106 |
+| no threads | 36.2 | 10.6 | 25.6 | 9.37 | 9.39 |
+| no threads + zero | 40.7 | 14.7 | 21.9 | 11.8 | 10.6 |
 
-#### `boost::root_ptr`
+`boost::shared_node_ptr`:
 
-Time, ns per operation (speed-up over `pool` in parentheses):
-
-| scenario | pool | fast | std | page_type | page_size |
+| build | pool | fast | std | page_type | page_size |
 |---|---|---|---|---|---|
-| churn | 77.9 (1.00x) | 57.6 (1.35x) | 53.3 (1.46x) | 57.4 (1.36x) | 56.2 (1.38x) |
-| bulk | 138882.6 (1.00x) | 117.0 (1187.54x) | 115.1 (1206.42x) | 107.5 (1292.29x) | 109.0 (1274.62x) |
-| mixed | 92700.9 (1.00x) | 136.8 (677.59x) | 151.9 (610.32x) | 127.6 (726.33x) | 128.3 (722.70x) |
-| cycles | 67957.0 (1.00x) | 123.3 (551.20x) | 133.7 (508.17x) | 119.1 (570.68x) | 119.6 (568.30x) |
-| threads | 441.6 (1.00x) | 368.2 (1.20x) | 271.4 (1.63x) | 386.2 (1.14x) | 386.9 (1.14x) |
-| types | 238.2 (1.00x) | 131.6 (1.81x) | 124.6 (1.91x) | 322.4 (0.74x) | 131.7 (1.81x) |
+| threads (default) | 84.6 | 46.7 | 46.2 | 51.3 | 61.8 |
+| threads + striped | 72.7 | 48.1 | 54.2 | 50.4 | 50.7 |
+| threads + caches | 70.1 | 47.5 | 51.4 | 38.9 | 38.6 |
+| threads + striped + caches | 67.5 | 47.9 | 45.7 | 38.5 | 38.1 |
+| threads + zero | 73.2 | 48.3 | 49.3 | 50.9 | 50.7 |
+| threads + striped + zero | 68.8 | 46.7 | 46.1 | 51.8 | 50.9 |
+| threads + caches + zero | 71.2 | 46.7 | 46.0 | 37.3 | 39.3 |
+| threads + striped + caches + zero | 74.7 | 47.4 | 49.8 | 38.8 | 39.4 |
+| no threads | 54.2 | 27.9 | 46.1 | 28.7 | 28.7 |
+| no threads + zero | 54.3 | 35.4 | 46.6 | 29.2 | 31.9 |
 
-Resident memory grown while the objects are live, kB:
+`std::unique_ptr`:
 
-| scenario | pool | fast | std | page_type | page_size |
+| build | pool | fast | std | page_type | page_size |
 |---|---|---|---|---|---|
-| bulk | 13960 | 14032 | 12728 | 12740 | 12708 |
-| mixed | 28000 | 28040 | 24396 | 23804 | 23820 |
-| types | 2108 | 2248 | 2288 | 3856 | 2280 |
+| threads (default) | 46.2 | 26.3 | 16.3 | 17.1 | 18.6 |
+| threads + striped | *46.2* | *26.3* | *16.3* | *17.1* | *18.6* |
+| threads + caches | 47.9 | 27.8 | 18.5 | 7.72 | 6.41 |
+| threads + striped + caches | *47.9* | *27.8* | *18.5* | *7.72* | *6.41* |
+| threads + zero | *46.2* | *26.3* | *16.3* | *17.1* | *18.6* |
+| threads + striped + zero | *46.2* | *26.3* | *16.3* | *17.1* | *18.6* |
+| threads + caches + zero | *47.9* | *27.8* | *18.5* | *7.72* | *6.41* |
+| threads + striped + caches + zero | *47.9* | *27.8* | *18.5* | *7.72* | *6.41* |
+| no threads | 27.3 | 4.05 | 15.8 | 5.99 | 5.83 |
+| no threads + zero | *27.3* | *4.05* | *15.8* | *5.99* | *5.83* |
 
-#### `std::unique_ptr`
+`std::shared_ptr`:
 
-Time, ns per operation (speed-up over `pool` in parentheses):
-
-| scenario | pool | fast | std | page_type | page_size |
+| build | pool | fast | std | page_type | page_size |
 |---|---|---|---|---|---|
-| churn | 46.2 (1.00x) | 25.4 (1.82x) | 15.4 (3.00x) | 17.2 (2.69x) | 16.4 (2.81x) |
-| bulk | 83229.7 (1.00x) | 51.4 (1619.57x) | 53.6 (1553.95x) | 39.1 (2128.09x) | 39.5 (2107.08x) |
-| mixed | 79149.8 (1.00x) | 76.0 (1040.76x) | 93.4 (847.61x) | 62.0 (1276.20x) | 64.0 (1237.30x) |
-| cycles | n/a | n/a | n/a | n/a | n/a |
-| threads | 259.8 (1.00x) | 220.8 (1.18x) | 4.1 (62.76x) | 165.8 (1.57x) | 156.9 (1.66x) |
-| types | 176.8 (1.00x) | 69.1 (2.56x) | 61.3 (2.89x) | 254.5 (0.69x) | 52.4 (3.37x) |
+| threads (default) | 63.4 | 43.5 | 17.6 | 20.1 | 22.7 |
+| threads + striped | *63.4* | *43.5* | *17.6* | *20.1* | *22.7* |
+| threads + caches | 70.9 | 48.4 | 21.8 | 10.1 | 8.48 |
+| threads + striped + caches | *70.9* | *48.4* | *21.8* | *10.1* | *8.48* |
+| threads + zero | *63.4* | *43.5* | *17.6* | *20.1* | *22.7* |
+| threads + striped + zero | *63.4* | *43.5* | *17.6* | *20.1* | *22.7* |
+| threads + caches + zero | *70.9* | *48.4* | *21.8* | *10.1* | *8.48* |
+| threads + striped + caches + zero | *70.9* | *48.4* | *21.8* | *10.1* | *8.48* |
+| no threads | 30.0 | 5.80 | 19.1 | 10.4 | 9.33 |
+| no threads + zero | *30.0* | *5.80* | *19.1* | *10.4* | *9.33* |
 
-Resident memory grown while the objects are live, kB:
+### bulk
 
-| scenario | pool | fast | std | page_type | page_size |
+100,000 live 48-byte objects, released together.
+
+`boost::root_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
 |---|---|---|---|---|---|
-| bulk | 8476 | 8520 | 8748 | 7124 | 7208 |
-| mixed | 19848 | 19924 | 17688 | 16152 | 16172 |
-| types | 1872 | 1976 | 1908 | 3768 | 2004 |
+| threads (default) | 141,871 | 138 | 144 | 131 | 133 |
+| threads + striped | 141,697 | 240 | 252 | 235 | 241 |
+| threads + caches | 140,769 | 137 | 138 | 131 | 131 |
+| threads + striped + caches | 143,332 | 249 | 250 | 240 | 233 |
+| threads + zero | 140,945 | 138 | 144 | 131 | 129 |
+| threads + striped + zero | 142,621 | 244 | 255 | 234 | 232 |
+| threads + caches + zero | 143,739 | 134 | 144 | 137 | 135 |
+| threads + striped + caches + zero | 143,132 | 246 | 250 | 241 | 236 |
+| no threads | 145,369 | 81.2 | 91.8 | 74.8 | 74.8 |
+| no threads + zero | 145,919 | 84.8 | 89.5 | 76.9 | 76.4 |
 
-#### `std::shared_ptr`
+`boost::shared_node_ptr`:
 
-Time, ns per operation (speed-up over `pool` in parentheses):
-
-| scenario | pool | fast | std | page_type | page_size |
+| build | pool | fast | std | page_type | page_size |
 |---|---|---|---|---|---|
-| churn | 62.9 (1.00x) | 43.1 (1.46x) | 17.1 (3.69x) | 19.8 (3.18x) | 19.4 (3.25x) |
-| bulk | 134578.3 (1.00x) | 79.0 (1703.95x) | 66.3 (2028.61x) | 51.5 (2610.64x) | 53.4 (2521.14x) |
-| mixed | 92856.5 (1.00x) | 108.0 (860.18x) | 104.1 (892.34x) | 77.1 (1204.36x) | 81.6 (1137.81x) |
-| cycles | n/a | n/a | n/a | n/a | n/a |
-| threads | 359.3 (1.00x) | 290.8 (1.24x) | 4.8 (75.63x) | 150.2 (2.39x) | 149.0 (2.41x) |
-| types | 206.0 (1.00x) | 104.1 (1.98x) | 72.8 (2.83x) | 271.6 (0.76x) | 73.8 (2.79x) |
+| threads (default) | 144,252 | 151 | 150 | 147 | 142 |
+| threads + striped | 142,903 | 150 | 151 | 142 | 143 |
+| threads + caches | 142,988 | 151 | 156 | 150 | 145 |
+| threads + striped + caches | 141,926 | 150 | 149 | 147 | 148 |
+| threads + zero | 143,772 | 155 | 155 | 142 | 142 |
+| threads + striped + zero | 143,751 | 151 | 155 | 142 | 143 |
+| threads + caches + zero | 145,759 | 149 | 154 | 148 | 150 |
+| threads + striped + caches + zero | 144,356 | 151 | 150 | 150 | 145 |
+| no threads | 142,011 | 125 | 141 | 116 | 116 |
+| no threads + zero | 144,348 | 123 | 137 | 119 | 114 |
 
-Resident memory grown while the objects are live, kB:
+`std::unique_ptr`:
 
-| scenario | pool | fast | std | page_type | page_size |
+| build | pool | fast | std | page_type | page_size |
 |---|---|---|---|---|---|
-| bulk | 11408 | 11484 | 11104 | 9576 | 9532 |
-| mixed | 24076 | 24124 | 21092 | 19812 | 19924 |
-| types | 1884 | 1940 | 1904 | 3716 | 1932 |
+| threads (default) | 85,265 | 63.0 | 65.9 | 47.5 | 47.6 |
+| threads + striped | *85,265* | *63.0* | *65.9* | *47.5* | *47.6* |
+| threads + caches | 84,610 | 62.2 | 65.8 | 44.2 | 42.9 |
+| threads + striped + caches | *84,610* | *62.2* | *65.8* | *44.2* | *42.9* |
+| threads + zero | *85,265* | *63.0* | *65.9* | *47.5* | *47.6* |
+| threads + striped + zero | *85,265* | *63.0* | *65.9* | *47.5* | *47.6* |
+| threads + caches + zero | *84,610* | *62.2* | *65.8* | *44.2* | *42.9* |
+| threads + striped + caches + zero | *84,610* | *62.2* | *65.8* | *44.2* | *42.9* |
+| no threads | 88,068 | 42.3 | 64.8 | 41.4 | 40.9 |
+| no threads + zero | *88,068* | *42.3* | *64.8* | *41.4* | *40.9* |
 
-#### Pointer types side by side
+`std::shared_ptr`:
 
-Time, ns per operation, `root_ptr` / `unique_ptr` / `shared_ptr`:
-
-| scenario | pool | fast | std | page_type | page_size |
+| build | pool | fast | std | page_type | page_size |
 |---|---|---|---|---|---|
-| churn | 77.9 / 46.2 / 62.9 | 57.6 / 25.4 / 43.1 | 53.3 / 15.4 / 17.1 | 57.4 / 17.2 / 19.8 | 56.2 / 16.4 / 19.4 |
-| bulk | 138882.6 / 83229.7 / 134578.3 | 117.0 / 51.4 / 79.0 | 115.1 / 53.6 / 66.3 | 107.5 / 39.1 / 51.5 | 109.0 / 39.5 / 53.4 |
-| mixed | 92700.9 / 79149.8 / 92856.5 | 136.8 / 76.0 / 108.0 | 151.9 / 93.4 / 104.1 | 127.6 / 62.0 / 77.1 | 128.3 / 64.0 / 81.6 |
-| cycles | 67957.0 / n/a / n/a | 123.3 / n/a / n/a | 133.7 / n/a / n/a | 119.1 / n/a / n/a | 119.6 / n/a / n/a |
-| threads | 441.6 / 259.8 / 359.3 | 368.2 / 220.8 / 290.8 | 271.4 / 4.1 / 4.8 | 386.2 / 165.8 / 150.2 | 386.9 / 156.9 / 149.0 |
-| types | 238.2 / 176.8 / 206.0 | 131.6 / 69.1 / 104.1 | 124.6 / 61.3 / 72.8 | 322.4 / 254.5 / 271.6 | 131.7 / 52.4 / 73.8 |
+| threads (default) | 136,876 | 99.7 | 77.2 | 64.2 | 63.5 |
+| threads + striped | *136,876* | *99.7* | *77.2* | *64.2* | *63.5* |
+| threads + caches | 138,142 | 100 | 79.4 | 61.2 | 61.3 |
+| threads + striped + caches | *138,142* | *100* | *79.4* | *61.2* | *61.3* |
+| threads + zero | *136,876* | *99.7* | *77.2* | *64.2* | *63.5* |
+| threads + striped + zero | *136,876* | *99.7* | *77.2* | *64.2* | *63.5* |
+| threads + caches + zero | *138,142* | *100* | *79.4* | *61.2* | *61.3* |
+| threads + striped + caches + zero | *138,142* | *100* | *79.4* | *61.2* | *61.3* |
+| no threads | 139,020 | 58.8 | 80.0 | 55.9 | 55.3 |
+| no threads + zero | *139,020* | *58.8* | *80.0* | *55.9* | *55.3* |
 
-Resident memory grown, kB, `root_ptr` / `unique_ptr` / `shared_ptr`:
+### mixed
 
-| scenario | pool | fast | std | page_type | page_size |
+50,000 each of 16, 48 and 200 bytes, interleaved, released together.
+
+`boost::root_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
 |---|---|---|---|---|---|
-| bulk | 13960 / 8476 / 11408 | 14032 / 8520 / 11484 | 12728 / 8748 / 11104 | 12740 / 7124 / 9576 | 12708 / 7208 / 9532 |
-| mixed | 28000 / 19848 / 24076 | 28040 / 19924 / 24124 | 24396 / 17688 / 21092 | 23804 / 16152 / 19812 | 23820 / 16172 / 19924 |
-| types | 2108 / 1872 / 1884 | 2248 / 1976 / 1940 | 2288 / 1908 / 1904 | 3856 / 3768 / 3716 | 2280 / 2004 / 1932 |
+| threads (default) | 99,512 | 170 | 178 | 137 | 155 |
+| threads + striped | 97,170 | 267 | 277 | 243 | 258 |
+| threads + caches | 95,371 | 162 | 182 | 144 | 142 |
+| threads + striped + caches | 96,602 | 252 | 281 | 254 | 242 |
+| threads + zero | 98,230 | 166 | 154 | 144 | 144 |
+| threads + striped + zero | 103,182 | 256 | 272 | 239 | 245 |
+| threads + caches + zero | 98,105 | 160 | 180 | 156 | 147 |
+| threads + striped + caches + zero | 95,402 | 256 | 279 | 250 | 265 |
+| no threads | 101,238 | 112 | 129 | 98.9 | 87.1 |
+| no threads + zero | 100,616 | 117 | 139 | 103 | 104 |
 
-#### Bulk release scaling
+`boost::shared_node_ptr`:
 
-ns per object, one run per size:
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 97,293 | 186 | 193 | 155 | 176 |
+| threads + striped | 98,320 | 184 | 229 | 154 | 156 |
+| threads + caches | 98,280 | 180 | 209 | 163 | 155 |
+| threads + striped + caches | 97,900 | 159 | 214 | 164 | 160 |
+| threads + zero | 99,161 | 180 | 199 | 173 | 165 |
+| threads + striped + zero | 97,605 | 159 | 201 | 149 | 162 |
+| threads + caches + zero | 99,258 | 175 | 209 | 166 | 170 |
+| threads + striped + caches + zero | 97,778 | 156 | 182 | 157 | 156 |
+| no threads | 105,652 | 156 | 199 | 145 | 126 |
+| no threads + zero | 99,523 | 155 | 199 | 148 | 146 |
+
+`std::unique_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 83,971 | 91.5 | 93.8 | 63.0 | 72.6 |
+| threads + striped | *83,971* | *91.5* | *93.8* | *63.0* | *72.6* |
+| threads + caches | 81,330 | 84.2 | 91.3 | 70.7 | 70.0 |
+| threads + striped + caches | *81,330* | *84.2* | *91.3* | *70.7* | *70.0* |
+| threads + zero | *83,971* | *91.5* | *93.8* | *63.0* | *72.6* |
+| threads + striped + zero | *83,971* | *91.5* | *93.8* | *63.0* | *72.6* |
+| threads + caches + zero | *81,330* | *84.2* | *91.3* | *70.7* | *70.0* |
+| threads + striped + caches + zero | *81,330* | *84.2* | *91.3* | *70.7* | *70.0* |
+| no threads | 82,876 | 70.8 | 93.4 | 62.4 | 66.8 |
+| no threads + zero | *82,876* | *70.8* | *93.4* | *62.4* | *66.8* |
+
+`std::shared_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 96,200 | 127 | 122 | 89.7 | 91.2 |
+| threads + striped | *96,200* | *127* | *122* | *89.7* | *91.2* |
+| threads + caches | 95,502 | 121 | 104 | 90.2 | 90.5 |
+| threads + striped + caches | *95,502* | *121* | *104* | *90.2* | *90.5* |
+| threads + zero | *96,200* | *127* | *122* | *89.7* | *91.2* |
+| threads + striped + zero | *96,200* | *127* | *122* | *89.7* | *91.2* |
+| threads + caches + zero | *95,502* | *121* | *104* | *90.2* | *90.5* |
+| threads + striped + caches + zero | *95,502* | *121* | *104* | *90.2* | *90.5* |
+| no threads | 96,604 | 88.6 | 116 | 82.7 | 82.7 |
+| no threads + zero | *96,604* | *88.6* | *116* | *82.7* | *82.7* |
+
+### cycles
+
+25,000 two-node cycles, reclaimed with their proxy (root_ptr only).
+
+`boost::root_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 68,865 | 155 | 165 | 144 | 140 |
+| threads + striped | 69,241 | 488 | 492 | 463 | 451 |
+| threads + caches | 68,397 | 153 | 165 | 137 | 136 |
+| threads + striped + caches | 68,619 | 479 | 501 | 455 | 463 |
+| threads + zero | 68,972 | 139 | 165 | 143 | 148 |
+| threads + striped + zero | 69,952 | 486 | 491 | 452 | 470 |
+| threads + caches + zero | 69,343 | 138 | 162 | 136 | 136 |
+| threads + striped + caches + zero | 70,027 | 421 | 476 | 475 | 469 |
+| no threads | 68,683 | 66.2 | 63.6 | 50.7 | 50.9 |
+| no threads + zero | 69,447 | 65.7 | 78.1 | 52.1 | 52.4 |
+
+### threads
+
+4 threads, each creating and dropping 250,000 objects (wall clock / all operations).
+
+`boost::root_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 462 | 393 | 313 | 402 | 389 |
+| threads + striped | 324 | 284 | 29.7 | 285 | 286 |
+| threads + caches | 482 | 385 | 289 | 280 | 309 |
+| threads + striped + caches | 320 | 290 | 34.4 | 28.0 | 30.2 |
+| threads + zero | 475 | 383 | 279 | 418 | 405 |
+| threads + striped + zero | 325 | 288 | 33.7 | 295 | 299 |
+| threads + caches + zero | 469 | 400 | 322 | 306 | 276 |
+| threads + striped + caches + zero | 316 | 293 | 34.1 | 33.1 | 31.8 |
+
+`boost::shared_node_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 283 | 216 | 12.8 | 233 | 239 |
+| threads + striped | 268 | 207 | 15.5 | 217 | 230 |
+| threads + caches | 270 | 216 | 15.2 | 12.9 | 12.4 |
+| threads + striped + caches | 254 | 205 | 15.6 | 11.1 | 12.4 |
+| threads + zero | 282 | 241 | 16.1 | 223 | 218 |
+| threads + striped + zero | 274 | 216 | 15.6 | 230 | 215 |
+| threads + caches + zero | 264 | 219 | 12.6 | 12.8 | 13.3 |
+| threads + striped + caches + zero | 263 | 214 | 15.1 | 12.5 | 10.3 |
+
+`std::unique_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 273 | 224 | 5.05 | 169 | 183 |
+| threads + striped | *273* | *224* | *5.05* | *169* | *183* |
+| threads + caches | 263 | 222 | 5.09 | 1.95 | 3.44 |
+| threads + striped + caches | *263* | *222* | *5.09* | *1.95* | *3.44* |
+| threads + zero | *273* | *224* | *5.05* | *169* | *183* |
+| threads + striped + zero | *273* | *224* | *5.05* | *169* | *183* |
+| threads + caches + zero | *263* | *222* | *5.09* | *1.95* | *3.44* |
+| threads + striped + caches + zero | *263* | *222* | *5.09* | *1.95* | *3.44* |
+
+`std::shared_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 376 | 307 | 6.00 | 151 | 166 |
+| threads + striped | *376* | *307* | *6.00* | *151* | *166* |
+| threads + caches | 379 | 295 | 5.77 | 2.68 | 4.35 |
+| threads + striped + caches | *379* | *295* | *5.77* | *2.68* | *4.35* |
+| threads + zero | *376* | *307* | *6.00* | *151* | *166* |
+| threads + striped + zero | *376* | *307* | *6.00* | *151* | *166* |
+| threads + caches + zero | *379* | *295* | *5.77* | *2.68* | *4.35* |
+| threads + striped + caches + zero | *379* | *295* | *5.77* | *2.68* | *4.35* |
+
+### types
+
+32 types of equal size, 100 live objects of each.
+
+`boost::root_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 239 | 141 | 160 | 371 | 146 |
+| threads + striped | 339 | 281 | 273 | 443 | 269 |
+| threads + caches | 249 | 141 | 159 | 327 | 143 |
+| threads + striped + caches | 343 | 251 | 278 | 504 | 262 |
+| threads + zero | 257 | 166 | 160 | 354 | 152 |
+| threads + striped + zero | 350 | 284 | 273 | 437 | 265 |
+| threads + caches + zero | 244 | 161 | 160 | 378 | 145 |
+| threads + striped + caches + zero | 338 | 288 | 281 | 503 | 272 |
+| no threads | 191 | 104 | 105 | 317 | 83.2 |
+| no threads + zero | 215 | 101 | 92.6 | 322 | 90.2 |
+
+`boost::shared_node_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 249 | 168 | 169 | 346 | 168 |
+| threads + striped | 263 | 170 | 173 | 344 | 168 |
+| threads + caches | 256 | 148 | 176 | 355 | 168 |
+| threads + striped + caches | 252 | 159 | 175 | 388 | 154 |
+| threads + zero | 255 | 171 | 176 | 352 | 164 |
+| threads + striped + zero | 251 | 167 | 174 | 389 | 162 |
+| threads + caches + zero | 255 | 173 | 169 | 385 | 165 |
+| threads + striped + caches + zero | 267 | 170 | 175 | 396 | 158 |
+| no threads | 244 | 150 | 156 | 363 | 138 |
+| no threads + zero | 243 | 151 | 142 | 366 | 138 |
+
+`std::unique_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 170 | 74.5 | 75.1 | 283 | 66.0 |
+| threads + striped | *170* | *74.5* | *75.1* | *283* | *66.0* |
+| threads + caches | 177 | 73.4 | 76.6 | 287 | 63.2 |
+| threads + striped + caches | *177* | *73.4* | *76.6* | *287* | *63.2* |
+| threads + zero | *170* | *74.5* | *75.1* | *283* | *66.0* |
+| threads + striped + zero | *170* | *74.5* | *75.1* | *283* | *66.0* |
+| threads + caches + zero | *177* | *73.4* | *76.6* | *287* | *63.2* |
+| threads + striped + caches + zero | *177* | *73.4* | *76.6* | *287* | *63.2* |
+| no threads | 162 | 55.3 | 72.9 | 297 | 57.7 |
+| no threads + zero | *162* | *55.3* | *72.9* | *297* | *57.7* |
+
+`std::shared_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 204 | 112 | 88.2 | 276 | 85.8 |
+| threads + striped | *204* | *112* | *88.2* | *276* | *85.8* |
+| threads + caches | 208 | 97.6 | 89.8 | 310 | 76.2 |
+| threads + striped + caches | *208* | *97.6* | *89.8* | *310* | *76.2* |
+| threads + zero | *204* | *112* | *88.2* | *276* | *85.8* |
+| threads + striped + zero | *204* | *112* | *88.2* | *276* | *85.8* |
+| threads + caches + zero | *208* | *97.6* | *89.8* | *310* | *76.2* |
+| threads + striped + caches + zero | *208* | *97.6* | *89.8* | *310* | *76.2* |
+| no threads | 172 | 68.8 | 88.9 | 306 | 74.7 |
+| no threads + zero | *172* | *68.8* | *88.9* | *306* | *74.7* |
+
+### allocator alone
+
+raw_churn - allocate and free one 72-byte block, 4,000,000 times:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 42.7 | 17.6 | 17.2 | 16.8 | 17.1 |
+| threads + striped | *42.7* | *17.6* | *17.2* | *16.8* | *17.1* |
+| threads + caches | 41.4 | 16.7 | 15.9 | 5.33 | 5.52 |
+| threads + striped + caches | *41.4* | *16.7* | *15.9* | *5.33* | *5.52* |
+| threads + zero | *42.7* | *17.6* | *17.2* | *16.8* | *17.1* |
+| threads + striped + zero | *42.7* | *17.6* | *17.2* | *16.8* | *17.1* |
+| threads + caches + zero | *41.4* | *16.7* | *15.9* | *5.33* | *5.52* |
+| threads + striped + caches + zero | *41.4* | *16.7* | *15.9* | *5.33* | *5.52* |
+| no threads | 27.2 | 3.33 | 15.8 | 4.01 | 4.77 |
+| no threads + zero | *27.2* | *3.33* | *15.8* | *4.01* | *4.77* |
+
+raw_batch - allocate 100,000 blocks, then free them in order:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 70,717 | 30.8 | 33.8 | 28.9 | 28.9 |
+| threads + striped | *70,717* | *30.8* | *33.8* | *28.9* | *28.9* |
+| threads + caches | 71,325 | 30.4 | 33.5 | 28.3 | 27.6 |
+| threads + striped + caches | *71,325* | *30.4* | *33.5* | *28.3* | *27.6* |
+| threads + zero | *70,717* | *30.8* | *33.8* | *28.9* | *28.9* |
+| threads + striped + zero | *70,717* | *30.8* | *33.8* | *28.9* | *28.9* |
+| threads + caches + zero | *71,325* | *30.4* | *33.5* | *28.3* | *27.6* |
+| threads + striped + caches + zero | *71,325* | *30.4* | *33.5* | *28.3* | *27.6* |
+| no threads | 71,570 | 26.6 | 33.8 | 24.9 | 25.1 |
+| no threads + zero | *71,570* | *26.6* | *33.8* | *24.9* | *25.1* |
+
+## Resident memory
+
+Resident memory grown while the objects are live, MB, median (lower is better).
+
+### bulk
+
+100,000 live 48-byte objects, released together.
+
+`boost::root_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 13.7 | 13.7 | 12.4 | 12.4 | 12.5 |
+| threads + striped | 13.7 | 13.8 | 12.5 | 12.5 | 12.5 |
+| threads + caches | 13.7 | 13.7 | 12.5 | 12.5 | 12.5 |
+| threads + striped + caches | 13.7 | 13.7 | 12.4 | 12.5 | 12.4 |
+| threads + zero | 13.7 | 13.8 | 12.5 | 12.4 | 12.4 |
+| threads + striped + zero | 13.7 | 13.7 | 12.5 | 12.4 | 12.4 |
+| threads + caches + zero | 13.7 | 13.8 | 12.4 | 12.4 | 12.4 |
+| threads + striped + caches + zero | 13.7 | 13.7 | 12.5 | 12.5 | 12.5 |
+| no threads | 13.6 | 13.8 | 12.3 | 12.4 | 12.4 |
+| no threads + zero | 13.6 | 13.7 | 12.4 | 12.4 | 12.4 |
+
+`boost::shared_node_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 16.9 | 16.9 | 15.3 | 15.5 | 15.6 |
+| threads + striped | 16.8 | 16.9 | 15.3 | 15.6 | 15.6 |
+| threads + caches | 16.8 | 16.9 | 15.3 | 15.6 | 15.6 |
+| threads + striped + caches | 16.8 | 16.9 | 15.6 | 15.6 | 15.6 |
+| threads + zero | 16.8 | 16.9 | 15.3 | 15.6 | 15.6 |
+| threads + striped + zero | 16.8 | 16.8 | 15.6 | 15.6 | 15.5 |
+| threads + caches + zero | 16.8 | 16.8 | 15.3 | 15.6 | 15.6 |
+| threads + striped + caches + zero | 16.8 | 16.9 | 15.5 | 15.6 | 15.6 |
+| no threads | 16.8 | 16.8 | 15.3 | 15.6 | 15.6 |
+| no threads + zero | 16.8 | 16.9 | 15.3 | 15.6 | 15.5 |
+
+`std::unique_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 8.3 | 8.7 | 8.5 | 7.0 | 7.0 |
+| threads + striped | *8.3* | *8.7* | *8.5* | *7.0* | *7.0* |
+| threads + caches | 8.3 | 8.4 | 8.5 | 7.0 | 7.0 |
+| threads + striped + caches | *8.3* | *8.4* | *8.5* | *7.0* | *7.0* |
+| threads + zero | *8.3* | *8.7* | *8.5* | *7.0* | *7.0* |
+| threads + striped + zero | *8.3* | *8.7* | *8.5* | *7.0* | *7.0* |
+| threads + caches + zero | *8.3* | *8.4* | *8.5* | *7.0* | *7.0* |
+| threads + striped + caches + zero | *8.3* | *8.4* | *8.5* | *7.0* | *7.0* |
+| no threads | 8.3 | 8.3 | 8.5 | 7.0 | 7.0 |
+| no threads + zero | *8.3* | *8.3* | *8.5* | *7.0* | *7.0* |
+
+`std::shared_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 11.2 | 11.2 | 10.8 | 9.2 | 9.3 |
+| threads + striped | *11.2* | *11.2* | *10.8* | *9.2* | *9.3* |
+| threads + caches | 11.1 | 11.2 | 10.8 | 9.4 | 9.3 |
+| threads + striped + caches | *11.1* | *11.2* | *10.8* | *9.4* | *9.3* |
+| threads + zero | *11.2* | *11.2* | *10.8* | *9.2* | *9.3* |
+| threads + striped + zero | *11.2* | *11.2* | *10.8* | *9.2* | *9.3* |
+| threads + caches + zero | *11.1* | *11.2* | *10.8* | *9.4* | *9.3* |
+| threads + striped + caches + zero | *11.1* | *11.2* | *10.8* | *9.4* | *9.3* |
+| no threads | 11.1 | 11.1 | 10.8 | 9.3 | 9.3 |
+| no threads + zero | *11.1* | *11.1* | *10.8* | *9.3* | *9.3* |
+
+### mixed
+
+50,000 each of 16, 48 and 200 bytes, interleaved, released together.
+
+`boost::root_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 27.4 | 27.4 | 23.8 | 23.3 | 23.3 |
+| threads + striped | 27.4 | 27.4 | 23.9 | 23.3 | 23.3 |
+| threads + caches | 27.3 | 27.4 | 23.8 | 23.3 | 23.3 |
+| threads + striped + caches | 27.4 | 27.4 | 23.8 | 23.4 | 23.3 |
+| threads + zero | 27.3 | 27.4 | 23.8 | 23.2 | 23.3 |
+| threads + striped + zero | 27.4 | 27.4 | 23.8 | 23.4 | 23.4 |
+| threads + caches + zero | 27.3 | 27.5 | 23.8 | 23.3 | 23.3 |
+| threads + striped + caches + zero | 27.4 | 27.4 | 23.9 | 23.3 | 23.3 |
+| no threads | 27.3 | 27.4 | 23.7 | 23.2 | 23.2 |
+| no threads + zero | 27.3 | 27.3 | 23.7 | 23.2 | 23.3 |
+
+`boost::shared_node_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 31.8 | 31.9 | 28.5 | 27.7 | 27.7 |
+| threads + striped | 31.8 | 31.8 | 28.5 | 27.8 | 27.7 |
+| threads + caches | 31.8 | 31.8 | 28.4 | 27.7 | 27.6 |
+| threads + striped + caches | 31.8 | 31.8 | 28.4 | 27.7 | 27.7 |
+| threads + zero | 31.8 | 31.8 | 28.5 | 27.8 | 27.7 |
+| threads + striped + zero | 31.8 | 31.9 | 28.5 | 27.7 | 27.7 |
+| threads + caches + zero | 31.8 | 31.8 | 28.5 | 27.8 | 27.7 |
+| threads + striped + caches + zero | 31.8 | 31.9 | 28.4 | 27.7 | 27.7 |
+| no threads | 31.8 | 31.8 | 28.4 | 27.7 | 27.7 |
+| no threads + zero | 31.8 | 31.8 | 28.4 | 27.7 | 27.6 |
+
+`std::unique_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 19.4 | 19.5 | 17.3 | 15.7 | 15.9 |
+| threads + striped | *19.4* | *19.5* | *17.3* | *15.7* | *15.9* |
+| threads + caches | 19.4 | 19.4 | 17.2 | 15.8 | 15.9 |
+| threads + striped + caches | *19.4* | *19.4* | *17.2* | *15.8* | *15.9* |
+| threads + zero | *19.4* | *19.5* | *17.3* | *15.7* | *15.9* |
+| threads + striped + zero | *19.4* | *19.5* | *17.3* | *15.7* | *15.9* |
+| threads + caches + zero | *19.4* | *19.4* | *17.2* | *15.8* | *15.9* |
+| threads + striped + caches + zero | *19.4* | *19.4* | *17.2* | *15.8* | *15.9* |
+| no threads | 19.3 | 19.3 | 17.2 | 15.7 | 15.8 |
+| no threads + zero | *19.3* | *19.3* | *17.2* | *15.7* | *15.8* |
+
+`std::shared_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 23.5 | 23.7 | 20.6 | 19.3 | 19.5 |
+| threads + striped | *23.5* | *23.7* | *20.6* | *19.3* | *19.5* |
+| threads + caches | 23.5 | 23.6 | 20.6 | 19.4 | 19.5 |
+| threads + striped + caches | *23.5* | *23.6* | *20.6* | *19.4* | *19.5* |
+| threads + zero | *23.5* | *23.7* | *20.6* | *19.3* | *19.5* |
+| threads + striped + zero | *23.5* | *23.7* | *20.6* | *19.3* | *19.5* |
+| threads + caches + zero | *23.5* | *23.6* | *20.6* | *19.4* | *19.5* |
+| threads + striped + caches + zero | *23.5* | *23.6* | *20.6* | *19.4* | *19.5* |
+| no threads | 23.5 | 23.5 | 20.6 | 19.4 | 19.3 |
+| no threads + zero | *23.5* | *23.5* | *20.6* | *19.4* | *19.3* |
+
+### types
+
+32 types of equal size, 100 live objects of each.
+
+`boost::root_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 2.1 | 2.2 | 2.3 | 3.8 | 2.2 |
+| threads + striped | 2.3 | 2.2 | 2.3 | 4.1 | 2.3 |
+| threads + caches | 2.1 | 2.2 | 2.3 | 3.8 | 2.3 |
+| threads + striped + caches | 2.2 | 2.2 | 2.3 | 4.1 | 2.3 |
+| threads + zero | 2.2 | 2.2 | 2.3 | 3.8 | 2.2 |
+| threads + striped + zero | 2.1 | 2.2 | 2.2 | 4.1 | 2.3 |
+| threads + caches + zero | 2.1 | 2.2 | 2.2 | 3.9 | 2.3 |
+| threads + striped + caches + zero | 2.2 | 2.3 | 2.3 | 4.2 | 2.3 |
+| no threads | 2.1 | 2.2 | 2.2 | 3.7 | 2.3 |
+| no threads + zero | 2.1 | 2.2 | 2.2 | 3.8 | 2.3 |
+
+`boost::shared_node_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 2.2 | 2.3 | 2.2 | 4.1 | 2.2 |
+| threads + striped | 2.2 | 2.2 | 2.2 | 4.1 | 2.2 |
+| threads + caches | 2.3 | 2.3 | 2.2 | 4.1 | 2.1 |
+| threads + striped + caches | 2.2 | 2.2 | 2.2 | 4.1 | 2.2 |
+| threads + zero | 2.2 | 2.2 | 2.2 | 4.1 | 2.2 |
+| threads + striped + zero | 2.2 | 2.3 | 2.2 | 4.1 | 2.2 |
+| threads + caches + zero | 2.2 | 2.2 | 2.2 | 4.1 | 2.2 |
+| threads + striped + caches + zero | 2.2 | 2.2 | 2.1 | 4.1 | 2.2 |
+| no threads | 2.1 | 2.2 | 2.2 | 4.0 | 2.2 |
+| no threads + zero | 2.2 | 2.2 | 2.2 | 4.0 | 2.2 |
+
+`std::unique_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 1.9 | 1.9 | 1.9 | 3.7 | 1.9 |
+| threads + striped | *1.9* | *1.9* | *1.9* | *3.7* | *1.9* |
+| threads + caches | 1.9 | 1.9 | 1.9 | 3.7 | 1.9 |
+| threads + striped + caches | *1.9* | *1.9* | *1.9* | *3.7* | *1.9* |
+| threads + zero | *1.9* | *1.9* | *1.9* | *3.7* | *1.9* |
+| threads + striped + zero | *1.9* | *1.9* | *1.9* | *3.7* | *1.9* |
+| threads + caches + zero | *1.9* | *1.9* | *1.9* | *3.7* | *1.9* |
+| threads + striped + caches + zero | *1.9* | *1.9* | *1.9* | *3.7* | *1.9* |
+| no threads | 1.8 | 1.9 | 1.9 | 3.7 | 1.9 |
+| no threads + zero | *1.8* | *1.9* | *1.9* | *3.7* | *1.9* |
+
+`std::shared_ptr`:
+
+| build | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| threads (default) | 1.9 | 1.9 | 1.9 | 3.7 | 1.9 |
+| threads + striped | *1.9* | *1.9* | *1.9* | *3.7* | *1.9* |
+| threads + caches | 1.9 | 1.9 | 1.9 | 3.8 | 2.0 |
+| threads + striped + caches | *1.9* | *1.9* | *1.9* | *3.8* | *2.0* |
+| threads + zero | *1.9* | *1.9* | *1.9* | *3.7* | *1.9* |
+| threads + striped + zero | *1.9* | *1.9* | *1.9* | *3.7* | *1.9* |
+| threads + caches + zero | *1.9* | *1.9* | *1.9* | *3.8* | *2.0* |
+| threads + striped + caches + zero | *1.9* | *1.9* | *1.9* | *3.8* | *2.0* |
+| no threads | 1.9 | 1.9 | 1.8 | 3.7 | 1.9 |
+| no threads + zero | *1.9* | *1.9* | *1.8* | *3.7* | *1.9* |
+
+## Effect of each setting
+
+Time without the setting / time with it, for each pair of builds that differ by that setting alone (higher is better: above 1.00x the setting is faster). *same*: the pointer's code does not change with it.
+
+### Turning thread support off (BOOST_DISABLE_THREADS)
+
+default: threads (default) -> no threads
+
+| pointer, scenario | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| `allocator alone` raw_churn | 1.57x | 5.28x | 1.09x | 4.18x | 3.59x |
+| `allocator alone` raw_batch | 0.99x | 1.16x | 1.00x | 1.16x | 1.15x |
+| `boost::root_ptr` churn | 2.19x | 5.43x | 2.29x | 6.23x | 6.17x |
+| `boost::root_ptr` bulk | 0.98x | 1.70x | 1.57x | 1.76x | 1.78x |
+| `boost::root_ptr` mixed | 0.98x | 1.52x | 1.37x | 1.38x | 1.77x |
+| `boost::root_ptr` cycles | 1.00x | 2.35x | 2.59x | 2.84x | 2.74x |
+| `boost::root_ptr` threads | n/a | n/a | n/a | n/a | n/a |
+| `boost::root_ptr` types | 1.25x | 1.36x | 1.52x | 1.17x | 1.76x |
+| `boost::shared_node_ptr` churn | 1.56x | 1.67x | 1.00x | 1.79x | 2.16x |
+| `boost::shared_node_ptr` bulk | 1.02x | 1.21x | 1.07x | 1.26x | 1.22x |
+| `boost::shared_node_ptr` mixed | 0.92x | 1.19x | 0.97x | 1.07x | 1.39x |
+| `boost::shared_node_ptr` threads | n/a | n/a | n/a | n/a | n/a |
+| `boost::shared_node_ptr` types | 1.02x | 1.12x | 1.08x | 0.95x | 1.21x |
+| `std::unique_ptr` churn | 1.69x | 6.49x | 1.03x | 2.85x | 3.19x |
+| `std::unique_ptr` bulk | 0.97x | 1.49x | 1.02x | 1.15x | 1.16x |
+| `std::unique_ptr` mixed | 1.01x | 1.29x | 1.00x | 1.01x | 1.09x |
+| `std::unique_ptr` threads | n/a | n/a | n/a | n/a | n/a |
+| `std::unique_ptr` types | 1.05x | 1.35x | 1.03x | 0.95x | 1.14x |
+| `std::shared_ptr` churn | 2.11x | 7.50x | 0.92x | 1.92x | 2.43x |
+| `std::shared_ptr` bulk | 0.98x | 1.70x | 0.97x | 1.15x | 1.15x |
+| `std::shared_ptr` mixed | 1.00x | 1.44x | 1.06x | 1.08x | 1.10x |
+| `std::shared_ptr` threads | n/a | n/a | n/a | n/a | n/a |
+| `std::shared_ptr` types | 1.18x | 1.63x | 0.99x | 0.90x | 1.15x |
+
+with zero: threads + zero -> no threads + zero
+
+| pointer, scenario | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| `allocator alone` raw_churn | *1.57x* | *5.28x* | *1.09x* | *4.18x* | *3.59x* |
+| `allocator alone` raw_batch | *0.99x* | *1.16x* | *1.00x* | *1.16x* | *1.15x* |
+| `boost::root_ptr` churn | 1.90x | 4.32x | 2.47x | 5.49x | 5.58x |
+| `boost::root_ptr` bulk | 0.97x | 1.63x | 1.61x | 1.71x | 1.69x |
+| `boost::root_ptr` mixed | 0.98x | 1.41x | 1.11x | 1.40x | 1.38x |
+| `boost::root_ptr` cycles | 0.99x | 2.12x | 2.11x | 2.74x | 2.83x |
+| `boost::root_ptr` threads | n/a | n/a | n/a | n/a | n/a |
+| `boost::root_ptr` types | 1.19x | 1.63x | 1.73x | 1.10x | 1.68x |
+| `boost::shared_node_ptr` churn | 1.35x | 1.37x | 1.06x | 1.74x | 1.59x |
+| `boost::shared_node_ptr` bulk | 1.00x | 1.26x | 1.13x | 1.19x | 1.24x |
+| `boost::shared_node_ptr` mixed | 1.00x | 1.16x | 1.00x | 1.17x | 1.13x |
+| `boost::shared_node_ptr` threads | n/a | n/a | n/a | n/a | n/a |
+| `boost::shared_node_ptr` types | 1.05x | 1.13x | 1.25x | 0.96x | 1.19x |
+| `std::unique_ptr` churn | *1.69x* | *6.49x* | *1.03x* | *2.85x* | *3.19x* |
+| `std::unique_ptr` bulk | *0.97x* | *1.49x* | *1.02x* | *1.15x* | *1.16x* |
+| `std::unique_ptr` mixed | *1.01x* | *1.29x* | *1.00x* | *1.01x* | *1.09x* |
+| `std::unique_ptr` threads | n/a | n/a | n/a | n/a | n/a |
+| `std::unique_ptr` types | *1.05x* | *1.35x* | *1.03x* | *0.95x* | *1.14x* |
+| `std::shared_ptr` churn | *2.11x* | *7.50x* | *0.92x* | *1.92x* | *2.43x* |
+| `std::shared_ptr` bulk | *0.98x* | *1.70x* | *0.97x* | *1.15x* | *1.15x* |
+| `std::shared_ptr` mixed | *1.00x* | *1.44x* | *1.06x* | *1.08x* | *1.10x* |
+| `std::shared_ptr` threads | n/a | n/a | n/a | n/a | n/a |
+| `std::shared_ptr` types | *1.18x* | *1.63x* | *0.99x* | *0.90x* | *1.15x* |
+
+### Striped locks (BOOST_ROOT_PTR_STRIPED_LOCKS)
+
+default: threads (default) -> threads + striped
+
+| pointer, scenario | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| `boost::root_ptr` churn | 0.56x | 0.45x | 0.49x | 0.50x | 0.48x |
+| `boost::root_ptr` bulk | 1.00x | 0.58x | 0.57x | 0.56x | 0.55x |
+| `boost::root_ptr` mixed | 1.02x | 0.64x | 0.64x | 0.56x | 0.60x |
+| `boost::root_ptr` cycles | 0.99x | 0.32x | 0.33x | 0.31x | 0.31x |
+| `boost::root_ptr` threads | 1.43x | 1.38x | 10.55x | 1.41x | 1.36x |
+| `boost::root_ptr` types | 0.71x | 0.50x | 0.58x | 0.84x | 0.54x |
+| `boost::shared_node_ptr` churn | 1.16x | 0.97x | 0.85x | 1.02x | 1.22x |
+| `boost::shared_node_ptr` bulk | 1.01x | 1.01x | 0.99x | 1.04x | 0.99x |
+| `boost::shared_node_ptr` mixed | 0.99x | 1.01x | 0.84x | 1.01x | 1.12x |
+| `boost::shared_node_ptr` threads | 1.06x | 1.04x | 0.82x | 1.07x | 1.04x |
+| `boost::shared_node_ptr` types | 0.94x | 0.99x | 0.98x | 1.01x | 1.00x |
+
+with caches: threads + caches -> threads + striped + caches
+
+| pointer, scenario | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| `boost::root_ptr` churn | 0.64x | 0.50x | 0.50x | 0.40x | 0.42x |
+| `boost::root_ptr` bulk | 0.98x | 0.55x | 0.55x | 0.55x | 0.56x |
+| `boost::root_ptr` mixed | 0.99x | 0.64x | 0.65x | 0.57x | 0.59x |
+| `boost::root_ptr` cycles | 1.00x | 0.32x | 0.33x | 0.30x | 0.29x |
+| `boost::root_ptr` threads | 1.51x | 1.33x | 8.40x | 10.02x | 10.24x |
+| `boost::root_ptr` types | 0.73x | 0.56x | 0.57x | 0.65x | 0.54x |
+| `boost::shared_node_ptr` churn | 1.04x | 0.99x | 1.13x | 1.01x | 1.01x |
+| `boost::shared_node_ptr` bulk | 1.01x | 1.01x | 1.05x | 1.02x | 0.98x |
+| `boost::shared_node_ptr` mixed | 1.00x | 1.14x | 0.98x | 0.99x | 0.97x |
+| `boost::shared_node_ptr` threads | 1.06x | 1.06x | 0.97x | 1.17x | 1.00x |
+| `boost::shared_node_ptr` types | 1.02x | 0.93x | 1.00x | 0.91x | 1.09x |
+
+with zero: threads + zero -> threads + striped + zero
+
+| pointer, scenario | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| `boost::root_ptr` churn | 0.55x | 0.56x | 0.48x | 0.56x | 0.51x |
+| `boost::root_ptr` bulk | 0.99x | 0.57x | 0.57x | 0.56x | 0.56x |
+| `boost::root_ptr` mixed | 0.95x | 0.65x | 0.57x | 0.60x | 0.59x |
+| `boost::root_ptr` cycles | 0.99x | 0.29x | 0.34x | 0.32x | 0.32x |
+| `boost::root_ptr` threads | 1.46x | 1.33x | 8.29x | 1.42x | 1.35x |
+| `boost::root_ptr` types | 0.73x | 0.58x | 0.59x | 0.81x | 0.57x |
+| `boost::shared_node_ptr` churn | 1.06x | 1.03x | 1.07x | 0.98x | 1.00x |
+| `boost::shared_node_ptr` bulk | 1.00x | 1.02x | 1.00x | 1.00x | 0.99x |
+| `boost::shared_node_ptr` mixed | 1.02x | 1.13x | 0.99x | 1.16x | 1.02x |
+| `boost::shared_node_ptr` threads | 1.03x | 1.11x | 1.03x | 0.97x | 1.01x |
+| `boost::shared_node_ptr` types | 1.02x | 1.03x | 1.01x | 0.91x | 1.01x |
+
+with caches + zero: threads + caches + zero -> threads + striped + caches + zero
+
+| pointer, scenario | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| `boost::root_ptr` churn | 0.61x | 0.51x | 0.46x | 0.42x | 0.45x |
+| `boost::root_ptr` bulk | 1.00x | 0.54x | 0.58x | 0.57x | 0.57x |
+| `boost::root_ptr` mixed | 1.03x | 0.62x | 0.65x | 0.63x | 0.55x |
+| `boost::root_ptr` cycles | 0.99x | 0.33x | 0.34x | 0.29x | 0.29x |
+| `boost::root_ptr` threads | 1.48x | 1.37x | 9.46x | 9.24x | 8.68x |
+| `boost::root_ptr` types | 0.72x | 0.56x | 0.57x | 0.75x | 0.53x |
+| `boost::shared_node_ptr` churn | 0.95x | 0.99x | 0.92x | 0.96x | 1.00x |
+| `boost::shared_node_ptr` bulk | 1.01x | 0.99x | 1.02x | 0.99x | 1.03x |
+| `boost::shared_node_ptr` mixed | 1.02x | 1.12x | 1.15x | 1.06x | 1.09x |
+| `boost::shared_node_ptr` threads | 1.00x | 1.02x | 0.83x | 1.02x | 1.29x |
+| `boost::shared_node_ptr` types | 0.95x | 1.02x | 0.97x | 0.97x | 1.05x |
+
+### Per-thread caches (BOOST_PAGE_ALLOCATOR_THREAD_CACHE)
+
+default: threads (default) -> threads + caches
+
+| pointer, scenario | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| `allocator alone` raw_churn | 1.03x | 1.05x | 1.08x | 3.15x | 3.10x |
+| `allocator alone` raw_batch | 0.99x | 1.01x | 1.01x | 1.02x | 1.05x |
+| `boost::root_ptr` churn | 0.97x | 1.00x | 0.98x | 1.31x | 1.29x |
+| `boost::root_ptr` bulk | 1.01x | 1.01x | 1.05x | 1.00x | 1.02x |
+| `boost::root_ptr` mixed | 1.04x | 1.05x | 0.97x | 0.95x | 1.09x |
+| `boost::root_ptr` cycles | 1.01x | 1.01x | 1.00x | 1.05x | 1.03x |
+| `boost::root_ptr` threads | 0.96x | 1.02x | 1.09x | 1.43x | 1.26x |
+| `boost::root_ptr` types | 0.96x | 1.00x | 1.00x | 1.13x | 1.02x |
+| `boost::shared_node_ptr` churn | 1.21x | 0.98x | 0.90x | 1.32x | 1.60x |
+| `boost::shared_node_ptr` bulk | 1.01x | 1.00x | 0.96x | 0.98x | 0.98x |
+| `boost::shared_node_ptr` mixed | 0.99x | 1.03x | 0.92x | 0.95x | 1.14x |
+| `boost::shared_node_ptr` threads | 1.05x | 1.00x | 0.84x | 18.02x | 19.28x |
+| `boost::shared_node_ptr` types | 0.97x | 1.14x | 0.96x | 0.97x | 1.00x |
+| `std::unique_ptr` churn | 0.96x | 0.95x | 0.88x | 2.21x | 2.90x |
+| `std::unique_ptr` bulk | 1.01x | 1.01x | 1.00x | 1.07x | 1.11x |
+| `std::unique_ptr` mixed | 1.03x | 1.09x | 1.03x | 0.89x | 1.04x |
+| `std::unique_ptr` threads | 1.04x | 1.01x | 0.99x | 86.68x | 53.18x |
+| `std::unique_ptr` types | 0.96x | 1.01x | 0.98x | 0.99x | 1.04x |
+| `std::shared_ptr` churn | 0.89x | 0.90x | 0.81x | 1.99x | 2.67x |
+| `std::shared_ptr` bulk | 0.99x | 1.00x | 0.97x | 1.05x | 1.04x |
+| `std::shared_ptr` mixed | 1.01x | 1.05x | 1.17x | 0.99x | 1.01x |
+| `std::shared_ptr` threads | 0.99x | 1.04x | 1.04x | 56.16x | 38.28x |
+| `std::shared_ptr` types | 0.98x | 1.15x | 0.98x | 0.89x | 1.13x |
+
+with striped: threads + striped -> threads + striped + caches
+
+| pointer, scenario | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| `allocator alone` raw_churn | *1.03x* | *1.05x* | *1.08x* | *3.15x* | *3.10x* |
+| `allocator alone` raw_batch | *0.99x* | *1.01x* | *1.01x* | *1.02x* | *1.05x* |
+| `boost::root_ptr` churn | 1.11x | 1.12x | 1.01x | 1.05x | 1.13x |
+| `boost::root_ptr` bulk | 0.99x | 0.97x | 1.01x | 0.98x | 1.03x |
+| `boost::root_ptr` mixed | 1.01x | 1.06x | 0.99x | 0.95x | 1.07x |
+| `boost::root_ptr` cycles | 1.01x | 1.02x | 0.98x | 1.02x | 0.97x |
+| `boost::root_ptr` threads | 1.01x | 0.98x | 0.86x | 10.19x | 9.48x |
+| `boost::root_ptr` types | 0.99x | 1.12x | 0.98x | 0.88x | 1.03x |
+| `boost::shared_node_ptr` churn | 1.08x | 1.00x | 1.19x | 1.31x | 1.33x |
+| `boost::shared_node_ptr` bulk | 1.01x | 1.00x | 1.02x | 0.96x | 0.97x |
+| `boost::shared_node_ptr` mixed | 1.00x | 1.16x | 1.07x | 0.94x | 0.98x |
+| `boost::shared_node_ptr` threads | 1.05x | 1.01x | 1.00x | 19.57x | 18.59x |
+| `boost::shared_node_ptr` types | 1.05x | 1.07x | 0.99x | 0.89x | 1.10x |
+| `std::unique_ptr` churn | *0.96x* | *0.95x* | *0.88x* | *2.21x* | *2.90x* |
+| `std::unique_ptr` bulk | *1.01x* | *1.01x* | *1.00x* | *1.07x* | *1.11x* |
+| `std::unique_ptr` mixed | *1.03x* | *1.09x* | *1.03x* | *0.89x* | *1.04x* |
+| `std::unique_ptr` threads | *1.04x* | *1.01x* | *0.99x* | *86.68x* | *53.18x* |
+| `std::unique_ptr` types | *0.96x* | *1.01x* | *0.98x* | *0.99x* | *1.04x* |
+| `std::shared_ptr` churn | *0.89x* | *0.90x* | *0.81x* | *1.99x* | *2.67x* |
+| `std::shared_ptr` bulk | *0.99x* | *1.00x* | *0.97x* | *1.05x* | *1.04x* |
+| `std::shared_ptr` mixed | *1.01x* | *1.05x* | *1.17x* | *0.99x* | *1.01x* |
+| `std::shared_ptr` threads | *0.99x* | *1.04x* | *1.04x* | *56.16x* | *38.28x* |
+| `std::shared_ptr` types | *0.98x* | *1.15x* | *0.98x* | *0.89x* | *1.13x* |
+
+with zero: threads + zero -> threads + caches + zero
+
+| pointer, scenario | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| `allocator alone` raw_churn | *1.03x* | *1.05x* | *1.08x* | *3.15x* | *3.10x* |
+| `allocator alone` raw_batch | *0.99x* | *1.01x* | *1.01x* | *1.02x* | *1.05x* |
+| `boost::root_ptr` churn | 0.98x | 1.07x | 1.02x | 1.46x | 1.25x |
+| `boost::root_ptr` bulk | 0.98x | 1.03x | 1.00x | 0.96x | 0.95x |
+| `boost::root_ptr` mixed | 1.00x | 1.04x | 0.86x | 0.92x | 0.98x |
+| `boost::root_ptr` cycles | 0.99x | 1.01x | 1.02x | 1.05x | 1.09x |
+| `boost::root_ptr` threads | 1.01x | 0.96x | 0.87x | 1.37x | 1.47x |
+| `boost::root_ptr` types | 1.05x | 1.03x | 1.00x | 0.94x | 1.05x |
+| `boost::shared_node_ptr` churn | 1.03x | 1.03x | 1.07x | 1.36x | 1.29x |
+| `boost::shared_node_ptr` bulk | 0.99x | 1.04x | 1.01x | 0.95x | 0.95x |
+| `boost::shared_node_ptr` mixed | 1.00x | 1.02x | 0.95x | 1.04x | 0.97x |
+| `boost::shared_node_ptr` threads | 1.07x | 1.10x | 1.28x | 17.46x | 16.42x |
+| `boost::shared_node_ptr` types | 1.00x | 0.99x | 1.04x | 0.91x | 1.00x |
+| `std::unique_ptr` churn | *0.96x* | *0.95x* | *0.88x* | *2.21x* | *2.90x* |
+| `std::unique_ptr` bulk | *1.01x* | *1.01x* | *1.00x* | *1.07x* | *1.11x* |
+| `std::unique_ptr` mixed | *1.03x* | *1.09x* | *1.03x* | *0.89x* | *1.04x* |
+| `std::unique_ptr` threads | *1.04x* | *1.01x* | *0.99x* | *86.68x* | *53.18x* |
+| `std::unique_ptr` types | *0.96x* | *1.01x* | *0.98x* | *0.99x* | *1.04x* |
+| `std::shared_ptr` churn | *0.89x* | *0.90x* | *0.81x* | *1.99x* | *2.67x* |
+| `std::shared_ptr` bulk | *0.99x* | *1.00x* | *0.97x* | *1.05x* | *1.04x* |
+| `std::shared_ptr` mixed | *1.01x* | *1.05x* | *1.17x* | *0.99x* | *1.01x* |
+| `std::shared_ptr` threads | *0.99x* | *1.04x* | *1.04x* | *56.16x* | *38.28x* |
+| `std::shared_ptr` types | *0.98x* | *1.15x* | *0.98x* | *0.89x* | *1.13x* |
+
+with striped + zero: threads + striped + zero -> threads + striped + caches + zero
+
+| pointer, scenario | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| `allocator alone` raw_churn | *1.03x* | *1.05x* | *1.08x* | *3.15x* | *3.10x* |
+| `allocator alone` raw_batch | *0.99x* | *1.01x* | *1.01x* | *1.02x* | *1.05x* |
+| `boost::root_ptr` churn | 1.07x | 0.97x | 0.98x | 1.10x | 1.11x |
+| `boost::root_ptr` bulk | 1.00x | 0.99x | 1.02x | 0.97x | 0.98x |
+| `boost::root_ptr` mixed | 1.08x | 1.00x | 0.97x | 0.96x | 0.92x |
+| `boost::root_ptr` cycles | 1.00x | 1.15x | 1.03x | 0.95x | 1.00x |
+| `boost::root_ptr` threads | 1.03x | 0.99x | 0.99x | 8.91x | 9.39x |
+| `boost::root_ptr` types | 1.03x | 0.99x | 0.97x | 0.87x | 0.97x |
+| `boost::shared_node_ptr` churn | 0.92x | 0.99x | 0.93x | 1.34x | 1.29x |
+| `boost::shared_node_ptr` bulk | 1.00x | 1.00x | 1.03x | 0.95x | 0.98x |
+| `boost::shared_node_ptr` mixed | 1.00x | 1.02x | 1.11x | 0.95x | 1.04x |
+| `boost::shared_node_ptr` threads | 1.04x | 1.01x | 1.03x | 18.40x | 20.85x |
+| `boost::shared_node_ptr` types | 0.94x | 0.98x | 1.00x | 0.98x | 1.03x |
+| `std::unique_ptr` churn | *0.96x* | *0.95x* | *0.88x* | *2.21x* | *2.90x* |
+| `std::unique_ptr` bulk | *1.01x* | *1.01x* | *1.00x* | *1.07x* | *1.11x* |
+| `std::unique_ptr` mixed | *1.03x* | *1.09x* | *1.03x* | *0.89x* | *1.04x* |
+| `std::unique_ptr` threads | *1.04x* | *1.01x* | *0.99x* | *86.68x* | *53.18x* |
+| `std::unique_ptr` types | *0.96x* | *1.01x* | *0.98x* | *0.99x* | *1.04x* |
+| `std::shared_ptr` churn | *0.89x* | *0.90x* | *0.81x* | *1.99x* | *2.67x* |
+| `std::shared_ptr` bulk | *0.99x* | *1.00x* | *0.97x* | *1.05x* | *1.04x* |
+| `std::shared_ptr` mixed | *1.01x* | *1.05x* | *1.17x* | *0.99x* | *1.01x* |
+| `std::shared_ptr` threads | *0.99x* | *1.04x* | *1.04x* | *56.16x* | *38.28x* |
+| `std::shared_ptr` types | *0.98x* | *1.15x* | *0.98x* | *0.89x* | *1.13x* |
+
+### Zeroization (BOOST_ZEROIZATION)
+
+default: threads (default) -> threads + zero
+
+| pointer, scenario | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| `boost::root_ptr` churn | 1.03x | 0.90x | 1.09x | 0.90x | 0.98x |
+| `boost::root_ptr` bulk | 1.01x | 1.00x | 1.00x | 1.00x | 1.03x |
+| `boost::root_ptr` mixed | 1.01x | 1.03x | 1.15x | 0.95x | 1.07x |
+| `boost::root_ptr` cycles | 1.00x | 1.11x | 1.00x | 1.01x | 0.94x |
+| `boost::root_ptr` threads | 0.97x | 1.03x | 1.12x | 0.96x | 0.96x |
+| `boost::root_ptr` types | 0.93x | 0.85x | 1.00x | 1.05x | 0.96x |
+| `boost::shared_node_ptr` churn | 1.16x | 0.97x | 0.94x | 1.01x | 1.22x |
+| `boost::shared_node_ptr` bulk | 1.00x | 0.98x | 0.97x | 1.04x | 1.00x |
+| `boost::shared_node_ptr` mixed | 0.98x | 1.03x | 0.97x | 0.90x | 1.07x |
+| `boost::shared_node_ptr` threads | 1.00x | 0.90x | 0.79x | 1.05x | 1.10x |
+| `boost::shared_node_ptr` types | 0.97x | 0.98x | 0.96x | 0.98x | 1.02x |
+
+with striped: threads + striped -> threads + striped + zero
+
+| pointer, scenario | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| `boost::root_ptr` churn | 1.02x | 1.12x | 1.07x | 1.01x | 1.03x |
+| `boost::root_ptr` bulk | 0.99x | 0.99x | 0.99x | 1.00x | 1.04x |
+| `boost::root_ptr` mixed | 0.94x | 1.05x | 1.02x | 1.01x | 1.06x |
+| `boost::root_ptr` cycles | 0.99x | 1.00x | 1.00x | 1.02x | 0.96x |
+| `boost::root_ptr` threads | 1.00x | 0.99x | 0.88x | 0.97x | 0.96x |
+| `boost::root_ptr` types | 0.97x | 0.99x | 1.00x | 1.02x | 1.02x |
+| `boost::shared_node_ptr` churn | 1.06x | 1.03x | 1.18x | 0.97x | 1.00x |
+| `boost::shared_node_ptr` bulk | 0.99x | 0.99x | 0.97x | 1.00x | 1.00x |
+| `boost::shared_node_ptr` mixed | 1.01x | 1.15x | 1.14x | 1.03x | 0.97x |
+| `boost::shared_node_ptr` threads | 0.98x | 0.96x | 0.99x | 0.94x | 1.07x |
+| `boost::shared_node_ptr` types | 1.05x | 1.02x | 0.99x | 0.89x | 1.04x |
+
+with caches: threads + caches -> threads + caches + zero
+
+| pointer, scenario | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| `boost::root_ptr` churn | 1.03x | 0.97x | 1.13x | 1.00x | 0.95x |
+| `boost::root_ptr` bulk | 0.98x | 1.02x | 0.96x | 0.96x | 0.97x |
+| `boost::root_ptr` mixed | 0.97x | 1.01x | 1.01x | 0.92x | 0.96x |
+| `boost::root_ptr` cycles | 0.99x | 1.11x | 1.01x | 1.01x | 0.99x |
+| `boost::root_ptr` threads | 1.03x | 0.96x | 0.90x | 0.92x | 1.12x |
+| `boost::root_ptr` types | 1.02x | 0.88x | 1.00x | 0.87x | 0.98x |
+| `boost::shared_node_ptr` churn | 0.98x | 1.02x | 1.12x | 1.04x | 0.98x |
+| `boost::shared_node_ptr` bulk | 0.98x | 1.01x | 1.01x | 1.01x | 0.97x |
+| `boost::shared_node_ptr` mixed | 0.99x | 1.03x | 1.00x | 0.98x | 0.91x |
+| `boost::shared_node_ptr` threads | 1.02x | 0.99x | 1.20x | 1.01x | 0.93x |
+| `boost::shared_node_ptr` types | 1.01x | 0.85x | 1.04x | 0.92x | 1.02x |
+
+with striped + caches: threads + striped + caches -> threads + striped + caches + zero
+
+| pointer, scenario | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| `boost::root_ptr` churn | 0.99x | 0.98x | 1.03x | 1.06x | 1.00x |
+| `boost::root_ptr` bulk | 1.00x | 1.01x | 1.00x | 1.00x | 0.99x |
+| `boost::root_ptr` mixed | 1.01x | 0.99x | 1.01x | 1.02x | 0.91x |
+| `boost::root_ptr` cycles | 0.98x | 1.14x | 1.05x | 0.96x | 0.99x |
+| `boost::root_ptr` threads | 1.01x | 0.99x | 1.01x | 0.85x | 0.95x |
+| `boost::root_ptr` types | 1.01x | 0.87x | 0.99x | 1.00x | 0.96x |
+| `boost::shared_node_ptr` churn | 0.90x | 1.01x | 0.92x | 0.99x | 0.97x |
+| `boost::shared_node_ptr` bulk | 0.98x | 0.99x | 0.99x | 0.98x | 1.02x |
+| `boost::shared_node_ptr` mixed | 1.00x | 1.02x | 1.18x | 1.05x | 1.02x |
+| `boost::shared_node_ptr` threads | 0.97x | 0.96x | 1.03x | 0.89x | 1.20x |
+| `boost::shared_node_ptr` types | 0.94x | 0.93x | 1.00x | 0.98x | 0.98x |
+
+no threads: no threads -> no threads + zero
+
+| pointer, scenario | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| `boost::root_ptr` churn | 0.89x | 0.72x | 1.17x | 0.79x | 0.88x |
+| `boost::root_ptr` bulk | 1.00x | 0.96x | 1.03x | 0.97x | 0.98x |
+| `boost::root_ptr` mixed | 1.01x | 0.95x | 0.93x | 0.96x | 0.84x |
+| `boost::root_ptr` cycles | 0.99x | 1.01x | 0.81x | 0.97x | 0.97x |
+| `boost::root_ptr` threads | n/a | n/a | n/a | n/a | n/a |
+| `boost::root_ptr` types | 0.89x | 1.02x | 1.13x | 0.98x | 0.92x |
+| `boost::shared_node_ptr` churn | 1.00x | 0.79x | 0.99x | 0.98x | 0.90x |
+| `boost::shared_node_ptr` bulk | 0.98x | 1.02x | 1.03x | 0.98x | 1.02x |
+| `boost::shared_node_ptr` mixed | 1.06x | 1.00x | 1.00x | 0.98x | 0.86x |
+| `boost::shared_node_ptr` threads | n/a | n/a | n/a | n/a | n/a |
+| `boost::shared_node_ptr` types | 1.01x | 0.99x | 1.10x | 0.99x | 1.00x |
+
+## Fastest allocator
+
+For every build, pointer and scenario: the fastest allocator and its time / the time of `page_allocator_by_size` (the default) in the same cell (lower is better; 1.00 = the default is the fastest).
+
+| pointer, scenario | threads (default) | threads + striped | threads + caches | threads + striped + caches | threads + zero | threads + striped + zero | threads + caches + zero | threads + striped + caches + zero | no threads | no threads + zero |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `allocator alone` raw_churn | page_type 0.98 | *page_type 0.98* | page_type 0.97 | *page_type 0.97* | *page_type 0.98* | *page_type 0.98* | *page_type 0.97* | *page_type 0.97* | fast 0.70 | *fast 0.70* |
+| `allocator alone` raw_batch | page_type 1.00 | *page_type 1.00* | page_size | *page_size* | *page_type 1.00* | *page_type 1.00* | *page_size* | *page_size* | page_type 0.99 | *page_type 0.99* |
+| `boost::root_ptr` churn | fast 0.99 | page_type 0.98 | page_type 0.99 | page_size | std 0.91 | std 0.97 | page_type 0.94 | page_type 1.00 | page_type 1.00 | page_size |
+| `boost::root_ptr` bulk | page_type 0.99 | page_type 0.97 | page_size | page_size | page_size | page_size | fast 0.99 | page_size | page_size | page_size |
+| `boost::root_ptr` mixed | page_type 0.88 | page_type 0.94 | page_size | page_size | page_type 1.00 | page_type 0.98 | page_size | page_type 0.94 | page_size | page_type 0.99 |
+| `boost::root_ptr` cycles | page_size | page_size | page_size | page_type 0.98 | fast 0.94 | page_type 0.96 | page_type 1.00 | fast 0.90 | page_type 0.99 | page_type 1.00 |
+| `boost::root_ptr` threads | std 0.81 | std 0.10 | page_type 0.91 | page_type 0.93 | std 0.69 | std 0.11 | page_size | page_size | n/a | n/a |
+| `boost::root_ptr` types | fast 0.97 | page_size | fast 0.99 | fast 0.96 | page_size | page_size | page_size | page_size | page_size | page_size |
+| `boost::shared_node_ptr` churn | std 0.75 | fast 0.95 | page_size | page_size | fast 0.95 | std 0.91 | page_type 0.95 | page_type 0.98 | fast 0.97 | page_type 0.91 |
+| `boost::shared_node_ptr` bulk | page_size | page_type 0.99 | page_size | page_type 0.99 | page_type 1.00 | page_type 1.00 | page_type 0.99 | page_size | page_type 1.00 | page_size |
+| `boost::shared_node_ptr` mixed | page_type 0.88 | page_type 0.98 | page_size | fast 0.99 | page_size | page_type 0.92 | page_type 0.98 | fast 1.00 | page_size | page_size |
+| `boost::shared_node_ptr` threads | std 0.05 | std 0.07 | page_size | page_type 0.89 | std 0.07 | std 0.07 | std 0.95 | page_size | n/a | n/a |
+| `boost::shared_node_ptr` types | page_size | page_size | fast 0.88 | page_size | page_size | page_size | page_size | page_size | page_size | page_size |
+| `std::unique_ptr` churn | std 0.88 | *std 0.88* | page_size | *page_size* | *std 0.88* | *std 0.88* | *page_size* | *page_size* | fast 0.69 | *fast 0.69* |
+| `std::unique_ptr` bulk | page_type 1.00 | *page_type 1.00* | page_size | *page_size* | *page_type 1.00* | *page_type 1.00* | *page_size* | *page_size* | page_size | *page_size* |
+| `std::unique_ptr` mixed | page_type 0.87 | *page_type 0.87* | page_size | *page_size* | *page_type 0.87* | *page_type 0.87* | *page_size* | *page_size* | page_type 0.93 | *page_type 0.93* |
+| `std::unique_ptr` threads | std 0.03 | *std 0.03* | page_type 0.57 | *page_type 0.57* | *std 0.03* | *std 0.03* | *page_type 0.57* | *page_type 0.57* | n/a | n/a |
+| `std::unique_ptr` types | page_size | *page_size* | page_size | *page_size* | *page_size* | *page_size* | *page_size* | *page_size* | fast 0.96 | *fast 0.96* |
+| `std::shared_ptr` churn | std 0.78 | *std 0.78* | page_size | *page_size* | *std 0.78* | *std 0.78* | *page_size* | *page_size* | fast 0.62 | *fast 0.62* |
+| `std::shared_ptr` bulk | page_size | *page_size* | page_type 1.00 | *page_type 1.00* | *page_size* | *page_size* | *page_type 1.00* | *page_type 1.00* | page_size | *page_size* |
+| `std::shared_ptr` mixed | page_type 0.98 | *page_type 0.98* | page_type 1.00 | *page_type 1.00* | *page_type 0.98* | *page_type 0.98* | *page_type 1.00* | *page_type 1.00* | page_size | *page_size* |
+| `std::shared_ptr` threads | std 0.04 | *std 0.04* | page_type 0.62 | *page_type 0.62* | *std 0.04* | *std 0.04* | *page_type 0.62* | *page_type 0.62* | n/a | n/a |
+| `std::shared_ptr` types | page_size | *page_size* | page_size | *page_size* | *page_size* | *page_size* | *page_size* | *page_size* | fast 0.92 | *fast 0.92* |
+
+## The other pointers against `root_ptr`
+
+Time of the pointer / time of `boost::root_ptr` in the same build, allocator and scenario (lower is better: below 1.00x the pointer is faster than `root_ptr`).
+
+With `boost::page_allocator_by_size`:
+
+| pointer, scenario | threads (default) | threads + striped | threads + caches | threads + striped + caches | threads + zero | threads + striped + zero | threads + caches + zero | threads + striped + caches + zero | no threads | no threads + zero |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `boost::shared_node_ptr` churn | 1.07x | 0.42x | 0.86x | 0.36x | 0.85x | 0.44x | 0.83x | 0.37x | 3.05x | 3.00x |
+| `std::unique_ptr` churn | 0.32x | *0.15x* | 0.14x | *0.06x* | *0.31x* | *0.16x* | *0.14x* | *0.06x* | 0.62x | *0.55x* |
+| `std::shared_ptr` churn | 0.39x | *0.19x* | 0.19x | *0.08x* | *0.38x* | *0.19x* | *0.18x* | *0.08x* | 0.99x | *0.88x* |
+| `boost::shared_node_ptr` bulk | 1.06x | 0.60x | 1.11x | 0.64x | 1.10x | 0.61x | 1.11x | 0.61x | 1.56x | 1.50x |
+| `std::unique_ptr` bulk | 0.36x | *0.20x* | 0.33x | *0.18x* | *0.37x* | *0.21x* | *0.32x* | *0.18x* | 0.55x | *0.54x* |
+| `std::shared_ptr` bulk | 0.48x | *0.26x* | 0.47x | *0.26x* | *0.49x* | *0.27x* | *0.45x* | *0.26x* | 0.74x | *0.72x* |
+| `boost::shared_node_ptr` mixed | 1.14x | 0.61x | 1.09x | 0.66x | 1.14x | 0.66x | 1.15x | 0.59x | 1.45x | 1.40x |
+| `std::unique_ptr` mixed | 0.47x | *0.28x* | 0.49x | *0.29x* | *0.50x* | *0.30x* | *0.48x* | *0.26x* | 0.77x | *0.64x* |
+| `std::shared_ptr` mixed | 0.59x | *0.35x* | 0.64x | *0.37x* | *0.63x* | *0.37x* | *0.62x* | *0.34x* | 0.95x | *0.79x* |
+| `boost::shared_node_ptr` threads | 0.61x | 0.80x | 0.04x | 0.41x | 0.54x | 0.72x | 0.05x | 0.32x | n/a | n/a |
+| `std::unique_ptr` threads | 0.47x | *0.64x* | 0.01x | *0.11x* | *0.45x* | *0.61x* | *0.01x* | *0.11x* | n/a | n/a |
+| `std::shared_ptr` threads | 0.43x | *0.58x* | 0.01x | *0.14x* | *0.41x* | *0.56x* | *0.02x* | *0.14x* | n/a | n/a |
+| `boost::shared_node_ptr` types | 1.15x | 0.63x | 1.17x | 0.59x | 1.08x | 0.61x | 1.14x | 0.58x | 1.66x | 1.53x |
+| `std::unique_ptr` types | 0.45x | *0.24x* | 0.44x | *0.24x* | *0.43x* | *0.25x* | *0.44x* | *0.23x* | 0.69x | *0.64x* |
+| `std::shared_ptr` types | 0.59x | *0.32x* | 0.53x | *0.29x* | *0.57x* | *0.32x* | *0.53x* | *0.28x* | 0.90x | *0.83x* |
+
+With `std::allocator`:
+
+| pointer, scenario | threads (default) | threads + striped | threads + caches | threads + striped + caches | threads + zero | threads + striped + zero | threads + caches + zero | threads + striped + caches + zero | no threads | no threads + zero |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `boost::shared_node_ptr` churn | 0.79x | 0.45x | 0.86x | 0.39x | 0.91x | 0.41x | 0.87x | 0.43x | 1.80x | 2.13x |
+| `std::unique_ptr` churn | 0.28x | *0.14x* | 0.31x | *0.16x* | *0.30x* | *0.14x* | *0.35x* | *0.16x* | 0.62x | *0.72x* |
+| `std::shared_ptr` churn | 0.30x | *0.15x* | 0.36x | *0.18x* | *0.33x* | *0.16x* | *0.41x* | *0.19x* | 0.74x | *0.87x* |
+| `boost::shared_node_ptr` bulk | 1.04x | 0.60x | 1.13x | 0.60x | 1.07x | 0.61x | 1.07x | 0.60x | 1.53x | 1.53x |
+| `std::unique_ptr` bulk | 0.46x | *0.26x* | 0.48x | *0.26x* | *0.46x* | *0.26x* | *0.46x* | *0.26x* | 0.71x | *0.72x* |
+| `std::shared_ptr` bulk | 0.53x | *0.31x* | 0.57x | *0.32x* | *0.54x* | *0.30x* | *0.55x* | *0.32x* | 0.87x | *0.89x* |
+| `boost::shared_node_ptr` mixed | 1.08x | 0.83x | 1.15x | 0.76x | 1.29x | 0.74x | 1.16x | 0.65x | 1.54x | 1.43x |
+| `std::unique_ptr` mixed | 0.53x | *0.34x* | 0.50x | *0.32x* | *0.61x* | *0.35x* | *0.51x* | *0.33x* | 0.72x | *0.67x* |
+| `std::shared_ptr` mixed | 0.69x | *0.44x* | 0.57x | *0.37x* | *0.79x* | *0.45x* | *0.58x* | *0.37x* | 0.89x | *0.83x* |
+| `boost::shared_node_ptr` threads | 0.04x | 0.52x | 0.05x | 0.45x | 0.06x | 0.46x | 0.04x | 0.44x | n/a | n/a |
+| `std::unique_ptr` threads | 0.02x | *0.17x* | 0.02x | *0.15x* | *0.02x* | *0.15x* | *0.02x* | *0.15x* | n/a | n/a |
+| `std::shared_ptr` threads | 0.02x | *0.20x* | 0.02x | *0.17x* | *0.02x* | *0.18x* | *0.02x* | *0.17x* | n/a | n/a |
+| `boost::shared_node_ptr` types | 1.06x | 0.63x | 1.11x | 0.63x | 1.10x | 0.64x | 1.06x | 0.62x | 1.49x | 1.53x |
+| `std::unique_ptr` types | 0.47x | *0.27x* | 0.48x | *0.28x* | *0.47x* | *0.28x* | *0.48x* | *0.27x* | 0.70x | *0.79x* |
+| `std::shared_ptr` types | 0.55x | *0.32x* | 0.56x | *0.32x* | *0.55x* | *0.32x* | *0.56x* | *0.32x* | 0.85x | *0.96x* |
+
+## Bulk release scaling
+
+ns per object, one run per size, threads (default) build (lower is better).
 
 `boost::root_ptr`:
 
 | objects | pool | fast | std | page_type | page_size |
 |---|---|---|---|---|---|
-| 12500 | 22613.3 | 118.5 | 117.0 | 145.0 | 125.9 |
-| 25000 | 39861.7 | 116.9 | 149.1 | 126.1 | 170.7 |
-| 50000 | 75243.7 | 120.7 | 136.2 | 115.6 | 115.8 |
-| 100000 | 168480.2 | 155.3 | 124.7 | 117.7 | 151.1 |
-| 200000 | 437673.0 | 123.7 | 137.5 | 125.6 | 127.1 |
+| 12,500 | 20,982 | 119 | 120 | 112 | 111 |
+| 25,000 | 37,743 | 115 | 121 | 110 | 107 |
+| 50,000 | 70,148 | 206 | 145 | 124 | 118 |
+| 100,000 | 143,228 | 136 | 145 | 134 | 135 |
+| 200,000 | 359,653 | 138 | 142 | 132 | 133 |
+
+`boost::shared_node_ptr`:
+
+| objects | pool | fast | std | page_type | page_size |
+|---|---|---|---|---|---|
+| 12,500 | 20,896 | 188 | 133 | 126 | 123 |
+| 25,000 | 37,860 | 124 | 123 | 122 | 140 |
+| 50,000 | 70,443 | 157 | 147 | 120 | 123 |
+| 100,000 | 145,512 | 151 | 156 | 160 | 148 |
+| 200,000 | 401,845 | 157 | 166 | 126 | 147 |
 
 `std::unique_ptr`:
 
 | objects | pool | fast | std | page_type | page_size |
 |---|---|---|---|---|---|
-| 12500 | 15495.9 | 64.2 | 80.3 | 41.0 | 42.6 |
-| 25000 | 26393.9 | 84.7 | 56.7 | 43.5 | 50.6 |
-| 50000 | 48698.2 | 58.8 | 54.2 | 44.1 | 55.1 |
-| 100000 | 93448.2 | 55.9 | 53.6 | 52.5 | 38.6 |
-| 200000 | 229368.6 | 56.6 | 59.6 | 44.0 | 63.7 |
+| 12,500 | 15,105 | 51.1 | 60.5 | 39.8 | 40.3 |
+| 25,000 | 24,973 | 63.0 | 66.0 | 49.2 | 38.8 |
+| 50,000 | 45,279 | 62.5 | 66.3 | 47.7 | 48.3 |
+| 100,000 | 85,217 | 63.8 | 66.7 | 48.1 | 48.1 |
+| 200,000 | 188,884 | 63.4 | 66.7 | 48.3 | 41.7 |
 
 `std::shared_ptr`:
 
 | objects | pool | fast | std | page_type | page_size |
 |---|---|---|---|---|---|
-| 12500 | 22017.8 | 85.3 | 63.8 | 63.3 | 58.5 |
-| 25000 | 39126.1 | 90.2 | 81.2 | 55.0 | 93.8 |
-| 50000 | 75103.4 | 96.8 | 72.2 | 69.3 | 76.0 |
-| 100000 | 155416.5 | 91.2 | 68.8 | 52.3 | 63.3 |
-| 200000 | 377687.2 | 86.5 | 82.9 | 85.9 | 56.9 |
-
-### Built with `BOOST_DISABLE_THREADS`
-
-No `root_ptr` mutex, plain reference counts, no pool mutexes; single-threaded scenarios only.
-
-#### Allocator alone
-
-Time, ns per operation (speed-up over `pool` in parentheses):
-
-| scenario | pool | fast | std | page_type | page_size |
-|---|---|---|---|---|---|
-| raw_churn | 27.1 (1.00x) | 3.3 (8.27x) | 15.6 (1.74x) | 4.5 (6.04x) | 4.0 (6.71x) |
-| raw_batch | 70094.4 (1.00x) | 24.0 (2918.17x) | 27.9 (2514.15x) | 21.5 (3260.20x) | 20.8 (3368.30x) |
-
-#### `boost::root_ptr`
-
-Time, ns per operation (speed-up over `pool` in parentheses):
-
-| scenario | pool | fast | std | page_type | page_size |
-|---|---|---|---|---|---|
-| churn | 35.6 (1.00x) | 10.6 (3.37x) | 21.2 (1.68x) | 9.3 (3.83x) | 9.4 (3.80x) |
-| bulk | 140134.5 (1.00x) | 70.4 (1990.26x) | 76.8 (1824.91x) | 63.8 (2198.19x) | 63.9 (2194.40x) |
-| mixed | 95495.5 (1.00x) | 96.5 (989.28x) | 119.3 (800.47x) | 84.9 (1124.40x) | 85.8 (1112.87x) |
-| cycles | 68285.9 (1.00x) | 56.8 (1201.58x) | 64.2 (1062.98x) | 43.5 (1569.43x) | 45.8 (1491.94x) |
-| types | 185.2 (1.00x) | 91.4 (2.03x) | 81.7 (2.27x) | 274.1 (0.68x) | 74.4 (2.49x) |
-
-#### `std::unique_ptr`
-
-Time, ns per operation (speed-up over `pool` in parentheses):
-
-| scenario | pool | fast | std | page_type | page_size |
-|---|---|---|---|---|---|
-| churn | 27.1 (1.00x) | 3.2 (8.39x) | 15.5 (1.75x) | 5.9 (4.62x) | 6.2 (4.40x) |
-| bulk | 84194.5 (1.00x) | 38.0 (2215.64x) | 54.2 (1552.26x) | 34.3 (2457.52x) | 34.0 (2477.04x) |
-| mixed | 78613.1 (1.00x) | 60.8 (1294.04x) | 88.3 (889.89x) | 56.6 (1389.66x) | 55.4 (1418.50x) |
-| cycles | n/a | n/a | n/a | n/a | n/a |
-| types | 152.6 (1.00x) | 44.0 (3.47x) | 63.8 (2.39x) | 242.1 (0.63x) | 50.4 (3.03x) |
-
-#### `std::shared_ptr`
-
-Time, ns per operation (speed-up over `pool` in parentheses):
-
-| scenario | pool | fast | std | page_type | page_size |
-|---|---|---|---|---|---|
-| churn | 30.0 (1.00x) | 4.7 (6.40x) | 18.5 (1.62x) | 9.9 (3.01x) | 9.1 (3.29x) |
-| bulk | 134868.5 (1.00x) | 49.2 (2742.90x) | 64.3 (2098.14x) | 48.2 (2800.43x) | 46.3 (2914.18x) |
-| mixed | 93995.9 (1.00x) | 75.7 (1241.20x) | 102.2 (919.91x) | 70.6 (1331.58x) | 75.2 (1250.28x) |
-| cycles | n/a | n/a | n/a | n/a | n/a |
-| types | 163.4 (1.00x) | 62.6 (2.61x) | 75.2 (2.17x) | 277.4 (0.59x) | 68.3 (2.39x) |
-
-### Striped locks (`BOOST_ROOT_PTR_STRIPED_LOCKS`)
-
-`boost::root_ptr` only. Time, ns per operation, global lock / striped locks (ratio: above 1.00x the striped build is faster):
-
-| scenario | pool | fast | std | page_type | page_size |
-|---|---|---|---|---|---|
-| churn | 77.9 / 132.6 (0.59x) | 57.6 / 111.8 (0.52x) | 53.3 / 113.4 (0.47x) | 57.4 / 114.6 (0.50x) | 56.2 / 113.8 (0.49x) |
-| bulk | 138882.6 / 140865.4 (0.99x) | 117.0 / 206.6 (0.57x) | 115.1 / 203.9 (0.56x) | 107.5 / 198.1 (0.54x) | 109.0 / 195.5 (0.56x) |
-| mixed | 92700.9 / 99231.8 (0.93x) | 136.8 / 235.6 (0.58x) | 151.9 / 232.3 (0.65x) | 127.6 / 219.1 (0.58x) | 128.3 / 219.9 (0.58x) |
-| cycles | 67957.0 / 70474.8 (0.96x) | 123.3 / 394.1 (0.31x) | 133.7 / 397.0 (0.34x) | 119.1 / 380.9 (0.31x) | 119.6 / 400.7 (0.30x) |
-| threads | 441.6 / 323.9 (1.36x) | 368.2 / 279.8 (1.32x) | 271.4 / 30.2 (8.99x) | 386.2 / 280.2 (1.38x) | 386.9 / 288.6 (1.34x) |
-| types | 238.2 / 316.7 (0.75x) | 131.6 / 242.3 (0.54x) | 124.6 / 241.4 (0.52x) | 322.4 / 427.3 (0.75x) | 131.7 / 233.9 (0.56x) |
-
-### Per-thread caches (`BOOST_PAGE_ALLOCATOR_THREAD_CACHE`)
-
-Only the page allocators have them; the other columns are the control. Time, ns per operation, without / with the caches (ratio: above 1.00x the caches are faster):
-
-`allocator alone`:
-
-| scenario | pool | fast | std | page_type | page_size |
-|---|---|---|---|---|---|
-| raw_churn | 40.6 / 41.0 (0.99x) | 17.5 / 16.0 (1.10x) | 15.5 / 15.4 (1.00x) | 16.6 / 5.3 (3.12x) | 16.8 / 5.7 (2.96x) |
-| raw_batch | 69462.3 / 72982.8 (0.95x) | 25.6 / 25.5 (1.01x) | 27.6 / 29.4 (0.94x) | 24.2 / 23.7 (1.02x) | 25.4 / 23.5 (1.08x) |
-
-`boost::root_ptr`:
-
-| scenario | pool | fast | std | page_type | page_size |
-|---|---|---|---|---|---|
-| churn | 77.9 / 78.7 (0.99x) | 57.6 / 57.9 (1.00x) | 53.3 / 53.6 (0.99x) | 57.4 / 45.1 (1.27x) | 56.2 / 45.8 (1.23x) |
-| bulk | 138882.6 / 143854.3 (0.97x) | 117.0 / 111.4 (1.05x) | 115.1 / 118.3 (0.97x) | 107.5 / 109.8 (0.98x) | 109.0 / 110.4 (0.99x) |
-| mixed | 92700.9 / 95019.7 (0.98x) | 136.8 / 137.4 (1.00x) | 151.9 / 161.9 (0.94x) | 127.6 / 134.7 (0.95x) | 128.3 / 139.1 (0.92x) |
-| cycles | 67957.0 / 68082.6 (1.00x) | 123.3 / 125.2 (0.99x) | 133.7 / 133.4 (1.00x) | 119.1 / 117.8 (1.01x) | 119.6 / 116.0 (1.03x) |
-| threads | 441.6 / 444.4 (0.99x) | 368.2 / 381.9 (0.96x) | 271.4 / 283.2 (0.96x) | 386.2 / 252.6 (1.53x) | 386.9 / 263.2 (1.47x) |
-| types | 238.2 / 227.8 (1.05x) | 131.6 / 136.9 (0.96x) | 124.6 / 127.2 (0.98x) | 322.4 / 325.9 (0.99x) | 131.7 / 126.0 (1.05x) |
-
-`std::unique_ptr`:
-
-| scenario | pool | fast | std | page_type | page_size |
-|---|---|---|---|---|---|
-| churn | 46.2 / 45.7 (1.01x) | 25.4 / 24.6 (1.03x) | 15.4 / 15.3 (1.01x) | 17.2 / 6.2 (2.77x) | 16.4 / 6.1 (2.69x) |
-| bulk | 83229.7 / 83587.9 (1.00x) | 51.4 / 51.6 (1.00x) | 53.6 / 54.0 (0.99x) | 39.1 / 36.4 (1.08x) | 39.5 / 38.5 (1.03x) |
-| mixed | 79149.8 / 82575.2 (0.96x) | 76.0 / 73.4 (1.04x) | 93.4 / 90.8 (1.03x) | 62.0 / 64.5 (0.96x) | 64.0 / 63.7 (1.00x) |
-| cycles | n/a | n/a | n/a | n/a | n/a |
-| threads | 259.8 / 270.5 (0.96x) | 220.8 / 220.4 (1.00x) | 4.1 / 4.2 (0.98x) | 165.8 / 1.9 (86.83x) | 156.9 / 1.9 (84.33x) |
-| types | 176.8 / 160.1 (1.10x) | 69.1 / 61.0 (1.13x) | 61.3 / 66.4 (0.92x) | 254.5 / 258.4 (0.98x) | 52.4 / 50.7 (1.03x) |
-
-`std::shared_ptr`:
-
-| scenario | pool | fast | std | page_type | page_size |
-|---|---|---|---|---|---|
-| churn | 62.9 / 62.8 (1.00x) | 43.1 / 44.4 (0.97x) | 17.1 / 17.2 (0.99x) | 19.8 / 8.4 (2.35x) | 19.4 / 8.5 (2.27x) |
-| bulk | 134578.3 / 135185.5 (1.00x) | 79.0 / 82.3 (0.96x) | 66.3 / 66.7 (1.00x) | 51.5 / 52.7 (0.98x) | 53.4 / 51.8 (1.03x) |
-| mixed | 92856.5 / 91463.9 (1.02x) | 108.0 / 106.6 (1.01x) | 104.1 / 102.0 (1.02x) | 77.1 / 78.3 (0.98x) | 81.6 / 77.8 (1.05x) |
-| cycles | n/a | n/a | n/a | n/a | n/a |
-| threads | 359.3 / 376.6 (0.95x) | 290.8 / 289.7 (1.00x) | 4.8 / 4.7 (1.01x) | 150.2 / 2.5 (60.30x) | 149.0 / 2.4 (61.55x) |
-| types | 206.0 / 198.5 (1.04x) | 104.1 / 98.1 (1.06x) | 72.8 / 75.2 (0.97x) | 271.6 / 263.9 (1.03x) | 73.8 / 63.2 (1.17x) |
-
-`boost::root_ptr` with striped locks, without / with the caches:
-
-| scenario | pool | fast | std | page_type | page_size |
-|---|---|---|---|---|---|
-| churn | 132.6 / 129.6 (1.02x) | 111.8 / 112.2 (1.00x) | 113.4 / 112.1 (1.01x) | 114.6 / 103.9 (1.10x) | 113.8 / 103.5 (1.10x) |
-| bulk | 140865.4 / 140195.0 (1.00x) | 206.6 / 196.1 (1.05x) | 203.9 / 204.0 (1.00x) | 198.1 / 193.8 (1.02x) | 195.5 / 197.1 (0.99x) |
-| mixed | 99231.8 / 95777.3 (1.04x) | 235.6 / 221.9 (1.06x) | 232.3 / 228.4 (1.02x) | 219.1 / 232.5 (0.94x) | 219.9 / 240.1 (0.92x) |
-| cycles | 70474.8 / 68086.6 (1.04x) | 394.1 / 388.5 (1.01x) | 397.0 / 392.7 (1.01x) | 380.9 / 398.3 (0.96x) | 400.7 / 392.5 (1.02x) |
-| threads | 323.9 / 306.6 (1.06x) | 279.8 / 283.7 (0.99x) | 30.2 / 29.3 (1.03x) | 280.2 / 28.5 (9.85x) | 288.6 / 27.0 (10.68x) |
-| types | 316.7 / 332.4 (0.95x) | 242.3 / 235.6 (1.03x) | 241.4 / 228.8 (1.05x) | 427.3 / 414.1 (1.03x) | 233.9 / 225.0 (1.04x) |
-
-Resident memory grown, kB, without / with the caches:
-
-| scenario | pool | fast | std | page_type | page_size |
-|---|---|---|---|---|---|
-| root bulk | 13960 / 13976 | 14032 / 14040 | 12728 / 12744 | 12740 / 12740 | 12708 / 12712 |
-| root mixed | 28000 / 27992 | 28040 / 28036 | 24396 / 24392 | 23804 / 23808 | 23820 / 23828 |
-| root types | 2108 / 2148 | 2248 / 2252 | 2288 / 2296 | 3856 / 3944 | 2280 / 2264 |
-| unique bulk | 8476 / 8440 | 8520 / 8564 | 8748 / 8716 | 7124 / 7184 | 7208 / 7216 |
-| unique mixed | 19848 / 19808 | 19924 / 19892 | 17688 / 17644 | 16152 / 16172 | 16172 / 16236 |
-| unique types | 1872 / 1900 | 1976 / 1972 | 1908 / 1916 | 3768 / 3764 | 2004 / 1984 |
-| shared bulk | 11408 / 11392 | 11484 / 11468 | 11104 / 11064 | 9576 / 9548 | 9532 / 9520 |
-| shared mixed | 24076 / 24092 | 24124 / 24100 | 21092 / 21068 | 19812 / 19808 | 19924 / 19928 |
-| shared types | 1884 / 1980 | 1940 / 1944 | 1904 / 1924 | 3716 / 3792 | 1932 / 1992 |
-
-### What thread support costs
-
-Time, ns per operation, with thread support / with `BOOST_DISABLE_THREADS` (ratio):
-
-`allocator alone`:
-
-| scenario | pool | fast | std | page_type | page_size |
-|---|---|---|---|---|---|
-| raw_churn | 40.6 / 27.1 (1.50x) | 17.5 / 3.3 (5.34x) | 15.5 / 15.6 (0.99x) | 16.6 / 4.5 (3.71x) | 16.8 / 4.0 (4.15x) |
-| raw_batch | 69462.3 / 70094.4 (0.99x) | 25.6 / 24.0 (1.07x) | 27.6 / 27.9 (0.99x) | 24.2 / 21.5 (1.13x) | 25.4 / 20.8 (1.22x) |
-
-`boost::root_ptr`:
-
-| scenario | pool | fast | std | page_type | page_size |
-|---|---|---|---|---|---|
-| churn | 77.9 / 35.6 (2.18x) | 57.6 / 10.6 (5.45x) | 53.3 / 21.2 (2.52x) | 57.4 / 9.3 (6.16x) | 56.2 / 9.4 (5.99x) |
-| bulk | 138882.6 / 140134.5 (0.99x) | 117.0 / 70.4 (1.66x) | 115.1 / 76.8 (1.50x) | 107.5 / 63.8 (1.69x) | 109.0 / 63.9 (1.71x) |
-| mixed | 92700.9 / 95495.5 (0.97x) | 136.8 / 96.5 (1.42x) | 151.9 / 119.3 (1.27x) | 127.6 / 84.9 (1.50x) | 128.3 / 85.8 (1.49x) |
-| cycles | 67957.0 / 68285.9 (1.00x) | 123.3 / 56.8 (2.17x) | 133.7 / 64.2 (2.08x) | 119.1 / 43.5 (2.74x) | 119.6 / 45.8 (2.61x) |
-| types | 238.2 / 185.2 (1.29x) | 131.6 / 91.4 (1.44x) | 124.6 / 81.7 (1.53x) | 322.4 / 274.1 (1.18x) | 131.7 / 74.4 (1.77x) |
-
-`std::unique_ptr`:
-
-| scenario | pool | fast | std | page_type | page_size |
-|---|---|---|---|---|---|
-| churn | 46.2 / 27.1 (1.71x) | 25.4 / 3.2 (7.86x) | 15.4 / 15.5 (1.00x) | 17.2 / 5.9 (2.93x) | 16.4 / 6.2 (2.67x) |
-| bulk | 83229.7 / 84194.5 (0.99x) | 51.4 / 38.0 (1.35x) | 53.6 / 54.2 (0.99x) | 39.1 / 34.3 (1.14x) | 39.5 / 34.0 (1.16x) |
-| mixed | 79149.8 / 78613.1 (1.01x) | 76.0 / 60.8 (1.25x) | 93.4 / 88.3 (1.06x) | 62.0 / 56.6 (1.10x) | 64.0 / 55.4 (1.15x) |
-| cycles | n/a | n/a | n/a | n/a | n/a |
-| types | 176.8 / 152.6 (1.16x) | 69.1 / 44.0 (1.57x) | 61.3 / 63.8 (0.96x) | 254.5 / 242.1 (1.05x) | 52.4 / 50.4 (1.04x) |
-
-`std::shared_ptr`:
-
-| scenario | pool | fast | std | page_type | page_size |
-|---|---|---|---|---|---|
-| churn | 62.9 / 30.0 (2.10x) | 43.1 / 4.7 (9.22x) | 17.1 / 18.5 (0.92x) | 19.8 / 9.9 (1.99x) | 19.4 / 9.1 (2.12x) |
-| bulk | 134578.3 / 134868.5 (1.00x) | 79.0 / 49.2 (1.61x) | 66.3 / 64.3 (1.03x) | 51.5 / 48.2 (1.07x) | 53.4 / 46.3 (1.15x) |
-| mixed | 92856.5 / 93995.9 (0.99x) | 108.0 / 75.7 (1.43x) | 104.1 / 102.2 (1.02x) | 77.1 / 70.6 (1.09x) | 81.6 / 75.2 (1.09x) |
-| cycles | n/a | n/a | n/a | n/a | n/a |
-| types | 206.0 / 163.4 (1.26x) | 104.1 / 62.6 (1.66x) | 72.8 / 75.2 (0.97x) | 271.6 / 277.4 (0.98x) | 73.8 / 68.3 (1.08x) |
-
-### `boost::shared_node_ptr` against `boost::root_ptr`
-
-A run of its own (bench/run.sh --snode, bench/raw-snode.txt), both pointers interleaved: compare them with each other only. Time, ns per operation, `shared_node_ptr` / `root_ptr` (ratio: above 1.00x `shared_node_ptr` is slower):
-
-With thread support:
-
-| scenario | pool | fast | std | page_type | page_size |
-|---|---|---|---|---|---|
-| churn | 80.7 / 86.5 (0.93x) | 58.5 / 63.4 (0.92x) | 51.6 / 55.4 (0.93x) | 63.6 / 59.5 (1.07x) | 62.9 / 63.0 (1.00x) |
-| bulk | 148616.6 / 146216.4 (1.02x) | 150.0 / 142.7 (1.05x) | 156.2 / 145.2 (1.08x) | 147.8 / 133.8 (1.10x) | 147.4 / 127.8 (1.15x) |
-| mixed | 99659.8 / 101480.3 (0.98x) | 190.4 / 169.3 (1.12x) | 211.4 / 210.5 (1.00x) | 176.5 / 161.1 (1.10x) | 175.5 / 157.2 (1.12x) |
-| cycles | n/a / 71146.7 | n/a / 154.8 | n/a / 165.7 | n/a / 148.9 | n/a / 148.2 |
-| threads | 253.4 / 465.6 (0.54x) | 228.2 / 397.2 (0.57x) | 17.1 / 299.2 (0.06x) | 220.6 / 399.7 (0.55x) | 229.1 / 406.9 (0.56x) |
-| types | 289.5 / 276.4 (1.05x) | 169.6 / 169.2 (1.00x) | 179.0 / 171.3 (1.05x) | 405.4 / 382.8 (1.06x) | 176.2 / 145.7 (1.21x) |
-
-With `BOOST_DISABLE_THREADS`:
-
-| scenario | pool | fast | std | page_type | page_size |
-|---|---|---|---|---|---|
-| churn | 61.1 / 43.3 (1.41x) | 28.6 / 12.5 (2.28x) | 48.6 / 25.7 (1.90x) | 32.8 / 10.4 (3.15x) | 36.0 / 11.0 (3.29x) |
-| bulk | 144937.9 / 147492.0 (0.98x) | 123.7 / 82.6 (1.50x) | 141.9 / 95.0 (1.49x) | 117.0 / 76.2 (1.54x) | 118.9 / 76.5 (1.55x) |
-| mixed | 106002.4 / 103550.5 (1.02x) | 157.6 / 114.7 (1.37x) | 197.8 / 139.9 (1.41x) | 147.3 / 101.7 (1.45x) | 142.4 / 100.1 (1.42x) |
-| cycles | n/a / 69882.3 | n/a / 63.8 | n/a / 77.4 | n/a / 53.9 | n/a / 52.5 |
-| types | 270.9 / 223.0 (1.21x) | 146.4 / 107.1 (1.37x) | 162.7 / 109.3 (1.49x) | 377.3 / 316.1 (1.19x) | 137.4 / 87.2 (1.58x) |
-
-With `BOOST_PAGE_ALLOCATOR_THREAD_CACHE`:
-
-| scenario | pool | fast | std | page_type | page_size |
-|---|---|---|---|---|---|
-| churn | 74.0 / 85.1 (0.87x) | 47.9 / 57.4 (0.83x) | 51.6 / 55.8 (0.93x) | 43.3 / 44.4 (0.98x) | 39.5 / 45.9 (0.86x) |
-| bulk | 151576.5 / 144192.3 (1.05x) | 152.5 / 143.3 (1.06x) | 156.6 / 142.0 (1.10x) | 150.3 / 132.1 (1.14x) | 151.1 / 132.5 (1.14x) |
-| mixed | 99018.6 / 101265.6 (0.98x) | 184.2 / 167.4 (1.10x) | 210.0 / 189.5 (1.11x) | 161.0 / 159.1 (1.01x) | 173.4 / 159.7 (1.09x) |
-| cycles | n/a / 70028.0 | n/a / 153.6 | n/a / 165.1 | n/a / 138.4 | n/a / 143.1 |
-| threads | 278.2 / 438.0 (0.64x) | 222.5 / 391.4 (0.57x) | 15.2 / 297.9 (0.05x) | 12.6 / 289.9 (0.04x) | 12.5 / 294.8 (0.04x) |
-| types | 293.8 / 286.2 (1.03x) | 170.1 / 167.5 (1.02x) | 175.1 / 161.1 (1.09x) | 376.1 / 373.9 (1.01x) | 160.8 / 135.8 (1.18x) |
-
-Resident memory grown, kB, `shared_node_ptr` / `root_ptr` (with thread support):
-
-| scenario | pool | fast | std | page_type | page_size |
-|---|---|---|---|---|---|
-| bulk | 17236 / 14008 | 17268 / 14068 | 15732 / 12732 | 15980 / 12764 | 15952 / 12732 |
-| mixed | 32600 / 27992 | 32592 / 28084 | 29196 / 24356 | 28368 / 23848 | 28380 / 23836 |
-| types | 2248 / 2168 | 2320 / 2264 | 2260 / 2308 | 4176 / 3892 | 2280 / 2224 |
-
-## Analysis
-
-**`boost::pool_allocator`.** It keeps its free list sorted by address, so each `deallocate` is a
-linear search. That doesn't show when one object is allocated and freed at a time (`raw_churn`,
-`churn`: the list stays short), but every scenario that releases many objects together pays per
-object in proportion to the number already free. The effect is the same for all three pointer types
-and in every build: in the scaling tables the cost per object goes from 15–23 µs at 12,500 objects to
-229–438 µs at 200,000, while every other allocator stays flat. Releasing a `node_proxy` scope with
-many nodes is exactly what transformed programs do, which is why the default was changed.
-
-**Page allocators vs. `fast_pool_allocator` and `std::allocator`.** All three avoid the sorted list
-and free in constant time. In the release scenarios a page allocator is the fastest in both
-single-threaded builds. They also use the least memory: 9–19% less than `pool` and `fast`, and up to 18%
-less than `std` (the same as `std` for `root_ptr` in `bulk`). The Boost pools grow in doubling chunks,
-so part of their last chunk is reserved but unused; the page allocators grow one 64 KiB page at a time
-and have no per-block header. For churn, `std::allocator` wins with thread support, because glibc
-serves it from a per-thread cache while a page pool takes its mutex (unless its per-thread caches
-are on: see below). Without thread support,
-`fast_pool_allocator` wins churn and "many types" for the standard pointers (3.2 vs. 6.2 ns per
-`unique_ptr` churn); I haven't profiled where the page pool's extra time goes.
-
-**By type vs. by size.** With one to three types (`bulk`, `mixed`) the two policies behave the same,
-because each type has its own size class anyway. With many types of the same size (`types`),
-`by_type` opens one 64 KiB page per type. Building a page's free list writes into every block, so the
-whole page becomes resident even when it holds a handful of objects: 1.6–1.8 MB more than `by_size`
-and 2.4× to 4.9× the time. `by_type` pays off only when keeping types apart matters more than
-footprint, for example to confine a use-after-free of one type to that type's pages.
-
-**Thread support.** With thread support, every `root_ptr` operation locks a global recursive mutex,
-node reference counts are atomic, and the pools lock their own mutexes. Together that is 6.0× on
-`root_ptr` churn with `page_allocator_by_size` (56.2 vs. 9.4 ns), 1.5–1.7× on bulk and mixed release
-and 2.6× on cycles. About 10 ns of the churn difference is the page pool's mutex (the same drop as
-`unique_ptr` churn, 16.4 to 6.2 ns, and what the per-thread caches save on `root_ptr` churn, 56.2 to
-45.8 ns); the rest is `root_ptr`'s own mutex and atomic counts. The allocator-only rows show the pools'
-share: 4.2× on `raw_churn` for `page_size` and 5.3× for `fast`, but 1.0× for `std`.
-
-**Striped locks.** With `BOOST_ROOT_PTR_STRIPED_LOCKS`, `root_ptr` no longer serializes every
-operation of every thread on one mutex. The price is more lock operations: a construction, access
-and destruction takes about 8 instead of 3, so every single-threaded scenario is 1.33× to 3.35× slower
-(except with `pool`, whose quadratic release dominates everything). With four threads the gain depends
-on the allocator: 9.0× with `std::allocator`, whose per-thread caches take no lock, but only 1.3–1.4×
-with the pool allocators, whose own mutex becomes the bottleneck, and 10.7× with the page allocators
-once they have per-thread caches too (27 ns). Striped `root_ptr` (27–30 ns) is still 6–14× slower
-than `unique_ptr` and `shared_ptr` (1.9–4.8 ns) in that scenario. Packing the locks into fewer cache lines did not help single-threaded code
-and made four threads 2× slower through false sharing.
-
-**Per-thread caches.** With `BOOST_PAGE_ALLOCATOR_THREAD_CACHE`, a thread allocates from and frees
-into a stack of its own, and takes the pool's mutex only once per batch (half of 16 KiB worth of
-blocks). This is what glibc does for `std::allocator`, and it closes the same gaps: four threads
-allocating the same type no longer contend (157 → 1.9 ns per `unique_ptr`, 149 → 2.4 ns per
-`shared_ptr`, faster than `std::allocator`'s 4.1 and 4.8 ns), and churn with thread support costs what
-it costs without (6.1 vs. 6.2 ns per `unique_ptr`). With the global `root_ptr` lock, four threads gain
-only 1.5×, because `root_ptr` itself then serializes them; with striped locks, 10.7×. Bulk, mixed,
-cycles and types move by 0.92–1.17×, the same spread as the allocators that have no cache
-(0.92–1.13×), and resident memory by −28 to +88 kB. The cost is idle memory: up to 16 KiB per thread
-and per pool it allocated from, returned when the thread exits. A thread that only frees (a consumer)
-never caches, and returns every block to the pool directly.
-
-**`shared_node_ptr`.** It is a `std::shared_ptr` that owns the transformer's node: every object costs
-the node allocation `root_ptr` makes plus a `shared_ptr` control block from `std::allocator`, so
-release takes 1.00–1.21× as long and memory grows 16–25% (bulk: 15.6 vs. 12.4 MB with
-`page_allocator_by_size`). In exchange it takes no global lock: four threads run 1.8× faster than
-`root_ptr` on the page allocators, whose own mutex then limits both, and 17–24× faster once the
-allocator does not serialize either (`std::allocator`, or the per-thread caches: 12.5 vs. 295 ns).
-`BOOST_DISABLE_THREADS` does not reach it: libstdc++ keeps atomic counts in a program linked with
-threads, and the control block still comes from `malloc`, so there it is 1.4–3.3× slower than a
-`root_ptr` that has dropped its mutex. It reclaims no cycles.
-
-**Threads.** For `unique_ptr` and `shared_ptr`, glibc's per-thread caches make `std::allocator` 31–38×
-faster than `page_allocator_by_size` without its own caches: all four threads allocate the same type, so they contend
-on a single page pool's mutex (or Boost's singleton-pool mutex). For `root_ptr` with its default
-global lock the gap shrinks to 1.4×, because `root_ptr` itself serializes every operation.
-
-**Pointer types.** With `page_allocator_by_size` and thread support, `root_ptr` costs 3.4× `unique_ptr`
-and 2.9× `shared_ptr` per churn, and 2.8× / 2.0× in bulk. Without thread support the gap narrows to
-1.5× `unique_ptr` and 1.03× `shared_ptr` per churn, and 1.9× / 1.4× in bulk: most of `root_ptr`'s extra
-cost is locking. The per-object state explains the rest: a 72-byte node and a 32-byte handle (the
-handle's links in its `node_proxy` ring), against 48 + 8 bytes for `unique_ptr` and 64 + 16 for
-`shared_ptr`, which matches the measured memory (12.7 MB vs. 7.2 MB and 9.5 MB for 100,000 objects).
-What it buys is the `cycles` row: `root_ptr` reclaims cycles at 44–134 ns per node, which neither
-standard pointer can do.
-
-## Recommendations
-
-1. **Change the default node allocator. Done 2026-09-27:** the default is now
-   `page_allocator_by_size`, which removes the quadratic release and also saves memory.
-   `-D BOOST_ROOT_PTR_ALLOCATOR=...` still selects another allocator per build.
-2. **Build single-threaded programs with `BOOST_DISABLE_THREADS`.** It makes `root_ptr` up to 6.0×
-   faster here. **Done 2026-09-27:** `FCXXSS_NO_THREADS=1 fcxxss.sh ...` defines it in all three
-   passes, with a precompiled header of its own. The program must not use threads at all.
-3. **Carve pages lazily.** `page_pool::grow()` threads the free list through a whole page up front,
-   touching all of it. Handing out blocks from a bump pointer and only threading freed blocks would
-   make a sparsely used page cost only what it holds, which is what hurts `page_allocator_by_type`.
-4. **Add per-thread caches to the page allocators. Implemented 2026-09-27 as an option,
-   `BOOST_PAGE_ALLOCATOR_THREAD_CACHE`** (ignored without thread support). With four threads the page
-   allocators go from 31–38× slower than `std::allocator` to 2.0–2.2× faster, and striped `root_ptr`
-   scales 10.7× instead of 1.3×.
-5. **Finer-grained locking in `root_ptr`. Implemented 2026-09-27 as an option,
-   `BOOST_ROOT_PTR_STRIPED_LOCKS`.** Rings are not one per `node_proxy` (a copy moves its source into a
-   ring of its own, an assignment moves the source into the target's ring), so the locks are striped
-   by root address instead. It pays off only with several threads, so it stays off by default.
-6. **Make the per-thread caches the default in builds with thread support.** Proposed, not done:
-   they were faster or equal in every scenario measured here, and the price is up to 16 KiB of idle
-   blocks per thread and per pool it allocated from.
-
-## Reproducing
-
-```sh
-bench/run.sh 5            # measure all five builds and print the tables (about 40 minutes)
-bench/run.sh --tables     # reprint the tables from bench/raw-main.txt and bench/raw-scale.txt
-bench/run.sh --snode 5    # shared_node_ptr against root_ptr, in a run of their own (bench/raw-snode.txt)
-bench/plot.py             # draw the charts from the same files into bench/ALLOCATOR_BENCHMARK.pdf
-# a single measurement:
-clang++ -std=c++20 -O2 -DNDEBUG -DBOOST_ERROR_CODE_HEADER_ONLY -isystem /opt/fornux/superset/usr/include \
-    bench/allocbench.cpp -o allocbench -lboost_thread -lpthread
-    # add -DBOOST_DISABLE_THREADS, -DBOOST_ROOT_PTR_STRIPED_LOCKS and/or
-    # -DBOOST_PAGE_ALLOCATOR_THREAD_CACHE for the other builds
-./allocbench shared page_size bulk     # <pointer> <allocator> <scenario> [n]; pointer: root unique shared snode
-```
-
-The raw measurements behind these tables are in `bench/raw-main.txt` (one line per run: build,
-pointer, allocator, scenario, ns, kB) and `bench/raw-scale.txt`. The complete output of the run, with
-start and end load averages, is in `bench/bench-run.log`.
+| 12,500 | 20,023 | 85.6 | 66.8 | 58.1 | 55.7 |
+| 25,000 | 36,720 | 86.7 | 73.0 | 55.6 | 54.9 |
+| 50,000 | 69,284 | 85.5 | 79.3 | 63.3 | 63.9 |
+| 100,000 | 136,703 | 98.1 | 80.6 | 64.7 | 63.8 |
+| 200,000 | 315,342 | 98.3 | 82.2 | 63.5 | 66.3 |

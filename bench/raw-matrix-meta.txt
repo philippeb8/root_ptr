@@ -1,0 +1,21 @@
+start 2026-09-29T21:32:12-04:00
+load 15.14 13.21 9.03
+repeat 5
+cpu Intel(R) Core(TM) i7-4700HQ CPU @ 2.40GHz
+cores 8
+kernel 5.15.0-194-generic
+compiler clang version 23.0.0git (https://github.com/llvm/llvm-project.git b74f8ad0092ab74b2b93bf3ccd22e48181b4d2d2)
+glibc 2.35
+flags -std=c++20 -O2 -DNDEBUG -DBOOST_ERROR_CODE_HEADER_ONLY -isystem /opt/fornux/superset/usr/include
+build mt 
+build mt_sl -DBOOST_ROOT_PTR_STRIPED_LOCKS
+build mt_tc -DBOOST_PAGE_ALLOCATOR_THREAD_CACHE
+build mt_sl_tc -DBOOST_ROOT_PTR_STRIPED_LOCKS -DBOOST_PAGE_ALLOCATOR_THREAD_CACHE
+build mt_z -DBOOST_ZEROIZATION
+build mt_sl_z -DBOOST_ROOT_PTR_STRIPED_LOCKS -DBOOST_ZEROIZATION
+build mt_tc_z -DBOOST_PAGE_ALLOCATOR_THREAD_CACHE -DBOOST_ZEROIZATION
+build mt_sl_tc_z -DBOOST_ROOT_PTR_STRIPED_LOCKS -DBOOST_PAGE_ALLOCATOR_THREAD_CACHE -DBOOST_ZEROIZATION
+build st -DBOOST_DISABLE_THREADS
+build st_z -DBOOST_DISABLE_THREADS -DBOOST_ZEROIZATION
+end 2026-09-30T00:02:42-04:00
+endload 1.19 1.54 1.72

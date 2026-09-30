@@ -1,0 +1,3500 @@
+mt raw pool raw_churn 44.44
+mt_tc raw pool raw_churn 45.75
+st raw pool raw_churn 30.59
+mt raw fast raw_churn 19.09
+mt_tc raw fast raw_churn 18.51
+st raw fast raw_churn 3.33
+mt raw std raw_churn 19.14
+mt_tc raw std raw_churn 19.13
+st raw std raw_churn 15.90
+mt raw page_type raw_churn 20.31
+mt_tc raw page_type raw_churn 6.78
+st raw page_type raw_churn 4.97
+mt raw page_size raw_churn 20.41
+mt_tc raw page_size raw_churn 6.93
+st raw page_size raw_churn 5.15
+mt raw pool raw_batch 72083.65
+mt_tc raw pool raw_batch 71324.99
+st raw pool raw_batch 71569.73
+mt raw fast raw_batch 26.47
+mt_tc raw fast raw_batch 31.15
+st raw fast raw_batch 25.94
+mt raw std raw_batch 33.82
+mt_tc raw std raw_batch 32.69
+st raw std raw_batch 32.17
+mt raw page_type raw_batch 28.91
+mt_tc raw page_type raw_batch 27.32
+st raw page_type raw_batch 24.95
+mt raw page_size raw_batch 29.29
+mt_tc raw page_size raw_batch 27.87
+st raw page_size raw_batch 21.02
+mt root pool churn 79.13
+mt snode pool churn 84.79
+mt unique pool churn 47.26
+mt shared pool churn 63.42
+mt_sl root pool churn 143.77
+mt_sl snode pool churn 84.09
+mt_tc root pool churn 91.59
+mt_tc snode pool churn 70.12
+mt_tc unique pool churn 47.91
+mt_tc shared pool churn 76.14
+mt_sl_tc root pool churn 130.34
+mt_sl_tc snode pool churn 67.84
+mt_z root pool churn 80.68
+mt_z snode pool churn 73.21
+mt_sl_z root pool churn 142.77
+mt_sl_z snode pool churn 80.95
+mt_tc_z root pool churn 79.47
+mt_tc_z snode pool churn 68.84
+mt_sl_tc_z root pool churn 130.24
+mt_sl_tc_z snode pool churn 74.67
+st root pool churn 35.93
+st snode pool churn 53.24
+st unique pool churn 34.47
+st shared pool churn 35.52
+st_z root pool churn 40.70
+st_z snode pool churn 53.25
+mt root fast churn 62.27
+mt snode fast churn 48.81
+mt unique fast churn 28.07
+mt shared fast churn 50.02
+mt_sl root fast churn 118.09
+mt_sl snode fast churn 48.07
+mt_tc root fast churn 57.24
+mt_tc snode fast churn 59.06
+mt_tc unique fast churn 29.99
+mt_tc shared fast churn 48.37
+mt_sl_tc root fast churn 115.27
+mt_sl_tc snode fast churn 59.26
+mt_z root fast churn 63.93
+mt_z snode fast churn 46.16
+mt_sl_z root fast churn 126.92
+mt_sl_z snode fast churn 46.32
+mt_tc_z root fast churn 59.01
+mt_tc_z snode fast churn 58.89
+mt_sl_tc_z root fast churn 118.39
+mt_sl_tc_z snode fast churn 49.60
+st root fast churn 13.44
+st snode fast churn 33.74
+st unique fast churn 3.67
+st shared fast churn 5.25
+st_z root fast churn 13.27
+st_z snode fast churn 31.91
+mt root std churn 58.77
+mt snode std churn 45.76
+mt unique std churn 17.07
+mt shared std churn 19.87
+mt_sl root std churn 122.07
+mt_sl snode std churn 46.59
+mt_tc root std churn 52.73
+mt_tc snode std churn 57.64
+mt_tc unique std churn 19.07
+mt_tc shared std churn 22.03
+mt_sl_tc root std churn 121.66
+mt_sl_tc snode std churn 46.57
+mt_z root std churn 54.11
+mt_z snode std churn 60.19
+mt_sl_z root std churn 121.83
+mt_sl_z snode std churn 47.33
+mt_tc_z root std churn 53.89
+mt_tc_z snode std churn 47.09
+mt_sl_tc_z root std churn 115.05
+mt_sl_tc_z snode std churn 46.52
+st root std churn 24.37
+st snode std churn 40.90
+st unique std churn 20.09
+st shared std churn 23.13
+st_z root std churn 26.43
+st_z snode std churn 47.34
+mt root page_type churn 60.06
+mt snode page_type churn 51.29
+mt unique page_type churn 21.61
+mt shared page_type churn 24.82
+mt_sl root page_type churn 120.70
+mt_sl snode page_type churn 50.07
+mt_tc root page_type churn 43.94
+mt_tc snode page_type churn 48.98
+mt_tc unique page_type churn 7.72
+mt_tc shared page_type churn 10.07
+mt_sl_tc root page_type churn 112.03
+mt_sl_tc snode page_type churn 47.27
+mt_z root page_type churn 64.92
+mt_z snode page_type churn 50.89
+mt_sl_z root page_type churn 116.30
+mt_sl_z snode page_type churn 53.42
+mt_tc_z root page_type churn 44.57
+mt_tc_z snode page_type churn 37.25
+mt_sl_tc_z root page_type churn 105.38
+mt_sl_tc_z snode page_type churn 38.77
+st root page_type churn 13.95
+st snode page_type churn 36.12
+st unique page_type churn 6.52
+st shared page_type churn 10.44
+st_z root page_type churn 13.21
+st_z snode page_type churn 29.19
+mt root page_size churn 56.78
+mt snode page_size churn 54.01
+mt unique page_size churn 16.81
+mt shared page_size churn 19.39
+mt_sl root page_size churn 113.31
+mt_sl snode page_size churn 51.02
+mt_tc root page_size churn 46.70
+mt_tc snode page_size churn 48.64
+mt_tc unique page_size churn 7.52
+mt_tc shared page_size churn 9.85
+mt_sl_tc root page_size churn 112.66
+mt_sl_tc snode page_size churn 50.26
+mt_z root page_size churn 66.33
+mt_z snode page_size churn 50.69
+mt_sl_z root page_size churn 112.49
+mt_sl_z snode page_size churn 50.28
+mt_tc_z root page_size churn 46.93
+mt_tc_z snode page_size churn 39.80
+mt_sl_tc_z root page_size churn 107.53
+mt_sl_tc_z snode page_size churn 39.43
+st root page_size churn 9.60
+st snode page_size churn 29.15
+st unique page_size churn 5.79
+st shared page_size churn 9.33
+st_z root page_size churn 13.59
+st_z snode page_size churn 34.99
+mt root pool bulk 150888.70 14056
+mt snode pool bulk 146275.87 17348
+mt unique pool bulk 86383.18 8516
+mt shared pool bulk 136875.65 11372
+mt_sl root pool bulk 142656.57 14056
+mt_sl snode pool bulk 147234.37 17168
+mt_tc root pool bulk 143936.58 14040
+mt_tc snode pool bulk 143271.66 17220
+mt_tc unique pool bulk 84124.73 8880
+mt_tc shared pool bulk 138142.02 11388
+mt_sl_tc root pool bulk 142514.00 14060
+mt_sl_tc snode pool bulk 141926.11 17204
+mt_z root pool bulk 141535.96 13992
+mt_z snode pool bulk 144990.73 17264
+mt_sl_z root pool bulk 141201.68 14080
+mt_sl_z snode pool bulk 141617.29 17244
+mt_tc_z root pool bulk 143739.16 13996
+mt_tc_z snode pool bulk 147434.27 17188
+mt_sl_tc_z root pool bulk 141454.90 13996
+mt_sl_tc_z snode pool bulk 142124.33 17244
+st root pool bulk 144913.93 13848
+st snode pool bulk 141722.52 17120
+st unique pool bulk 91219.40 8540
+st shared pool bulk 139020.36 11340
+st_z root pool bulk 145918.98 14016
+st_z snode pool bulk 139372.55 17316
+mt root fast bulk 147.76 14100
+mt snode fast bulk 239.30 17256
+mt unique fast bulk 56.83 8916
+mt shared fast bulk 98.67 11504
+mt_sl root fast bulk 252.66 14104
+mt_sl snode fast bulk 149.88 17292
+mt_tc root fast bulk 140.43 14100
+mt_tc snode fast bulk 154.18 17284
+mt_tc unique fast bulk 62.80 8480
+mt_tc shared fast bulk 100.71 11420
+mt_sl_tc root fast bulk 248.59 14108
+mt_sl_tc snode fast bulk 151.32 17336
+mt_z root fast bulk 138.01 13996
+mt_z snode fast bulk 154.98 17268
+mt_sl_z root fast bulk 248.28 14112
+mt_sl_z snode fast bulk 158.78 17384
+mt_tc_z root fast bulk 139.01 14008
+mt_tc_z snode fast bulk 153.04 17296
+mt_sl_tc_z root fast bulk 246.72 14132
+mt_sl_tc_z snode fast bulk 149.70 17328
+st root fast bulk 82.20 14084
+st snode fast bulk 125.51 17200
+st unique fast bulk 41.87 8436
+st shared fast bulk 58.80 11384
+st_z root fast bulk 82.89 13996
+st_z snode fast bulk 122.02 17256
+mt root std bulk 144.19 12720
+mt snode std bulk 159.18 15664
+mt unique std bulk 67.11 8692
+mt shared std bulk 67.20 11100
+mt_sl root std bulk 201.14 12760
+mt_sl snode std bulk 125.09 15692
+mt_tc root std bulk 142.27 12732
+mt_tc snode std bulk 153.74 15644
+mt_tc unique std bulk 65.76 8724
+mt_tc shared std bulk 80.04 11036
+mt_sl_tc root std bulk 249.42 12644
+mt_sl_tc snode std bulk 148.62 15976
+mt_z root std bulk 140.83 12748
+mt_z snode std bulk 157.84 15788
+mt_sl_z root std bulk 253.79 12916
+mt_sl_z snode std bulk 149.61 16012
+mt_tc_z root std bulk 138.09 12736
+mt_tc_z snode std bulk 153.97 15656
+mt_sl_tc_z root std bulk 250.18 12820
+mt_sl_tc_z snode std bulk 150.48 15660
+st root std bulk 89.09 12584
+st snode std bulk 135.80 15676
+st unique std bulk 63.82 8708
+st shared std bulk 74.11 11016
+st_z root std bulk 86.15 12684
+st_z snode std bulk 135.83 15628
+mt root page_type bulk 131.42 12704
+mt snode page_type bulk 142.59 15908
+mt unique page_type bulk 46.74 7220
+mt shared page_type bulk 61.61 9520
+mt_sl root page_type bulk 234.70 12788
+mt_sl snode page_type bulk 141.73 15952
+mt_tc root page_type bulk 181.95 12760
+mt_tc snode page_type bulk 150.34 16028
+mt_tc unique page_type bulk 41.09 7192
+mt_tc shared page_type bulk 61.57 9444
+mt_sl_tc root page_type bulk 239.08 12820
+mt_sl_tc snode page_type bulk 151.21 15944
+mt_z root page_type bulk 133.93 12828
+mt_z snode page_type bulk 145.17 15940
+mt_sl_z root page_type bulk 242.86 12828
+mt_sl_z snode page_type bulk 145.03 15972
+mt_tc_z root page_type bulk 136.59 12700
+mt_tc_z snode page_type bulk 148.26 16052
+mt_sl_tc_z root page_type bulk 243.12 12716
+mt_sl_tc_z snode page_type bulk 149.35 15932
+st root page_type bulk 75.16 12736
+st snode page_type bulk 116.42 15960
+st unique page_type bulk 41.44 7172
+st shared page_type bulk 55.92 9512
+st_z root page_type bulk 77.04 12792
+st_z snode page_type bulk 118.80 15928
+mt root page_size bulk 106.97 12764
+mt snode page_size bulk 119.05 15940
+mt unique page_size bulk 47.40 7184
+mt shared page_size bulk 63.55 9564
+mt_sl root page_size bulk 240.81 12912
+mt_sl snode page_size bulk 153.36 15844
+mt_tc root page_size bulk 133.85 12668
+mt_tc snode page_size bulk 144.30 15876
+mt_tc unique page_size bulk 42.72 7192
+mt_tc shared page_size bulk 61.32 9532
+mt_sl_tc root page_size bulk 233.42 12748
+mt_sl_tc snode page_size bulk 158.27 16004
+mt_z root page_size bulk 128.91 12788
+mt_z snode page_size bulk 141.51 15932
+mt_sl_z root page_size bulk 234.69 12728
+mt_sl_z snode page_size bulk 139.80 15984
+mt_tc_z root page_size bulk 135.01 12668
+mt_tc_z snode page_size bulk 143.81 15916
+mt_sl_tc_z root page_size bulk 236.31 12768
+mt_sl_tc_z snode page_size bulk 150.24 15976
+st root page_size bulk 73.75 12776
+st snode page_size bulk 113.54 15768
+st unique page_size bulk 39.98 7028
+st shared page_size bulk 54.33 9532
+st_z root page_size bulk 76.71 12644
+st_z snode page_size bulk 114.45 15900
+mt root pool mixed 98998.06 28076
+mt snode pool mixed 100724.17 32568
+mt unique pool mixed 80778.75 19912
+mt shared pool mixed 98833.43 24044
+mt_sl root pool mixed 94172.45 28016
+mt_sl snode pool mixed 93582.57 32564
+mt_tc root pool mixed 93301.92 27996
+mt_tc snode pool mixed 92498.85 32556
+mt_tc unique pool mixed 78496.22 19940
+mt_tc shared pool mixed 91718.24 24044
+mt_sl_tc root pool mixed 95305.92 28132
+mt_sl_tc snode pool mixed 94459.69 32600
+mt_z root pool mixed 98229.79 27976
+mt_z snode pool mixed 98970.89 32556
+mt_sl_z root pool mixed 94161.36 28056
+mt_sl_z snode pool mixed 97369.28 32556
+mt_tc_z root pool mixed 95840.07 27864
+mt_tc_z snode pool mixed 93281.69 32500
+mt_sl_tc_z root pool mixed 95401.88 28008
+mt_sl_tc_z snode pool mixed 98613.93 32624
+st root pool mixed 103013.02 28040
+st snode pool mixed 107205.07 32568
+st unique pool mixed 82045.07 19740
+st shared pool mixed 127761.85 24028
+st_z root pool mixed 100575.00 27988
+st_z snode pool mixed 103902.60 32584
+mt root fast mixed 169.73 28108
+mt snode fast mixed 189.67 32704
+mt unique fast mixed 100.87 19980
+mt shared fast mixed 127.30 24228
+mt_sl root fast mixed 388.87 27920
+mt_sl snode fast mixed 183.79 32580
+mt_tc root fast mixed 167.02 28232
+mt_tc snode fast mixed 180.38 32684
+mt_tc unique fast mixed 91.11 19980
+mt_tc shared fast mixed 128.66 24228
+mt_sl_tc root fast mixed 268.08 27988
+mt_sl_tc snode fast mixed 158.83 32600
+mt_z root fast mixed 140.61 28108
+mt_z snode fast mixed 153.56 32588
+mt_sl_z root fast mixed 233.86 28108
+mt_sl_z snode fast mixed 179.93 32584
+mt_tc_z root fast mixed 164.83 28236
+mt_tc_z snode fast mixed 174.33 32552
+mt_sl_tc_z root fast mixed 256.46 27980
+mt_sl_tc_z snode fast mixed 155.82 32704
+st root fast mixed 98.44 28044
+st snode fast mixed 156.10 32572
+st unique fast mixed 76.87 19792
+st shared fast mixed 93.03 24140
+st_z root fast mixed 121.02 27912
+st_z snode fast mixed 153.78 32608
+mt root std mixed 176.11 24380
+mt snode std mixed 208.60 29164
+mt unique std mixed 107.94 17684
+mt shared std mixed 130.38 21136
+mt_sl root std mixed 243.88 24344
+mt_sl snode std mixed 241.61 29180
+mt_tc root std mixed 182.45 24312
+mt_tc snode std mixed 210.06 29116
+mt_tc unique std mixed 90.48 17716
+mt_tc shared std mixed 103.94 21084
+mt_sl_tc root std mixed 281.07 24368
+mt_sl_tc snode std mixed 220.58 29212
+mt_z root std mixed 185.49 24404
+mt_z snode std mixed 198.72 29168
+mt_sl_z root std mixed 242.13 24416
+mt_sl_z snode std mixed 208.75 29192
+mt_tc_z root std mixed 181.92 24292
+mt_tc_z snode std mixed 196.02 29148
+mt_sl_tc_z root std mixed 280.44 24352
+mt_sl_tc_z snode std mixed 210.02 29140
+st root std mixed 118.50 24304
+st snode std mixed 220.51 29136
+st unique std mixed 91.96 17516
+st shared std mixed 125.04 21172
+st_z root std mixed 138.95 24296
+st_z snode std mixed 202.44 29088
+mt root page_type mixed 136.54 23868
+mt snode page_type mixed 149.32 28348
+mt unique page_type mixed 62.86 16028
+mt shared page_type mixed 80.82 19740
+mt_sl root page_type mixed 242.87 23932
+mt_sl snode page_type mixed 153.42 28728
+mt_tc root page_type mixed 144.09 23924
+mt_tc snode page_type mixed 161.26 28324
+mt_tc unique page_type mixed 70.72 16044
+mt_tc shared page_type mixed 85.90 19876
+mt_sl_tc root page_type mixed 239.13 23964
+mt_sl_tc snode page_type mixed 160.08 28448
+mt_z root page_type mixed 143.60 23792
+mt_z snode page_type mixed 189.35 28472
+mt_sl_z root page_type mixed 226.20 23912
+mt_sl_z snode page_type mixed 148.93 28364
+mt_tc_z root page_type mixed 156.15 23816
+mt_tc_z snode page_type mixed 166.09 28444
+mt_sl_tc_z root page_type mixed 253.00 23908
+mt_sl_tc_z snode page_type mixed 148.70 28424
+st root page_type mixed 84.89 23756
+st snode page_type mixed 121.43 28220
+st unique page_type mixed 58.61 16112
+st shared page_type mixed 70.32 19920
+st_z root page_type mixed 88.70 23808
+st_z snode page_type mixed 126.36 28340
+mt root page_size mixed 161.06 23788
+mt snode page_size mixed 175.60 28340
+mt unique page_size mixed 72.57 16280
+mt shared page_size mixed 91.19 20008
+mt_sl root page_size mixed 258.48 23804
+mt_sl snode page_size mixed 174.70 28376
+mt_tc root page_size mixed 131.59 23828
+mt_tc snode page_size mixed 147.60 28276
+mt_tc unique page_size mixed 62.72 16284
+mt_tc shared page_size mixed 94.95 19976
+mt_sl_tc root page_size mixed 241.78 23924
+mt_sl_tc snode page_size mixed 172.51 28364
+mt_z root page_size mixed 158.44 23844
+mt_z snode page_size mixed 168.81 28384
+mt_sl_z root page_size mixed 244.84 23996
+mt_sl_z snode page_size mixed 152.62 28376
+mt_tc_z root page_size mixed 147.11 23836
+mt_tc_z snode page_size mixed 169.86 28420
+mt_sl_tc_z root page_size mixed 255.22 23848
+mt_sl_tc_z snode page_size mixed 155.90 28384
+st root page_size mixed 87.14 23736
+st snode page_size mixed 148.74 28364
+st unique page_size mixed 66.76 16004
+st shared page_size mixed 82.65 19744
+st_z root page_size mixed 104.35 23816
+st_z snode page_size mixed 146.27 28412
+mt root pool cycles 68902.08
+mt_sl root pool cycles 69241.35
+mt_tc root pool cycles 68397.47
+mt_sl_tc root pool cycles 68386.50
+mt_z root pool cycles 69348.73
+mt_sl_z root pool cycles 73253.47
+mt_tc_z root pool cycles 73138.02
+mt_sl_tc_z root pool cycles 70627.94
+st root pool cycles 68098.27
+st_z root pool cycles 69105.36
+mt root fast cycles 155.33
+mt_sl root fast cycles 486.32
+mt_tc root fast cycles 152.85
+mt_sl_tc root fast cycles 492.35
+mt_z root fast cycles 139.38
+mt_sl_z root fast cycles 425.30
+mt_tc_z root fast cycles 135.85
+mt_sl_tc_z root fast cycles 421.36
+st root fast cycles 60.58
+st_z root fast cycles 65.67
+mt root std cycles 164.40
+mt_sl root std cycles 492.21
+mt_tc root std cycles 164.40
+mt_sl_tc root std cycles 505.09
+mt_z root std cycles 166.31
+mt_sl_z root std cycles 492.93
+mt_tc_z root std cycles 165.98
+mt_sl_tc_z root std cycles 476.32
+st root std cycles 63.22
+st_z root std cycles 78.08
+mt root page_type cycles 148.89
+mt_sl root page_type cycles 504.08
+mt_tc root page_type cycles 135.43
+mt_sl_tc root page_type cycles 458.39
+mt_z root page_type cycles 143.09
+mt_sl_z root page_type cycles 471.01
+mt_tc_z root page_type cycles 131.37
+mt_sl_tc_z root page_type cycles 442.09
+st root page_type cycles 49.34
+st_z root page_type cycles 50.28
+mt root page_size cycles 121.74
+mt_sl root page_size cycles 477.94
+mt_tc root page_size cycles 141.10
+mt_sl_tc root page_size cycles 470.01
+mt_z root page_size cycles 150.16
+mt_sl_z root page_size cycles 473.59
+mt_tc_z root page_size cycles 143.17
+mt_sl_tc_z root page_size cycles 474.15
+st root page_size cycles 53.91
+st_z root page_size cycles 57.38
+mt root pool threads 462.19
+mt snode pool threads 302.65
+mt unique pool threads 226.23
+mt shared pool threads 376.49
+mt_sl root pool threads 317.34
+mt_sl snode pool threads 238.13
+mt_tc root pool threads 464.90
+mt_tc snode pool threads 257.55
+mt_tc unique pool threads 265.17
+mt_tc shared pool threads 379.28
+mt_sl_tc root pool threads 320.15
+mt_sl_tc snode pool threads 274.27
+mt_z root pool threads 483.68
+mt_z snode pool threads 275.71
+mt_sl_z root pool threads 314.14
+mt_sl_z snode pool threads 277.49
+mt_tc_z root pool threads 438.27
+mt_tc_z snode pool threads 263.50
+mt_sl_tc_z root pool threads 313.84
+mt_sl_tc_z snode pool threads 228.79
+mt root fast threads 393.04
+mt snode fast threads 233.76
+mt unique fast threads 229.45
+mt shared fast threads 311.95
+mt_sl root fast threads 282.29
+mt_sl snode fast threads 207.35
+mt_tc root fast threads 380.09
+mt_tc snode fast threads 211.53
+mt_tc unique fast threads 212.93
+mt_tc shared fast threads 295.17
+mt_sl_tc root fast threads 289.77
+mt_sl_tc snode fast threads 216.59
+mt_z root fast threads 378.14
+mt_z snode fast threads 230.83
+mt_sl_z root fast threads 279.53
+mt_sl_z snode fast threads 216.07
+mt_tc_z root fast threads 418.01
+mt_tc_z snode fast threads 219.37
+mt_sl_tc_z root fast threads 284.06
+mt_sl_tc_z snode fast threads 208.39
+mt root std threads 313.20
+mt snode std threads 12.75
+mt unique std threads 4.15
+mt shared std threads 9.44
+mt_sl root std threads 29.20
+mt_sl snode std threads 15.58
+mt_tc root std threads 267.50
+mt_tc snode std threads 15.17
+mt_tc unique std threads 4.56
+mt_tc shared std threads 5.13
+mt_sl_tc root std threads 30.49
+mt_sl_tc snode std threads 15.69
+mt_z root std threads 261.72
+mt_z snode std threads 16.13
+mt_sl_z root std threads 51.03
+mt_sl_z snode std threads 15.26
+mt_tc_z root std threads 322.20
+mt_tc_z snode std threads 12.63
+mt_sl_tc_z root std threads 29.46
+mt_sl_tc_z snode std threads 15.20
+mt root page_type threads 401.90
+mt snode page_type threads 256.33
+mt unique page_type threads 165.89
+mt shared page_type threads 144.40
+mt_sl root page_type threads 283.06
+mt_sl snode page_type threads 238.40
+mt_tc root page_type threads 375.39
+mt_tc snode page_type threads 10.09
+mt_tc unique page_type threads 1.88
+mt_tc shared page_type threads 2.68
+mt_sl_tc root page_type threads 27.96
+mt_sl_tc snode page_type threads 10.12
+mt_z root page_type threads 425.87
+mt_z snode page_type threads 204.96
+mt_sl_z root page_type threads 294.61
+mt_sl_z snode page_type threads 213.94
+mt_tc_z root page_type threads 322.40
+mt_tc_z snode page_type threads 12.42
+mt_sl_tc_z root page_type threads 33.08
+mt_sl_tc_z snode page_type threads 20.40
+mt root page_size threads 400.83
+mt snode page_size threads 238.86
+mt unique page_size threads 219.66
+mt shared page_size threads 163.63
+mt_sl root page_size threads 274.44
+mt_sl snode page_size threads 230.02
+mt_tc root page_size threads 309.63
+mt_tc snode page_size threads 12.86
+mt_tc unique page_size threads 2.03
+mt_tc shared page_size threads 4.84
+mt_sl_tc root page_size threads 36.78
+mt_sl_tc snode page_size threads 12.53
+mt_z root page_size threads 404.81
+mt_z snode page_size threads 227.51
+mt_sl_z root page_size threads 283.95
+mt_sl_z snode page_size threads 210.13
+mt_tc_z root page_size threads 328.53
+mt_tc_z snode page_size threads 20.61
+mt_sl_tc_z root page_size threads 31.83
+mt_sl_tc_z snode page_size threads 10.30
+mt root pool types 238.72 2156
+mt snode pool types 248.89 2148
+mt unique pool types 174.79 1888
+mt shared pool types 203.75 1784
+mt_sl root pool types 338.82 2344
+mt_sl snode pool types 252.66 2352
+mt_tc root pool types 267.01 2176
+mt_tc snode pool types 256.16 2368
+mt_tc unique pool types 177.34 1940
+mt_tc shared pool types 213.86 1932
+mt_sl_tc root pool types 342.81 2348
+mt_sl_tc snode pool types 265.29 2248
+mt_z root pool types 260.84 2288
+mt_z snode pool types 255.01 2244
+mt_sl_z root pool types 390.21 2232
+mt_sl_z snode pool types 254.20 2332
+mt_tc_z root pool types 317.41 2176
+mt_tc_z snode pool types 254.02 2244
+mt_sl_tc_z root pool types 338.25 2276
+mt_sl_tc_z snode pool types 266.82 2300
+st root pool types 190.74 2120
+st snode pool types 229.03 2196
+st unique pool types 148.94 1848
+st shared pool types 163.72 1820
+st_z root pool types 202.00 2176
+st_z snode pool types 232.30 2324
+mt root fast types 139.59 2292
+mt snode fast types 146.78 2352
+mt unique fast types 66.18 2012
+mt shared fast types 104.34 2148
+mt_sl root fast types 353.63 2336
+mt_sl snode fast types 139.30 2316
+mt_tc root fast types 127.75 2304
+mt_tc snode fast types 147.71 2276
+mt_tc unique fast types 61.41 2060
+mt_tc shared fast types 97.60 1956
+mt_sl_tc root fast types 251.01 2256
+mt_sl_tc snode fast types 158.83 2220
+mt_z root fast types 165.66 2208
+mt_z snode fast types 144.07 2352
+mt_sl_z root fast types 258.62 2200
+mt_sl_z snode fast types 136.36 2312
+mt_tc_z root fast types 159.81 2292
+mt_tc_z snode fast types 154.89 2276
+mt_sl_tc_z root fast types 253.73 2236
+mt_sl_tc_z snode fast types 141.48 2320
+st root fast types 103.77 2228
+st snode fast types 150.47 2232
+st unique fast types 63.79 1936
+st shared fast types 68.78 2020
+st_z root fast types 92.44 2236
+st_z snode fast types 120.27 2224
+mt root std types 141.86 2308
+mt snode std types 177.30 2260
+mt unique std types 75.10 1940
+mt shared std types 91.56 1924
+mt_sl root std types 273.30 2352
+mt_sl snode std types 177.40 2164
+mt_tc root std types 164.40 2352
+mt_tc snode std types 176.17 2220
+mt_tc unique std types 76.56 2008
+mt_tc shared std types 93.79 2012
+mt_sl_tc root std types 287.97 2468
+mt_sl_tc snode std types 183.89 2264
+mt_z root std types 161.31 2268
+mt_z snode std types 180.76 2300
+mt_sl_z root std types 269.81 2208
+mt_sl_z snode std types 174.37 2276
+mt_tc_z root std types 159.88 2240
+mt_tc_z snode std types 169.31 2204
+mt_sl_tc_z root std types 265.60 2336
+mt_sl_tc_z snode std types 174.60 2200
+st root std types 101.85 2292
+st snode std types 156.41 2244
+st unique std types 67.99 1912
+st shared std types 82.00 1756
+st_z root std types 92.58 2300
+st_z snode std types 127.92 2128
+mt root page_type types 336.97 3884
+mt snode page_type types 332.70 4152
+mt unique page_type types 259.34 3808
+mt shared page_type types 259.51 3760
+mt_sl root page_type types 414.73 4204
+mt_sl snode page_type types 331.02 4036
+mt_tc root page_type types 308.12 3952
+mt_tc snode page_type types 355.24 4188
+mt_tc unique page_type types 252.63 3756
+mt_tc shared page_type types 325.17 3848
+mt_sl_tc root page_type types 503.72 4216
+mt_sl_tc snode page_type types 406.95 4180
+mt_z root page_type types 310.50 3800
+mt_z snode page_type types 351.99 4152
+mt_sl_z root page_type types 410.04 4196
+mt_sl_z snode page_type types 317.30 4104
+mt_tc_z root page_type types 316.88 3944
+mt_tc_z snode page_type types 324.16 4184
+mt_sl_tc_z root page_type types 411.92 4184
+mt_sl_tc_z snode page_type types 341.31 4208
+st root page_type types 259.38 3732
+st snode page_type types 315.35 4076
+st unique page_type types 249.64 3616
+st shared page_type types 262.47 3792
+st_z root page_type types 274.56 3888
+st_z snode page_type types 320.10 4148
+mt root page_size types 129.40 2300
+mt snode page_size types 150.66 2292
+mt unique page_size types 68.54 1940
+mt shared page_size types 85.75 2036
+mt_sl root page_size types 271.98 2312
+mt_sl snode page_size types 162.73 2292
+mt_tc root page_size types 141.23 2240
+mt_tc snode page_size types 163.37 2192
+mt_tc unique page_size types 59.31 1936
+mt_tc shared page_size types 84.04 1940
+mt_sl_tc root page_size types 271.27 2400
+mt_sl_tc snode page_size types 161.52 2228
+mt_z root page_size types 162.47 2280
+mt_z snode page_size types 168.15 2224
+mt_sl_z root page_size types 265.64 2356
+mt_sl_z snode page_size types 167.39 2308
+mt_tc_z root page_size types 145.76 2324
+mt_tc_z snode page_size types 164.85 2280
+mt_sl_tc_z root page_size types 276.29 2376
+mt_sl_tc_z snode page_size types 174.81 2260
+st root page_size types 88.76 2408
+st snode page_size types 141.20 2272
+st unique page_size types 57.67 1880
+st shared page_size types 74.28 1836
+st_z root page_size types 85.93 2224
+st_z snode page_size types 140.82 2164
+mt raw pool raw_churn 42.37
+mt_tc raw pool raw_churn 40.32
+st raw pool raw_churn 27.20
+mt raw fast raw_churn 19.31
+mt_tc raw fast raw_churn 16.67
+st raw fast raw_churn 3.32
+mt raw std raw_churn 15.72
+mt_tc raw std raw_churn 19.31
+st raw std raw_churn 15.84
+mt raw page_type raw_churn 16.77
+mt_tc raw page_type raw_churn 5.32
+st raw page_type raw_churn 3.97
+mt raw page_size raw_churn 17.07
+mt_tc raw page_size raw_churn 5.27
+st raw page_size raw_churn 4.77
+mt raw pool raw_batch 70549.07
+mt_tc raw pool raw_batch 70696.73
+st raw pool raw_batch 70509.23
+mt raw fast raw_batch 25.84
+mt_tc raw fast raw_batch 30.35
+st raw fast raw_batch 27.67
+mt raw std raw_batch 32.64
+mt_tc raw std raw_batch 32.42
+st raw std raw_batch 33.61
+mt raw page_type raw_batch 27.95
+mt_tc raw page_type raw_batch 28.03
+st raw page_type raw_batch 24.84
+mt raw page_size raw_batch 27.96
+mt_tc raw page_size raw_batch 29.48
+st raw page_size raw_batch 25.08
+mt root pool churn 83.48
+mt snode pool churn 72.29
+mt unique pool churn 46.14
+mt shared pool churn 62.88
+mt_sl root pool churn 141.93
+mt_sl snode pool churn 72.72
+mt_tc root pool churn 80.05
+mt_tc snode pool churn 69.86
+mt_tc unique pool churn 57.60
+mt_tc shared pool churn 69.41
+mt_sl_tc root pool churn 127.15
+mt_sl_tc snode pool churn 67.45
+mt_z root pool churn 77.13
+mt_z snode pool churn 87.44
+mt_sl_z root pool churn 139.83
+mt_sl_z snode pool churn 68.76
+mt_tc_z root pool churn 79.05
+mt_tc_z snode pool churn 83.53
+mt_sl_tc_z root pool churn 128.03
+mt_sl_tc_z snode pool churn 83.87
+st root pool churn 36.30
+st snode pool churn 56.80
+st unique pool churn 27.07
+st shared pool churn 29.06
+st_z root pool churn 47.66
+st_z snode pool churn 59.31
+mt root fast churn 57.36
+mt snode fast churn 46.59
+mt unique fast churn 25.82
+mt shared fast churn 42.21
+mt_sl root fast churn 127.45
+mt_sl snode fast churn 46.81
+mt_tc root fast churn 57.08
+mt_tc snode fast churn 46.63
+mt_tc unique fast churn 25.10
+mt_tc shared fast churn 43.48
+mt_sl_tc root fast churn 114.30
+mt_sl_tc snode fast churn 46.37
+mt_z root fast churn 71.89
+mt_z snode fast churn 48.92
+mt_sl_z root fast churn 112.00
+mt_sl_z snode fast churn 46.69
+mt_tc_z root fast churn 59.60
+mt_tc_z snode fast churn 46.66
+mt_sl_tc_z root fast churn 112.77
+mt_sl_tc_z snode fast churn 46.04
+st root fast churn 10.55
+st snode fast churn 27.91
+st unique fast churn 3.22
+st shared fast churn 5.24
+st_z root fast churn 13.30
+st_z snode fast churn 35.35
+mt root std churn 58.58
+mt snode std churn 45.45
+mt unique std churn 16.32
+mt shared std churn 22.21
+mt_sl root std churn 119.68
+mt_sl snode std churn 47.48
+mt_tc root std churn 53.48
+mt_tc snode std churn 57.42
+mt_tc unique std churn 18.73
+mt_tc shared std churn 21.75
+mt_sl_tc root std churn 119.84
+mt_sl_tc snode std churn 45.67
+mt_z root std churn 66.94
+mt_z snode std churn 49.23
+mt_sl_z root std churn 112.23
+mt_sl_z snode std churn 46.00
+mt_tc_z root std churn 52.78
+mt_tc_z snode std churn 46.00
+mt_sl_tc_z root std churn 115.44
+mt_sl_tc_z snode std churn 49.82
+st root std churn 22.69
+st snode std churn 39.92
+st unique std churn 15.44
+st shared std churn 18.38
+st_z root std churn 21.83
+st_z snode std churn 46.61
+mt root page_type churn 57.47
+mt snode page_type churn 50.41
+mt unique page_type churn 17.05
+mt shared page_type churn 19.76
+mt_sl root page_type churn 117.28
+mt_sl snode page_type churn 51.29
+mt_tc root page_type churn 45.96
+mt_tc snode page_type churn 38.32
+mt_tc unique page_type churn 7.75
+mt_tc shared page_type churn 9.11
+mt_sl_tc root page_type churn 105.86
+mt_sl_tc snode page_type churn 39.93
+mt_z root page_type churn 69.74
+mt_z snode page_type churn 52.17
+mt_sl_z root page_type churn 112.14
+mt_sl_z snode page_type churn 50.33
+mt_tc_z root page_type churn 45.34
+mt_tc_z snode page_type churn 38.03
+mt_sl_tc_z root page_type churn 105.33
+mt_sl_tc_z snode page_type churn 39.52
+st root page_type churn 9.16
+st snode page_type churn 28.67
+st unique page_type churn 7.19
+st shared page_type churn 11.71
+st_z root page_type churn 12.64
+st_z snode page_type churn 28.94
+mt root page_size churn 57.86
+mt snode page_size churn 62.96
+mt unique page_size churn 18.57
+mt shared page_size churn 22.31
+mt_sl root page_size churn 120.92
+mt_sl snode page_size churn 50.70
+mt_tc root page_size churn 45.38
+mt_tc snode page_size churn 37.67
+mt_tc unique page_size churn 7.87
+mt_tc shared page_size churn 10.72
+mt_sl_tc root page_size churn 114.29
+mt_sl_tc snode page_size churn 38.13
+mt_z root page_size churn 59.00
+mt_z snode page_size churn 63.60
+mt_sl_z root page_size churn 118.30
+mt_sl_z snode page_size churn 50.92
+mt_tc_z root page_size churn 47.28
+mt_tc_z snode page_size churn 39.32
+mt_sl_tc_z root page_size churn 104.23
+mt_sl_tc_z snode page_size churn 37.55
+st root page_size churn 9.39
+st snode page_size churn 29.62
+st unique page_size churn 6.56
+st shared page_size churn 10.13
+st_z root page_size churn 11.80
+st_z snode page_size churn 31.92
+mt root pool bulk 141318.28 14036
+mt snode pool bulk 144322.84 17256
+mt unique pool bulk 84747.18 8480
+mt shared pool bulk 136271.59 11548
+mt_sl root pool bulk 141184.13 14100
+mt_sl snode pool bulk 142902.96 17220
+mt_tc root pool bulk 140768.85 13920
+mt_tc snode pool bulk 143317.28 17204
+mt_tc unique pool bulk 85544.84 8512
+mt_tc shared pool bulk 139527.70 11384
+mt_sl_tc root pool bulk 145217.55 13996
+mt_sl_tc snode pool bulk 147808.13 17264
+mt_z root pool bulk 140944.56 13948
+mt_z snode pool bulk 143772.28 17212
+mt_sl_z root pool bulk 145173.64 14016
+mt_sl_z snode pool bulk 144870.86 17220
+mt_tc_z root pool bulk 143481.72 14000
+mt_tc_z snode pool bulk 143814.99 17292
+mt_sl_tc_z root pool bulk 143389.08 14084
+mt_sl_tc_z snode pool bulk 144355.88 17236
+st root pool bulk 145632.71 13952
+st snode pool bulk 142010.73 17156
+st unique pool bulk 86015.38 8384
+st shared pool bulk 138890.08 11232
+st_z root pool bulk 141656.77 13968
+st_z snode pool bulk 147888.36 17132
+mt root fast bulk 137.14 13932
+mt snode fast bulk 146.95 17296
+mt unique fast bulk 63.06 8888
+mt shared fast bulk 99.89 11504
+mt_sl root fast bulk 245.17 14092
+mt_sl snode fast bulk 149.28 17316
+mt_tc root fast bulk 136.29 13980
+mt_tc snode fast bulk 148.08 17284
+mt_tc unique fast bulk 62.22 8552
+mt_tc shared fast bulk 97.41 11464
+mt_sl_tc root fast bulk 253.89 13952
+mt_sl_tc snode fast bulk 144.11 17316
+mt_z root fast bulk 133.84 14116
+mt_z snode fast bulk 151.04 17256
+mt_sl_z root fast bulk 221.55 13928
+mt_sl_z snode fast bulk 151.15 17248
+mt_tc_z root fast bulk 138.38 14112
+mt_tc_z snode fast bulk 149.31 17228
+mt_sl_tc_z root fast bulk 247.82 14048
+mt_sl_tc_z snode fast bulk 152.86 17268
+st root fast bulk 81.23 14100
+st snode fast bulk 125.25 17232
+st unique fast bulk 43.34 8392
+st shared fast bulk 58.47 11424
+st_z root fast bulk 90.31 14020
+st_z snode fast bulk 123.67 17280
+mt root std bulk 144.42 12744
+mt snode std bulk 148.97 15644
+mt unique std bulk 65.91 8712
+mt shared std bulk 77.17 11000
+mt_sl root std bulk 264.83 12820
+mt_sl snode std bulk 153.18 15980
+mt_tc root std bulk 153.95 12840
+mt_tc snode std bulk 155.77 15608
+mt_tc unique std bulk 66.31 8684
+mt_tc shared std bulk 66.31 11104
+mt_sl_tc root std bulk 313.73 12740
+mt_sl_tc snode std bulk 160.51 15996
+mt_z root std bulk 146.13 12828
+mt_z snode std bulk 154.89 15676
+mt_sl_z root std bulk 203.93 12796
+mt_sl_z snode std bulk 212.23 15956
+mt_tc_z root std bulk 144.30 12712
+mt_tc_z snode std bulk 151.12 15712
+mt_sl_tc_z root std bulk 253.64 12788
+mt_sl_tc_z snode std bulk 156.95 15692
+st root std bulk 93.93 12664
+st snode std bulk 140.81 15596
+st unique std bulk 64.78 8684
+st shared std bulk 79.96 11164
+st_z root std bulk 95.55 12664
+st_z snode std bulk 146.70 15540
+mt root page_type bulk 134.10 12704
+mt snode page_type bulk 147.11 15840
+mt unique page_type bulk 48.05 7156
+mt shared page_type bulk 64.18 9444
+mt_sl root page_type bulk 230.47 12716
+mt_sl snode page_type bulk 116.45 15860
+mt_tc root page_type bulk 108.72 12740
+mt_tc snode page_type bulk 152.88 15904
+mt_tc unique page_type bulk 46.63 7188
+mt_tc shared page_type bulk 61.24 9612
+mt_sl_tc root page_type bulk 241.42 12860
+mt_sl_tc snode page_type bulk 143.98 15988
+mt_z root page_type bulk 128.94 12724
+mt_z snode page_type bulk 141.51 15908
+mt_sl_z root page_type bulk 233.63 12748
+mt_sl_z snode page_type bulk 142.11 15884
+mt_tc_z root page_type bulk 148.11 12792
+mt_tc_z snode page_type bulk 192.89 15840
+mt_sl_tc_z root page_type bulk 240.96 12776
+mt_sl_tc_z snode page_type bulk 155.47 15960
+st root page_type bulk 74.82 12680
+st snode page_type bulk 118.64 15856
+st unique page_type bulk 41.42 7032
+st shared page_type bulk 57.17 9480
+st_z root page_type bulk 76.92 12772
+st_z snode page_type bulk 117.53 15980
+mt root page_size bulk 133.39 12732
+mt snode page_size bulk 141.45 15956
+mt unique page_size bulk 47.62 7144
+mt shared page_size bulk 61.74 9452
+mt_sl root page_size bulk 232.24 12788
+mt_sl snode page_size bulk 140.10 15972
+mt_tc root page_size bulk 129.12 12756
+mt_tc snode page_size bulk 144.83 15928
+mt_tc unique page_size bulk 42.90 7184
+mt_tc shared page_size bulk 50.78 9624
+mt_sl_tc root page_size bulk 198.12 12716
+mt_sl_tc snode page_size bulk 123.56 15936
+mt_z root page_size bulk 108.71 12704
+mt_z snode page_size bulk 148.52 15880
+mt_sl_z root page_size bulk 239.29 12820
+mt_sl_z snode page_size bulk 146.71 15920
+mt_tc_z root page_size bulk 145.18 12880
+mt_tc_z snode page_size bulk 150.15 16000
+mt_sl_tc_z root page_size bulk 241.43 12768
+mt_sl_tc_z snode page_size bulk 178.97 15968
+st root page_size bulk 86.45 12728
+st snode page_size bulk 117.18 15948
+st unique page_size bulk 40.97 7180
+st shared page_size bulk 56.46 9520
+st_z root page_size bulk 80.11 12680
+st_z snode page_size bulk 122.37 15888
+mt root pool mixed 106676.50 27988
+mt snode pool mixed 97293.34 32564
+mt unique pool mixed 87200.62 19908
+mt shared pool mixed 96200.15 24080
+mt_sl root pool mixed 97715.25 28172
+mt_sl snode pool mixed 98911.34 32576
+mt_tc root pool mixed 115888.52 28000
+mt_tc snode pool mixed 114110.97 32600
+mt_tc unique pool mixed 90670.28 19776
+mt_tc shared pool mixed 116429.33 24056
+mt_sl_tc root pool mixed 112590.86 28072
+mt_sl_tc snode pool mixed 111369.85 32580
+mt_z root pool mixed 117264.58 27980
+mt_z snode pool mixed 118292.80 32416
+mt_sl_z root pool mixed 110555.84 27952
+mt_sl_z snode pool mixed 128531.59 32544
+mt_tc_z root pool mixed 106706.09 27892
+mt_tc_z snode pool mixed 126462.41 32572
+mt_sl_tc_z root pool mixed 95521.95 28184
+mt_sl_tc_z snode pool mixed 130369.50 32640
+st root pool mixed 97109.05 27908
+st snode pool mixed 113616.82 32556
+st unique pool mixed 85010.69 19820
+st shared pool mixed 94675.73 24020
+st_z root pool mixed 102972.38 28032
+st_z snode pool mixed 98669.83 32632
+mt root fast mixed 171.40 28056
+mt snode fast mixed 184.41 32628
+mt unique fast mixed 90.58 19832
+mt shared fast mixed 127.34 24200
+mt_sl root fast mixed 267.14 28148
+mt_sl snode fast mixed 157.71 32592
+mt_tc root fast mixed 143.54 28112
+mt_tc snode fast mixed 156.32 32516
+mt_tc unique fast mixed 77.32 19824
+mt_tc shared fast mixed 110.43 24148
+mt_sl_tc root fast mixed 237.78 28064
+mt_sl_tc snode fast mixed 156.65 32580
+mt_z root fast mixed 164.24 27992
+mt_z snode fast mixed 182.19 32496
+mt_sl_z root fast mixed 255.76 28100
+mt_sl_z snode fast mixed 154.01 32608
+mt_tc_z root fast mixed 159.88 27964
+mt_tc_z snode fast mixed 175.22 32692
+mt_sl_tc_z root fast mixed 255.87 28076
+mt_sl_tc_z snode fast mixed 189.80 32644
+st root fast mixed 114.35 28016
+st snode fast mixed 145.04 32544
+st unique fast mixed 58.93 19904
+st shared fast mixed 74.77 24052
+st_z root fast mixed 101.19 27992
+st_z snode fast mixed 131.20 32492
+mt root std mixed 153.53 24416
+mt snode std mixed 175.93 29112
+mt unique std mixed 92.71 17616
+mt shared std mixed 125.44 21000
+mt_sl root std mixed 281.03 24444
+mt_sl snode std mixed 229.45 29288
+mt_tc root std mixed 182.89 24348
+mt_tc snode std mixed 209.04 29192
+mt_tc unique std mixed 94.18 17660
+mt_tc shared std mixed 108.50 21076
+mt_sl_tc root std mixed 265.39 24456
+mt_sl_tc snode std mixed 180.26 29124
+mt_z root std mixed 154.49 24460
+mt_z snode std mixed 178.91 29160
+mt_sl_z root std mixed 231.34 24336
+mt_sl_z snode std mixed 181.96 29028
+mt_tc_z root std mixed 154.31 24372
+mt_tc_z snode std mixed 209.04 29168
+mt_sl_tc_z root std mixed 278.91 24360
+mt_sl_tc_z snode std mixed 181.60 29076
+st root std mixed 128.86 24236
+st snode std mixed 175.15 29084
+st unique std mixed 93.42 17688
+st shared std mixed 123.57 21120
+st_z root std mixed 139.03 24372
+st_z snode std mixed 198.55 29132
+mt root page_type mixed 136.69 23848
+mt snode page_type mixed 159.98 28472
+mt unique page_type mixed 62.99 16212
+mt shared page_type mixed 79.22 19788
+mt_sl root page_type mixed 228.78 23868
+mt_sl snode page_type mixed 149.39 28740
+mt_tc root page_type mixed 134.76 23852
+mt_tc snode page_type mixed 162.76 28404
+mt_tc unique page_type mixed 64.61 16092
+mt_tc shared page_type mixed 82.57 19892
+mt_sl_tc root page_type mixed 239.33 23916
+mt_sl_tc snode page_type mixed 182.95 28376
+mt_z root page_type mixed 153.93 23728
+mt_z snode page_type mixed 172.28 28428
+mt_sl_z root page_type mixed 245.54 23956
+mt_sl_z snode page_type mixed 149.32 28372
+mt_tc_z root page_type mixed 144.90 23800
+mt_tc_z snode page_type mixed 170.26 28476
+mt_sl_tc_z root page_type mixed 248.86 23892
+mt_sl_tc_z snode page_type mixed 155.95 28408
+st root page_type mixed 91.70 23856
+st snode page_type mixed 154.22 28420
+st unique page_type mixed 62.35 16100
+st shared page_type mixed 84.37 19852
+st_z root page_type mixed 102.93 23768
+st_z snode page_type mixed 149.02 28376
+mt root page_size mixed 154.60 23832
+mt snode page_size mixed 174.29 28256
+mt unique page_size mixed 71.01 16232
+mt shared page_size mixed 88.31 20048
+mt_sl root page_size mixed 243.08 23884
+mt_sl snode page_size mixed 156.10 28384
+mt_tc root page_size mixed 137.25 23768
+mt_tc snode page_size mixed 154.70 28288
+mt_tc unique page_size mixed 72.24 16104
+mt_tc shared page_size mixed 90.55 19836
+mt_sl_tc root page_size mixed 267.50 23892
+mt_sl_tc snode page_size mixed 157.08 28332
+mt_z root page_size mixed 144.26 23892
+mt_z snode page_size mixed 139.07 28340
+mt_sl_z root page_size mixed 211.79 23996
+mt_sl_z snode page_size mixed 179.97 28384
+mt_tc_z root page_size mixed 136.84 23876
+mt_tc_z snode page_size mixed 163.30 28400
+mt_sl_tc_z root page_size mixed 280.02 23840
+mt_sl_tc_z snode page_size mixed 187.18 28712
+st root page_size mixed 96.39 23832
+st snode page_size mixed 126.50 28376
+st unique page_size mixed 58.46 16136
+st shared page_size mixed 70.05 19808
+st_z root page_size mixed 86.13 23840
+st_z snode page_size mixed 124.54 28280
+mt root pool cycles 68864.71
+mt_sl root pool cycles 69605.68
+mt_tc root pool cycles 69001.53
+mt_sl_tc root pool cycles 68583.16
+mt_z root pool cycles 68972.50
+mt_sl_z root pool cycles 68849.80
+mt_tc_z root pool cycles 69228.07
+mt_sl_tc_z root pool cycles 70027.47
+st root pool cycles 69330.82
+st_z root pool cycles 69446.53
+mt root fast cycles 154.88
+mt_sl root fast cycles 492.78
+mt_tc root fast cycles 151.92
+mt_sl_tc root fast cycles 435.24
+mt_z root fast cycles 132.96
+mt_sl_z root fast cycles 510.61
+mt_tc_z root fast cycles 164.16
+mt_sl_tc_z root fast cycles 485.79
+st root fast cycles 76.26
+st_z root fast cycles 66.46
+mt root std cycles 171.03
+mt_sl root std cycles 495.06
+mt_tc root std cycles 166.79
+mt_sl_tc root std cycles 500.59
+mt_z root std cycles 170.04
+mt_sl_z root std cycles 402.73
+mt_tc_z root std cycles 146.34
+mt_sl_tc_z root std cycles 420.74
+st root std cycles 63.63
+st_z root std cycles 64.02
+mt root page_type cycles 123.14
+mt_sl root page_type cycles 405.86
+mt_tc root page_type cycles 131.46
+mt_sl_tc root page_type cycles 443.53
+mt_z root page_type cycles 138.38
+mt_sl_z root page_type cycles 450.04
+mt_tc_z root page_type cycles 128.11
+mt_sl_tc_z root page_type cycles 425.13
+st root page_type cycles 46.33
+st_z root page_type cycles 48.01
+mt root page_size cycles 128.66
+mt_sl root page_size cycles 412.63
+mt_tc root page_size cycles 121.26
+mt_sl_tc root page_size cycles 463.32
+mt_z root page_size cycles 158.35
+mt_sl_z root page_size cycles 485.30
+mt_tc_z root page_size cycles 136.34
+mt_sl_tc_z root page_size cycles 455.41
+st root page_size cycles 50.94
+st_z root page_size cycles 52.41
+mt root pool threads 450.44
+mt snode pool threads 268.88
+mt unique pool threads 290.85
+mt shared pool threads 338.98
+mt_sl root pool threads 322.08
+mt_sl snode pool threads 282.89
+mt_tc root pool threads 505.52
+mt_tc snode pool threads 298.31
+mt_tc unique pool threads 262.62
+mt_tc shared pool threads 403.18
+mt_sl_tc root pool threads 298.42
+mt_sl_tc snode pool threads 254.43
+mt_z root pool threads 475.15
+mt_z snode pool threads 253.54
+mt_sl_z root pool threads 358.12
+mt_sl_z snode pool threads 273.11
+mt_tc_z root pool threads 467.49
+mt_tc_z snode pool threads 246.57
+mt_sl_tc_z root pool threads 325.13
+mt_sl_tc_z snode pool threads 250.92
+mt root fast threads 464.79
+mt snode fast threads 230.14
+mt unique fast threads 214.84
+mt shared fast threads 307.20
+mt_sl root fast threads 276.43
+mt_sl snode fast threads 204.03
+mt_tc root fast threads 388.18
+mt_tc snode fast threads 196.24
+mt_tc unique fast threads 222.05
+mt_tc shared fast threads 323.94
+mt_sl_tc root fast threads 289.99
+mt_sl_tc snode fast threads 200.34
+mt_z root fast threads 383.25
+mt_z snode fast threads 225.70
+mt_sl_z root fast threads 297.77
+mt_sl_z snode fast threads 220.66
+mt_tc_z root fast threads 396.11
+mt_tc_z snode fast threads 247.04
+mt_sl_tc_z root fast threads 302.22
+mt_sl_tc_z snode fast threads 214.09
+mt root std threads 335.68
+mt snode std threads 12.31
+mt unique std threads 4.96
+mt shared std threads 5.76
+mt_sl root std threads 34.43
+mt_sl snode std threads 12.75
+mt_tc root std threads 289.70
+mt_tc snode std threads 12.33
+mt_tc unique std threads 5.17
+mt_tc shared std threads 5.94
+mt_sl_tc root std threads 33.48
+mt_sl_tc snode std threads 14.74
+mt_z root std threads 253.89
+mt_z snode std threads 12.41
+mt_sl_z root std threads 33.68
+mt_sl_z snode std threads 15.62
+mt_tc_z root std threads 275.71
+mt_tc_z snode std threads 12.40
+mt_sl_tc_z root std threads 34.07
+mt_sl_tc_z snode std threads 15.13
+mt root page_type threads 378.47
+mt snode page_type threads 230.71
+mt unique page_type threads 172.32
+mt shared page_type threads 150.52
+mt_sl root page_type threads 284.98
+mt_sl snode page_type threads 210.58
+mt_tc root page_type threads 259.41
+mt_tc snode page_type threads 12.91
+mt_tc unique page_type threads 1.95
+mt_tc shared page_type threads 2.55
+mt_sl_tc root page_type threads 26.91
+mt_sl_tc snode page_type threads 22.76
+mt_z root page_type threads 428.78
+mt_z snode page_type threads 224.26
+mt_sl_z root page_type threads 284.35
+mt_sl_z snode page_type threads 240.36
+mt_tc_z root page_type threads 335.69
+mt_tc_z snode page_type threads 12.28
+mt_sl_tc_z root page_type threads 32.14
+mt_sl_tc_z snode page_type threads 20.26
+mt root page_size threads 388.90
+mt snode page_size threads 254.15
+mt unique page_size threads 203.04
+mt shared page_size threads 163.40
+mt_sl root page_size threads 305.88
+mt_sl snode page_size threads 242.16
+mt_tc root page_size threads 310.31
+mt_tc snode page_size threads 11.06
+mt_tc unique page_size threads 3.76
+mt_tc shared page_size threads 2.48
+mt_sl_tc root page_size threads 27.73
+mt_sl_tc snode page_size threads 12.31
+mt_z root page_size threads 407.18
+mt_z snode page_size threads 205.15
+mt_sl_z root page_size threads 301.88
+mt_sl_z snode page_size threads 214.81
+mt_tc_z root page_size threads 290.47
+mt_tc_z snode page_size threads 9.95
+mt_sl_tc_z root page_size threads 31.83
+mt_sl_tc_z snode page_size threads 10.19
+mt root pool types 224.50 2172
+mt snode pool types 242.52 2188
+mt unique pool types 166.69 2052
+mt shared pool types 199.75 1924
+mt_sl root pool types 326.57 2360
+mt_sl snode pool types 247.15 2248
+mt_tc root pool types 238.59 2128
+mt_tc snode pool types 247.73 2308
+mt_tc unique pool types 167.08 1916
+mt_tc shared pool types 207.56 1928
+mt_sl_tc root pool types 326.67 2256
+mt_sl_tc snode pool types 246.81 2220
+mt_z root pool types 256.90 2244
+mt_z snode pool types 250.48 2344
+mt_sl_z root pool types 307.26 2140
+mt_sl_z snode pool types 240.50 2252
+mt_tc_z root pool types 238.95 2132
+mt_tc_z snode pool types 243.65 2204
+mt_sl_tc_z root pool types 308.50 2216
+mt_sl_tc_z snode pool types 236.98 2276
+st root pool types 184.69 2184
+st snode pool types 210.87 2248
+st unique pool types 162.40 1952
+st shared pool types 172.21 1916
+st_z root pool types 193.98 2196
+st_z snode pool types 230.60 2220
+mt root fast types 134.86 2196
+mt snode fast types 183.87 2348
+mt unique fast types 74.46 1952
+mt shared fast types 121.23 1848
+mt_sl root fast types 278.53 2292
+mt_sl snode fast types 170.40 2288
+mt_tc root fast types 134.59 2244
+mt_tc snode fast types 145.25 2348
+mt_tc unique fast types 64.81 2024
+mt_tc shared fast types 95.36 1972
+mt_sl_tc root fast types 230.31 2216
+mt_sl_tc snode fast types 152.89 2220
+mt_z root fast types 157.51 2120
+mt_z snode fast types 173.88 2412
+mt_sl_z root fast types 283.75 2296
+mt_sl_z snode fast types 168.22 2320
+mt_tc_z root fast types 157.72 2264
+mt_tc_z snode fast types 164.83 2380
+mt_sl_tc_z root fast types 299.09 2328
+mt_sl_tc_z snode fast types 189.24 2308
+st root fast types 104.54 2292
+st snode fast types 155.56 2320
+st unique fast types 52.45 1936
+st shared fast types 69.29 2028
+st_z root fast types 107.68 2280
+st_z snode fast types 152.05 2380
+mt root std types 159.67 2340
+mt snode std types 174.15 2172
+mt unique std types 77.81 1916
+mt shared std types 88.22 2036
+mt_sl root std types 270.74 2352
+mt_sl snode std types 168.95 2280
+mt_tc root std types 154.87 2340
+mt_tc snode std types 172.09 2320
+mt_tc unique std types 79.65 1896
+mt_tc shared std types 107.69 1912
+mt_sl_tc root std types 277.72 2344
+mt_sl_tc snode std types 168.69 2244
+mt_z root std types 159.99 2320
+mt_z snode std types 173.24 2260
+mt_sl_z root std types 272.77 2352
+mt_sl_z snode std types 178.83 2100
+mt_tc_z root std types 154.17 2308
+mt_tc_z snode std types 168.64 2352
+mt_sl_tc_z root std types 277.37 2360
+mt_sl_tc_z snode std types 174.34 2260
+st root std types 104.74 2264
+st snode std types 163.62 2224
+st unique std types 74.01 1856
+st shared std types 96.17 1940
+st_z root std types 106.14 2308
+st_z snode std types 162.51 2192
+mt root page_type types 370.63 3840
+mt snode page_type types 346.19 4104
+mt unique page_type types 266.12 3864
+mt shared page_type types 294.33 3808
+mt_sl root page_type types 444.18 4052
+mt_sl snode page_type types 409.02 4136
+mt_tc root page_type types 327.32 3848
+mt_tc snode page_type types 344.02 4304
+mt_tc unique page_type types 295.55 3824
+mt_tc shared page_type types 324.41 3860
+mt_sl_tc root page_type types 510.66 4376
+mt_sl_tc snode page_type types 398.79 4116
+mt_z root page_type types 353.54 3932
+mt_z snode page_type types 333.19 4112
+mt_sl_z root page_type types 436.60 4172
+mt_sl_z snode page_type types 402.96 4128
+mt_tc_z root page_type types 377.88 3992
+mt_tc_z snode page_type types 400.73 4156
+mt_sl_tc_z root page_type types 505.34 4264
+mt_sl_tc_z snode page_type types 396.72 4184
+st root page_type types 323.12 3956
+st snode page_type types 370.70 4124
+st unique page_type types 300.66 3804
+st shared page_type types 306.32 3756
+st_z root page_type types 322.06 3904
+st_z snode page_type types 390.24 4140
+mt root page_size types 149.68 2288
+mt snode page_size types 167.83 2216
+mt unique page_size types 66.30 1884
+mt shared page_size types 90.87 1916
+mt_sl root page_size types 269.30 2296
+mt_sl snode page_size types 168.95 2244
+mt_tc root page_size types 142.69 2296
+mt_tc snode page_size types 151.67 2116
+mt_tc unique page_size types 58.07 1960
+mt_tc shared page_size types 74.74 2068
+mt_sl_tc root page_size types 261.51 2336
+mt_sl_tc snode page_size types 153.80 2288
+mt_z root page_size types 149.24 2336
+mt_z snode page_size types 164.08 2152
+mt_sl_z root page_size types 265.14 2292
+mt_sl_z snode page_size types 161.86 2252
+mt_tc_z root page_size types 141.79 2252
+mt_tc_z snode page_size types 153.51 2172
+mt_sl_tc_z root page_size types 370.32 2372
+mt_sl_tc_z snode page_size types 154.91 2312
+st root page_size types 73.12 2332
+st snode page_size types 111.39 2212
+st unique page_size types 48.11 1900
+st shared page_size types 76.77 1896
+st_z root page_size types 90.19 2324
+st_z snode page_size types 142.95 2256
+mt raw pool raw_churn 42.70
+mt_tc raw pool raw_churn 44.55
+st raw pool raw_churn 27.43
+mt raw fast raw_churn 16.14
+mt_tc raw fast raw_churn 16.68
+st raw fast raw_churn 3.33
+mt raw std raw_churn 18.67
+mt_tc raw std raw_churn 15.91
+st raw std raw_churn 15.63
+mt raw page_type raw_churn 16.56
+mt_tc raw page_type raw_churn 5.33
+st raw page_type raw_churn 3.98
+mt raw page_size raw_churn 17.38
+mt_tc raw page_size raw_churn 6.63
+st raw page_size raw_churn 5.03
+mt raw pool raw_batch 72222.46
+mt_tc raw pool raw_batch 73194.49
+st raw pool raw_batch 72571.58
+mt raw fast raw_batch 31.39
+mt_tc raw fast raw_batch 30.30
+st raw fast raw_batch 26.22
+mt raw std raw_batch 33.77
+mt_tc raw std raw_batch 54.77
+st raw std raw_batch 34.69
+mt raw page_type raw_batch 29.62
+mt_tc raw page_type raw_batch 28.49
+st raw page_type raw_batch 25.80
+mt raw page_size raw_batch 28.94
+mt_tc raw page_size raw_batch 27.61
+st raw page_size raw_batch 25.90
+mt root pool churn 81.95
+mt snode pool churn 77.84
+mt unique pool churn 46.20
+mt shared pool churn 69.23
+mt_sl root pool churn 129.63
+mt_sl snode pool churn 67.84
+mt_tc root pool churn 94.17
+mt_tc snode pool churn 73.50
+mt_tc unique pool churn 59.80
+mt_tc shared pool churn 70.94
+mt_sl_tc root pool churn 141.53
+mt_sl_tc snode pool churn 67.14
+mt_z root pool churn 90.45
+mt_z snode pool churn 82.54
+mt_sl_z root pool churn 130.34
+mt_sl_z snode pool churn 67.83
+mt_tc_z root pool churn 92.44
+mt_tc_z snode pool churn 71.21
+mt_sl_tc_z root pool churn 142.32
+mt_sl_tc_z snode pool churn 85.15
+st root pool churn 36.17
+st snode pool churn 54.22
+st unique pool churn 27.26
+st shared pool churn 29.05
+st_z root pool churn 35.46
+st_z snode pool churn 51.81
+mt root fast churn 57.35
+mt snode fast churn 46.64
+mt unique fast churn 26.29
+mt shared fast churn 43.51
+mt_sl root fast churn 125.70
+mt_sl snode fast churn 48.01
+mt_tc root fast churn 57.67
+mt_tc snode fast churn 46.74
+mt_tc unique fast churn 24.89
+mt_tc shared fast churn 48.42
+mt_sl_tc root fast churn 112.60
+mt_sl_tc snode fast churn 58.65
+mt_z root fast churn 63.66
+mt_z snode fast churn 46.23
+mt_sl_z root fast churn 113.19
+mt_sl_z snode fast churn 47.49
+mt_tc_z root fast churn 58.19
+mt_tc_z snode fast churn 46.51
+mt_sl_tc_z root fast churn 119.64
+mt_sl_tc_z snode fast churn 48.18
+st root fast churn 11.08
+st snode fast churn 28.81
+st unique fast churn 4.09
+st shared fast churn 5.88
+st_z root fast churn 15.24
+st_z snode fast churn 35.38
+mt root std churn 60.26
+mt snode std churn 46.35
+mt unique std churn 16.08
+mt shared std churn 17.37
+mt_sl root std churn 111.35
+mt_sl snode std churn 54.22
+mt_tc root std churn 65.75
+mt_tc snode std churn 49.40
+mt_tc unique std churn 15.59
+mt_tc shared std churn 18.10
+mt_sl_tc root std churn 112.35
+mt_sl_tc snode std churn 45.68
+mt_z root std churn 53.42
+mt_z snode std churn 49.28
+mt_sl_z root std churn 126.23
+mt_sl_z snode std churn 46.13
+mt_tc_z root std churn 53.17
+mt_tc_z snode std churn 45.73
+mt_sl_tc_z root std churn 112.32
+mt_sl_tc_z snode std churn 58.58
+st root std churn 25.64
+st snode std churn 46.07
+st unique std churn 15.73
+st shared std churn 18.73
+st_z root std churn 21.87
+st_z snode std churn 40.37
+mt root page_type churn 58.88
+mt snode page_type churn 62.60
+mt unique page_type churn 19.07
+mt shared page_type churn 22.03
+mt_sl root page_type churn 116.23
+mt_sl snode page_type churn 50.13
+mt_tc root page_type churn 44.50
+mt_tc snode page_type churn 47.54
+mt_tc unique page_type churn 7.71
+mt_tc shared page_type churn 10.17
+mt_sl_tc root page_type churn 112.05
+mt_sl_tc snode page_type churn 38.53
+mt_z root page_type churn 57.86
+mt_z snode page_type churn 49.95
+mt_sl_z root page_type churn 118.25
+mt_sl_z snode page_type churn 64.93
+mt_tc_z root page_type churn 48.81
+mt_tc_z snode page_type churn 46.52
+mt_sl_tc_z root page_type churn 111.64
+mt_sl_tc_z snode page_type churn 39.24
+st root page_type churn 9.39
+st snode page_type churn 28.99
+st unique page_type churn 5.85
+st shared page_type churn 9.54
+st_z root page_type churn 10.93
+st_z snode page_type churn 36.06
+mt root page_size churn 64.86
+mt snode page_size churn 62.88
+mt unique page_size churn 18.49
+mt shared page_size churn 22.67
+mt_sl root page_size churn 121.77
+mt_sl snode page_size churn 51.26
+mt_tc root page_size churn 44.40
+mt_tc snode page_size churn 37.69
+mt_tc unique page_size churn 6.21
+mt_tc shared page_size churn 8.29
+mt_sl_tc root page_size churn 103.97
+mt_sl_tc snode page_size churn 37.47
+mt_z root page_size churn 59.32
+mt_z snode page_size churn 49.93
+mt_sl_z root page_size churn 115.27
+mt_sl_z snode page_size churn 50.50
+mt_tc_z root page_size churn 46.19
+mt_tc_z snode page_size churn 38.25
+mt_sl_tc_z root page_size churn 119.51
+mt_sl_tc_z snode page_size churn 41.20
+st root page_size churn 9.41
+st snode page_size churn 28.68
+st unique page_size churn 5.85
+st shared page_size churn 9.21
+st_z root page_size churn 10.61
+st_z snode page_size churn 28.62
+mt root pool bulk 141831.36 14052
+mt snode pool bulk 144251.57 17312
+mt unique pool bulk 85520.58 8544
+mt shared pool bulk 138018.15 11452
+mt_sl root pool bulk 140846.50 14108
+mt_sl snode pool bulk 140910.14 17240
+mt_tc root pool bulk 141662.16 14048
+mt_tc snode pool bulk 142587.44 17304
+mt_tc unique pool bulk 87343.54 8884
+mt_tc shared pool bulk 136523.70 11408
+mt_sl_tc root pool bulk 143331.66 14120
+mt_sl_tc snode pool bulk 143453.82 17188
+mt_z root pool bulk 146674.28 14036
+mt_z snode pool bulk 141667.92 17224
+mt_sl_z root pool bulk 147336.93 14072
+mt_sl_z snode pool bulk 142698.22 17180
+mt_tc_z root pool bulk 140928.98 14052
+mt_tc_z snode pool bulk 145759.23 17240
+mt_sl_tc_z root pool bulk 143132.00 14016
+mt_sl_tc_z snode pool bulk 144198.44 17140
+st root pool bulk 150711.29 13996
+st snode pool bulk 142788.78 17196
+st unique pool bulk 88067.70 8384
+st shared pool bulk 141103.82 11436
+st_z root pool bulk 146083.91 13908
+st_z snode pool bulk 144347.58 17216
+mt root fast bulk 138.22 14028
+mt snode fast bulk 163.11 17208
+mt unique fast bulk 62.63 9020
+mt shared fast bulk 99.69 11480
+mt_sl root fast bulk 240.44 14100
+mt_sl snode fast bulk 150.22 17256
+mt_tc root fast bulk 136.67 13984
+mt_tc snode fast bulk 150.92 17312
+mt_tc unique fast bulk 65.66 8968
+mt_tc shared fast bulk 100.06 11460
+mt_sl_tc root fast bulk 246.70 14052
+mt_sl_tc snode fast bulk 150.17 17248
+mt_z root fast bulk 144.86 14024
+mt_z snode fast bulk 155.33 17284
+mt_sl_z root fast bulk 251.21 13992
+mt_sl_z snode fast bulk 146.83 17280
+mt_tc_z root fast bulk 133.65 14120
+mt_tc_z snode fast bulk 148.42 17292
+mt_sl_tc_z root fast bulk 246.27 14064
+mt_sl_tc_z snode fast bulk 151.96 17316
+st root fast bulk 82.79 14020
+st snode fast bulk 125.25 17172
+st unique fast bulk 42.91 8516
+st shared fast bulk 59.08 11388
+st_z root fast bulk 84.85 14084
+st_z snode fast bulk 123.09 17196
+mt root std bulk 146.61 12688
+mt snode std bulk 150.03 15816
+mt unique std bulk 52.03 8708
+mt shared std bulk 63.46 11104
+mt_sl root std bulk 201.35 12788
+mt_sl snode std bulk 125.18 15640
+mt_tc root std bulk 114.38 12736
+mt_tc snode std bulk 123.04 15608
+mt_tc unique std bulk 54.01 8716
+mt_tc shared std bulk 64.48 11104
+mt_sl_tc root std bulk 210.25 12756
+mt_sl_tc snode std bulk 128.33 15968
+mt_z root std bulk 119.23 12712
+mt_z snode std bulk 143.38 15668
+mt_sl_z root std bulk 256.07 12756
+mt_sl_z snode std bulk 168.87 15988
+mt_tc_z root std bulk 145.17 12772
+mt_tc_z snode std bulk 154.01 15720
+mt_sl_tc_z root std bulk 262.89 12744
+mt_sl_tc_z snode std bulk 123.49 15964
+st root std bulk 79.77 12676
+st snode std bulk 112.95 15544
+st unique std bulk 52.02 8544
+st shared std bulk 67.59 11028
+st_z root std bulk 74.48 12528
+st_z snode std bulk 112.87 15708
+mt root page_type bulk 108.75 12732
+mt snode page_type bulk 147.54 15904
+mt unique page_type bulk 47.47 7172
+mt shared page_type bulk 64.38 9672
+mt_sl root page_type bulk 237.78 12848
+mt_sl snode page_type bulk 144.63 15864
+mt_tc root page_type bulk 131.34 12760
+mt_tc snode page_type bulk 121.19 15940
+mt_tc unique page_type bulk 46.49 7140
+mt_tc shared page_type bulk 60.63 9604
+mt_sl_tc root page_type bulk 239.46 12760
+mt_sl_tc snode page_type bulk 147.06 15948
+mt_z root page_type bulk 132.80 12748
+mt_z snode page_type bulk 144.93 15952
+mt_sl_z root page_type bulk 215.15 12780
+mt_sl_z snode page_type bulk 117.84 15972
+mt_tc_z root page_type bulk 113.44 12724
+mt_tc_z snode page_type bulk 133.01 15936
+mt_sl_tc_z root page_type bulk 237.12 12816
+mt_sl_tc_z snode page_type bulk 145.42 15872
+st root page_type bulk 73.68 12740
+st snode page_type bulk 114.63 15944
+st unique page_type bulk 41.96 7204
+st shared page_type bulk 54.84 9528
+st_z root page_type bulk 74.79 12700
+st_z snode page_type bulk 116.77 15940
+mt root page_size bulk 128.69 12764
+mt snode page_size bulk 141.77 15960
+mt unique page_size bulk 46.44 7200
+mt shared page_size bulk 60.91 9532
+mt_sl root page_size bulk 236.22 12844
+mt_sl snode page_size bulk 141.18 15924
+mt_tc root page_size bulk 129.14 12852
+mt_tc snode page_size bulk 145.38 15904
+mt_tc unique page_size bulk 36.09 7116
+mt_tc shared page_size bulk 63.69 9572
+mt_sl_tc root page_size bulk 241.76 12668
+mt_sl_tc snode page_size bulk 151.33 15920
+mt_z root page_size bulk 133.78 12748
+mt_z snode page_size bulk 148.80 15952
+mt_sl_z root page_size bulk 231.06 12736
+mt_sl_z snode page_size bulk 142.72 15964
+mt_tc_z root page_size bulk 133.53 12688
+mt_tc_z snode page_size bulk 149.80 15932
+mt_sl_tc_z root page_size bulk 235.77 12760
+mt_sl_tc_z snode page_size bulk 145.05 16064
+st root page_size bulk 74.75 12708
+st snode page_size bulk 113.12 16032
+st unique page_size bulk 40.05 7272
+st shared page_size bulk 55.27 9500
+st_z root page_size bulk 76.12 12656
+st_z snode page_size bulk 113.85 15948
+mt root pool mixed 99511.73 27912
+mt snode pool mixed 97079.19 32616
+mt unique pool mixed 83970.68 19920
+mt shared pool mixed 94220.81 24092
+mt_sl root pool mixed 97170.45 28144
+mt_sl snode pool mixed 98319.51 32392
+mt_tc root pool mixed 95371.14 27976
+mt_tc snode pool mixed 98279.78 32632
+mt_tc unique pool mixed 81330.24 19856
+mt_tc shared pool mixed 95501.82 24032
+mt_sl_tc root pool mixed 96601.93 28068
+mt_sl_tc snode pool mixed 97899.79 32420
+mt_z root pool mixed 94625.90 28036
+mt_z snode pool mixed 99161.29 32636
+mt_sl_z root pool mixed 103182.07 28068
+mt_sl_z snode pool mixed 97605.39 32584
+mt_tc_z root pool mixed 98104.92 27932
+mt_tc_z snode pool mixed 99257.56 32676
+mt_sl_tc_z root pool mixed 94258.30 28044
+mt_sl_tc_z snode pool mixed 96695.50 32552
+st root pool mixed 101238.20 27992
+st snode pool mixed 100443.69 32516
+st unique pool mixed 82876.10 19832
+st shared pool mixed 96603.78 23924
+st_z root pool mixed 100615.51 27992
+st_z snode pool mixed 99522.52 32572
+mt root fast mixed 182.53 27956
+mt snode fast mixed 202.34 32624
+mt unique fast mixed 93.60 19980
+mt shared fast mixed 131.61 24144
+mt_sl root fast mixed 273.01 28088
+mt_sl snode fast mixed 184.91 32528
+mt_tc root fast mixed 161.87 28044
+mt_tc snode fast mixed 171.92 32608
+mt_tc unique fast mixed 85.94 19848
+mt_tc shared fast mixed 120.45 24260
+mt_sl_tc root fast mixed 265.25 28216
+mt_sl_tc snode fast mixed 156.62 32644
+mt_z root fast mixed 165.81 28032
+mt_z snode fast mixed 179.20 32540
+mt_sl_z root fast mixed 255.53 28092
+mt_sl_z snode fast mixed 153.03 32652
+mt_tc_z root fast mixed 140.12 28124
+mt_tc_z snode fast mixed 160.89 32608
+mt_sl_tc_z root fast mixed 233.61 28152
+mt_sl_tc_z snode fast mixed 154.93 32664
+st root fast mixed 100.03 28000
+st snode fast mixed 143.16 32504
+st unique fast mixed 69.14 19840
+st shared fast mixed 86.79 24020
+st_z root fast mixed 117.29 27924
+st_z snode fast mixed 158.61 32436
+mt root std mixed 179.49 24308
+mt snode std mixed 191.84 29256
+mt unique std mixed 93.75 17728
+mt shared std mixed 108.59 21088
+mt_sl root std mixed 249.43 24472
+mt_sl snode std mixed 178.08 29180
+mt_tc root std mixed 157.52 24444
+mt_tc snode std mixed 185.25 29084
+mt_tc unique std mixed 90.39 17608
+mt_tc shared std mixed 104.48 21080
+mt_sl_tc root std mixed 292.26 24392
+mt_sl_tc snode std mixed 213.86 29116
+mt_z root std mixed 153.80 24364
+mt_z snode std mixed 213.03 29188
+mt_sl_z root std mixed 280.73 24516
+mt_sl_z snode std mixed 188.53 29060
+mt_tc_z root std mixed 182.19 24320
+mt_tc_z snode std mixed 217.70 29172
+mt_sl_tc_z root std mixed 229.14 24464
+mt_sl_tc_z snode std mixed 174.97 29124
+st root std mixed 131.50 24356
+st snode std mixed 170.84 29128
+st unique std mixed 89.10 17588
+st shared std mixed 102.16 20964
+st_z root std mixed 139.69 24288
+st_z snode std mixed 173.71 29132
+mt root page_type mixed 129.83 23876
+mt snode page_type mixed 151.41 28376
+mt unique page_type mixed 67.26 16164
+mt shared page_type mixed 89.71 19912
+mt_sl root page_type mixed 223.40 23840
+mt_sl snode page_type mixed 180.50 28244
+mt_tc root page_type mixed 151.45 23888
+mt_tc snode page_type mixed 142.34 28344
+mt_tc unique page_type mixed 61.03 16180
+mt_tc shared page_type mixed 90.23 19864
+mt_sl_tc root page_type mixed 266.13 23988
+mt_sl_tc snode page_type mixed 164.16 28356
+mt_z root page_type mixed 129.38 23860
+mt_z snode page_type mixed 146.71 28360
+mt_sl_z root page_type mixed 235.76 23868
+mt_sl_z snode page_type mixed 144.86 28328
+mt_tc_z root page_type mixed 160.25 23888
+mt_tc_z snode page_type mixed 176.38 28464
+mt_sl_tc_z root page_type mixed 253.21 23928
+mt_sl_tc_z snode page_type mixed 181.31 28356
+st root page_type mixed 102.88 23788
+st snode page_type mixed 144.66 28396
+st unique page_type mixed 65.04 16152
+st shared page_type mixed 82.70 19844
+st_z root page_type mixed 105.96 23808
+st_z snode page_type mixed 147.74 28352
+mt root page_size mixed 152.81 23828
+mt snode page_size mixed 171.58 28400
+mt unique page_size mixed 70.17 16152
+mt shared page_size mixed 87.78 19872
+mt_sl root page_size mixed 246.94 24004
+mt_sl snode page_size mixed 146.76 28372
+mt_tc root page_size mixed 160.08 23844
+mt_tc snode page_size mixed 151.84 28360
+mt_tc unique page_size mixed 72.55 16188
+mt_tc shared page_size mixed 90.05 19852
+mt_sl_tc root page_size mixed 239.96 23876
+mt_sl_tc snode page_size mixed 157.41 28348
+mt_z root page_size mixed 153.36 23844
+mt_z snode page_size mixed 164.69 28364
+mt_sl_z root page_size mixed 214.09 23880
+mt_sl_z snode page_size mixed 137.61 28728
+mt_tc_z root page_size mixed 133.21 23912
+mt_tc_z snode page_size mixed 146.02 28380
+mt_sl_tc_z root page_size mixed 215.80 23856
+mt_sl_tc_z snode page_size mixed 147.38 28260
+st root page_size mixed 83.65 23776
+st snode page_size mixed 122.00 28348
+st unique page_size mixed 66.93 16136
+st shared page_size mixed 82.78 19816
+st_z root page_size mixed 104.17 23904
+st_z snode page_size mixed 146.99 28288
+mt root pool cycles 68299.54
+mt_sl root pool cycles 69144.68
+mt_tc root pool cycles 68094.71
+mt_sl_tc root pool cycles 70304.78
+mt_z root pool cycles 68628.14
+mt_sl_z root pool cycles 68682.10
+mt_tc_z root pool cycles 69342.75
+mt_sl_tc_z root pool cycles 69203.55
+st root pool cycles 68123.84
+st_z root pool cycles 69637.89
+mt root fast cycles 155.23
+mt_sl root fast cycles 478.83
+mt_tc root fast cycles 158.30
+mt_sl_tc root fast cycles 479.38
+mt_z root fast cycles 156.05
+mt_sl_z root fast cycles 496.39
+mt_tc_z root fast cycles 157.17
+mt_sl_tc_z root fast cycles 487.07
+st root fast cycles 66.16
+st_z root fast cycles 67.46
+mt root std cycles 168.44
+mt_sl root std cycles 501.14
+mt_tc root std cycles 165.14
+mt_sl_tc root std cycles 512.26
+mt_z root std cycles 164.84
+mt_sl_z root std cycles 503.07
+mt_tc_z root std cycles 162.33
+mt_sl_tc_z root std cycles 475.96
+st root std cycles 75.51
+st_z root std cycles 77.02
+mt root page_type cycles 143.24
+mt_sl root page_type cycles 462.65
+mt_tc root page_type cycles 137.09
+mt_sl_tc root page_type cycles 451.34
+mt_z root page_type cycles 142.91
+mt_sl_z root page_type cycles 380.94
+mt_tc_z root page_type cycles 144.24
+mt_sl_tc_z root page_type cycles 488.73
+st root page_type cycles 50.87
+st_z root page_type cycles 53.79
+mt root page_size cycles 139.59
+mt_sl root page_size cycles 451.14
+mt_tc root page_size cycles 119.18
+mt_sl_tc root page_size cycles 391.71
+mt_z root page_size cycles 120.70
+mt_sl_z root page_size cycles 385.01
+mt_tc_z root page_size cycles 115.24
+mt_sl_tc_z root page_size cycles 387.10
+st root page_size cycles 42.34
+st_z root page_size cycles 42.02
+mt root pool threads 497.14
+mt snode pool threads 266.14
+mt unique pool threads 273.22
+mt shared pool threads 474.03
+mt_sl root pool threads 375.21
+mt_sl snode pool threads 267.93
+mt_tc root pool threads 482.36
+mt_tc snode pool threads 269.79
+mt_tc unique pool threads 467.51
+mt_tc shared pool threads 364.91
+mt_sl_tc root pool threads 333.73
+mt_sl_tc snode pool threads 247.32
+mt_z root pool threads 456.77
+mt_z snode pool threads 282.05
+mt_sl_z root pool threads 324.87
+mt_sl_z snode pool threads 235.48
+mt_tc_z root pool threads 478.82
+mt_tc_z snode pool threads 249.92
+mt_sl_tc_z root pool threads 334.23
+mt_sl_tc_z snode pool threads 294.41
+mt root fast threads 389.59
+mt snode fast threads 215.63
+mt unique fast threads 232.96
+mt shared fast threads 288.57
+mt_sl root fast threads 284.20
+mt_sl snode fast threads 218.52
+mt_tc root fast threads 380.65
+mt_tc snode fast threads 224.84
+mt_tc unique fast threads 255.06
+mt_tc shared fast threads 279.99
+mt_sl_tc root fast threads 283.21
+mt_sl_tc snode fast threads 227.16
+mt_z root fast threads 417.66
+mt_z snode fast threads 242.19
+mt_sl_z root fast threads 299.04
+mt_sl_z snode fast threads 215.95
+mt_tc_z root fast threads 413.75
+mt_tc_z snode fast threads 215.32
+mt_sl_tc_z root fast threads 330.61
+mt_sl_tc_z snode fast threads 226.16
+mt root std threads 262.12
+mt snode std threads 12.41
+mt unique std threads 8.63
+mt shared std threads 12.62
+mt_sl root std threads 29.27
+mt_sl snode std threads 22.58
+mt_tc root std threads 317.87
+mt_tc snode std threads 15.16
+mt_tc unique std threads 5.09
+mt_tc shared std threads 5.65
+mt_sl_tc root std threads 36.72
+mt_sl_tc snode std threads 15.25
+mt_z root std threads 290.83
+mt_z snode std threads 27.80
+mt_sl_z root std threads 54.76
+mt_sl_z snode std threads 26.19
+mt_tc_z root std threads 339.09
+mt_tc_z snode std threads 15.31
+mt_sl_tc_z root std threads 32.95
+mt_sl_tc_z snode std threads 27.20
+mt root page_type threads 423.74
+mt snode page_type threads 248.21
+mt unique page_type threads 169.03
+mt shared page_type threads 162.72
+mt_sl root page_type threads 292.81
+mt_sl snode page_type threads 210.86
+mt_tc root page_type threads 280.16
+mt_tc snode page_type threads 16.05
+mt_tc unique page_type threads 1.89
+mt_tc shared page_type threads 4.76
+mt_sl_tc root page_type threads 45.74
+mt_sl_tc snode page_type threads 18.90
+mt_z root page_type threads 400.34
+mt_z snode page_type threads 202.02
+mt_sl_z root page_type threads 298.55
+mt_sl_z snode page_type threads 255.59
+mt_tc_z root page_type threads 286.19
+mt_tc_z snode page_type threads 12.75
+mt_sl_tc_z root page_type threads 32.40
+mt_sl_tc_z snode page_type threads 12.29
+mt root page_size threads 394.88
+mt snode page_size threads 204.46
+mt unique page_size threads 182.93
+mt shared page_size threads 183.10
+mt_sl root page_size threads 297.01
+mt_sl snode page_size threads 240.25
+mt_tc root page_size threads 257.60
+mt_tc snode page_size threads 11.46
+mt_tc unique page_size threads 3.44
+mt_tc shared page_size threads 4.35
+mt_sl_tc root page_size threads 45.52
+mt_sl_tc snode page_size threads 22.29
+mt_z root page_size threads 430.36
+mt_z snode page_size threads 215.74
+mt_sl_z root page_size threads 298.94
+mt_sl_z snode page_size threads 232.17
+mt_tc_z root page_size threads 254.48
+mt_tc_z snode page_size threads 13.26
+mt_sl_tc_z root page_size threads 31.81
+mt_sl_tc_z snode page_size threads 10.25
+mt root pool types 244.64 2292
+mt snode pool types 248.53 2288
+mt unique pool types 169.93 1868
+mt shared pool types 203.60 1892
+mt_sl root pool types 345.46 2280
+mt_sl snode pool types 354.54 2304
+mt_tc root pool types 249.10 2196
+mt_tc snode pool types 299.99 2284
+mt_tc unique pool types 258.22 1844
+mt_tc shared pool types 201.80 1912
+mt_sl_tc root pool types 340.70 2272
+mt_sl_tc snode pool types 251.89 2280
+mt_z root pool types 240.85 2224
+mt_z snode pool types 274.42 2200
+mt_sl_z root pool types 349.71 2244
+mt_sl_z snode pool types 250.98 2276
+mt_tc_z root pool types 242.62 2204
+mt_tc_z snode pool types 254.65 2308
+mt_sl_tc_z root pool types 338.26 2136
+mt_sl_tc_z snode pool types 300.33 2340
+st root pool types 230.22 2188
+st snode pool types 267.96 2252
+st unique pool types 180.14 1776
+st shared pool types 205.07 1900
+st_z root pool types 226.46 2080
+st_z snode pool types 270.33 2216
+mt root fast types 178.14 2296
+mt snode fast types 167.87 2212
+mt unique fast types 78.21 2016
+mt shared fast types 111.92 1968
+mt_sl root fast types 284.12 2252
+mt_sl snode fast types 180.26 2296
+mt_tc root fast types 163.45 2260
+mt_tc snode fast types 167.53 2436
+mt_tc unique fast types 74.38 1944
+mt_tc shared fast types 112.69 1944
+mt_sl_tc root fast types 280.01 2280
+mt_sl_tc snode fast types 175.96 2200
+mt_z root fast types 184.55 2344
+mt_z snode fast types 170.96 2260
+mt_sl_z root fast types 285.32 2200
+mt_sl_z snode fast types 166.65 2184
+mt_tc_z root fast types 160.56 2272
+mt_tc_z snode fast types 177.91 2284
+mt_sl_tc_z root fast types 288.40 2216
+mt_sl_tc_z snode fast types 174.42 2300
+st root fast types 100.64 2172
+st snode fast types 137.96 2168
+st unique fast types 55.31 1964
+st shared fast types 66.18 1908
+st_z root fast types 101.43 2232
+st_z snode fast types 151.18 2308
+mt root std types 166.58 2332
+mt snode std types 168.81 2316
+mt unique std types 74.72 1880
+mt shared std types 90.62 1984
+mt_sl root std types 282.84 2384
+mt_sl snode std types 172.86 2292
+mt_tc root std types 159.20 2292
+mt_tc snode std types 176.88 2296
+mt_tc unique std types 74.96 2004
+mt_tc shared std types 89.46 1932
+mt_sl_tc root std types 275.68 2244
+mt_sl_tc snode std types 177.11 2236
+mt_z root std types 157.62 2232
+mt_z snode std types 177.68 2228
+mt_sl_z root std types 278.83 2292
+mt_sl_z snode std types 173.32 2284
+mt_tc_z root std types 160.51 2272
+mt_tc_z snode std types 170.89 2300
+mt_sl_tc_z root std types 280.60 2432
+mt_sl_tc_z snode std types 139.00 2172
+st root std types 94.82 2376
+st snode std types 140.47 2240
+st unique std types 76.38 1888
+st shared std types 88.93 1864
+st_z root std types 104.40 2268
+st_z snode std types 163.86 2240
+mt root page_type types 393.99 3860
+mt snode page_type types 412.94 4244
+mt unique page_type types 332.69 3784
+mt shared page_type types 331.82 3784
+mt_sl root page_type types 524.28 4108
+mt_sl snode page_type types 412.77 4204
+mt_tc root page_type types 383.46 3940
+mt_tc snode page_type types 377.54 4296
+mt_tc unique page_type types 305.07 3832
+mt_tc shared page_type types 310.17 3876
+mt_sl_tc root page_type types 523.89 4204
+mt_sl_tc snode page_type types 388.37 4140
+mt_z root page_type types 395.82 3928
+mt_z snode page_type types 408.20 4248
+mt_sl_z root page_type types 504.70 4212
+mt_sl_z snode page_type types 402.21 4204
+mt_tc_z root page_type types 379.56 3888
+mt_tc_z snode page_type types 398.23 4124
+mt_sl_tc_z root page_type types 509.46 4300
+mt_sl_tc_z snode page_type types 396.10 4168
+st root page_type types 316.76 3848
+st snode page_type types 355.49 4188
+st unique page_type types 296.27 3692
+st shared page_type types 308.10 3728
+st_z root page_type types 328.40 3824
+st_z snode page_type types 365.59 4116
+mt root page_size types 146.25 2288
+mt snode page_size types 168.64 2324
+mt unique page_size types 65.97 1916
+mt shared page_size types 83.20 2008
+mt_sl root page_size types 263.52 2324
+mt_sl snode page_size types 169.40 2232
+mt_tc root page_size types 141.61 2356
+mt_tc snode page_size types 173.22 2328
+mt_tc unique page_size types 63.17 1976
+mt_tc shared page_size types 76.20 1896
+mt_sl_tc root page_size types 265.16 2400
+mt_sl_tc snode page_size types 151.01 2248
+mt_z root page_size types 119.36 2264
+mt_z snode page_size types 144.27 2312
+mt_sl_z root page_size types 211.00 2356
+mt_sl_z snode page_size types 143.40 2312
+mt_tc_z root page_size types 121.79 2436
+mt_tc_z snode page_size types 131.85 2288
+mt_sl_tc_z root page_size types 214.83 2404
+mt_sl_tc_z snode page_size types 157.50 2276
+st root page_size types 83.19 2268
+st snode page_size types 115.21 2340
+st unique page_size types 47.10 1888
+st shared page_size types 64.10 1932
+st_z root page_size types 71.17 2236
+st_z snode page_size types 126.31 2256
+mt raw pool raw_churn 41.08
+mt_tc raw pool raw_churn 41.44
+st raw pool raw_churn 27.16
+mt raw fast raw_churn 16.15
+mt_tc raw fast raw_churn 16.08
+st raw fast raw_churn 4.22
+mt raw std raw_churn 17.23
+mt_tc raw std raw_churn 15.31
+st raw std raw_churn 15.51
+mt raw page_type raw_churn 16.05
+mt_tc raw page_type raw_churn 5.27
+st raw page_type raw_churn 4.23
+mt raw page_size raw_churn 17.11
+mt_tc raw page_size raw_churn 5.52
+st raw page_size raw_churn 4.14
+mt raw pool raw_batch 70490.71
+mt_tc raw pool raw_batch 71098.79
+st raw pool raw_batch 70954.48
+mt raw fast raw_batch 30.79
+mt_tc raw fast raw_batch 30.22
+st raw fast raw_batch 26.97
+mt raw std raw_batch 33.86
+mt_tc raw std raw_batch 34.76
+st raw std raw_batch 33.99
+mt raw page_type raw_batch 28.69
+mt_tc raw page_type raw_batch 28.33
+st raw page_type raw_batch 24.98
+mt raw page_size raw_batch 31.80
+mt_tc raw page_size raw_batch 27.05
+st raw page_size raw_batch 25.34
+mt root pool churn 79.13
+mt snode pool churn 84.99
+mt unique pool churn 45.94
+mt shared pool churn 62.64
+mt_sl root pool churn 128.72
+mt_sl snode pool churn 68.15
+mt_tc root pool churn 77.59
+mt_tc snode pool churn 81.53
+mt_tc unique pool churn 45.82
+mt_tc shared pool churn 77.04
+mt_sl_tc root pool churn 128.44
+mt_sl_tc snode pool churn 80.93
+mt_z root pool churn 76.93
+mt_z snode pool churn 72.57
+mt_sl_z root pool churn 126.33
+mt_sl_z snode pool churn 67.41
+mt_tc_z root pool churn 77.61
+mt_tc_z snode pool churn 82.52
+mt_sl_tc_z root pool churn 137.17
+mt_sl_tc_z snode pool churn 71.94
+st root pool churn 50.18
+st snode pool churn 53.44
+st unique pool churn 27.21
+st shared pool churn 30.03
+st_z root pool churn 37.75
+st_z snode pool churn 59.53
+mt root fast churn 61.47
+mt snode fast churn 46.71
+mt unique fast churn 25.95
+mt shared fast churn 42.37
+mt_sl root fast churn 127.98
+mt_sl snode fast churn 49.49
+mt_tc root fast churn 66.08
+mt_tc snode fast churn 60.28
+mt_tc unique fast churn 29.32
+mt_tc shared fast churn 48.20
+mt_sl_tc root fast churn 113.26
+mt_sl_tc snode fast churn 46.17
+mt_z root fast churn 58.65
+mt_z snode fast churn 48.94
+mt_sl_z root fast churn 113.83
+mt_sl_z snode fast churn 46.47
+mt_tc_z root fast churn 59.85
+mt_tc_z snode fast churn 68.91
+mt_sl_tc_z root fast churn 117.15
+mt_sl_tc_z snode fast churn 46.67
+st root fast churn 10.61
+st snode fast churn 27.90
+st unique fast churn 4.05
+st shared fast churn 5.82
+st_z root fast churn 14.73
+st_z snode fast churn 36.27
+mt root std churn 62.05
+mt snode std churn 46.29
+mt unique std churn 16.53
+mt shared std churn 17.54
+mt_sl root std churn 151.56
+mt_sl snode std churn 57.43
+mt_tc root std churn 71.31
+mt_tc snode std churn 51.41
+mt_tc unique std churn 18.52
+mt_tc shared std churn 21.99
+mt_sl_tc root std churn 118.60
+mt_sl_tc snode std churn 46.40
+mt_z root std churn 54.06
+mt_z snode std churn 53.87
+mt_sl_z root std churn 112.73
+mt_sl_z snode std churn 45.85
+mt_tc_z root std churn 53.55
+mt_tc_z snode std churn 57.53
+mt_sl_tc_z root std churn 120.09
+mt_sl_tc_z snode std churn 47.01
+st root std churn 28.51
+st snode std churn 48.34
+st unique std churn 15.81
+st shared std churn 19.10
+st_z root std churn 21.57
+st_z snode std churn 40.88
+mt root page_type churn 58.42
+mt snode page_type churn 54.09
+mt unique page_type churn 16.76
+mt shared page_type churn 19.93
+mt_sl root page_type churn 120.39
+mt_sl snode page_type churn 52.30
+mt_tc root page_type churn 47.40
+mt_tc snode page_type churn 37.91
+mt_tc unique page_type churn 6.32
+mt_tc shared page_type churn 8.23
+mt_sl_tc root page_type churn 109.85
+mt_sl_tc snode page_type churn 38.54
+mt_z root page_type churn 69.78
+mt_z snode page_type churn 52.55
+mt_sl_z root page_type churn 114.15
+mt_sl_z snode page_type churn 50.23
+mt_tc_z root page_type churn 43.99
+mt_tc_z snode page_type churn 37.34
+mt_sl_tc_z root page_type churn 118.30
+mt_sl_tc_z snode page_type churn 38.45
+st root page_type churn 9.24
+st snode page_type churn 27.71
+st unique page_type churn 5.99
+st shared page_type churn 9.41
+st_z root page_type churn 11.82
+st_z snode page_type churn 28.95
+mt root page_size churn 57.97
+mt snode page_size churn 61.81
+mt unique page_size churn 18.70
+mt shared page_size churn 23.05
+mt_sl root page_size churn 119.22
+mt_sl snode page_size churn 50.64
+mt_tc root page_size churn 44.82
+mt_tc snode page_size churn 38.72
+mt_tc unique page_size churn 6.34
+mt_tc shared page_size churn 8.48
+mt_sl_tc root page_size churn 104.36
+mt_sl_tc snode page_size churn 47.60
+mt_z root page_size churn 65.84
+mt_z snode page_size churn 50.95
+mt_sl_z root page_size churn 163.50
+mt_sl_z snode page_size churn 62.75
+mt_tc_z root page_size churn 51.18
+mt_tc_z snode page_size churn 38.57
+mt_sl_tc_z root page_size churn 105.16
+mt_sl_tc_z snode page_size churn 37.71
+st root page_size churn 9.15
+st snode page_size churn 28.26
+st unique page_size churn 5.83
+st shared page_size churn 9.46
+st_z root page_size churn 10.63
+st_z snode page_size churn 35.01
+mt root pool bulk 144253.47 13992
+mt snode pool bulk 142758.89 17112
+mt unique pool bulk 84485.52 8508
+mt shared pool bulk 145921.72 11400
+mt_sl root pool bulk 156474.43 14048
+mt_sl snode pool bulk 147061.23 17200
+mt_tc root pool bulk 140431.40 14036
+mt_tc snode pool bulk 142988.25 17252
+mt_tc unique pool bulk 84567.57 8472
+mt_tc shared pool bulk 139147.74 11460
+mt_sl_tc root pool bulk 145808.18 14088
+mt_sl_tc snode pool bulk 140700.61 17232
+mt_z root pool bulk 140187.78 14040
+mt_z snode pool bulk 141198.67 17280
+mt_sl_z root pool bulk 142620.80 14028
+mt_sl_z snode pool bulk 143750.62 17084
+mt_tc_z root pool bulk 151544.44 13904
+mt_tc_z snode pool bulk 141267.32 17284
+mt_sl_tc_z root pool bulk 140237.08 14096
+mt_sl_tc_z snode pool bulk 144581.77 17240
+st root pool bulk 140911.60 13944
+st snode pool bulk 140344.05 17244
+st unique pool bulk 85154.12 8520
+st shared pool bulk 135216.73 11348
+st_z root pool bulk 141547.41 13972
+st_z snode pool bulk 142881.21 17240
+mt root fast bulk 143.42 14028
+mt snode fast bulk 151.47 17252
+mt unique fast bulk 63.04 8512
+mt shared fast bulk 106.70 11424
+mt_sl root fast bulk 234.92 14044
+mt_sl snode fast bulk 143.41 17420
+mt_tc root fast bulk 139.78 14072
+mt_tc snode fast bulk 151.02 17280
+mt_tc unique fast bulk 62.11 8932
+mt_tc shared fast bulk 97.34 11488
+mt_sl_tc root fast bulk 245.08 14020
+mt_sl_tc snode fast bulk 149.92 17268
+mt_z root fast bulk 127.00 14160
+mt_z snode fast bulk 141.30 17228
+mt_sl_z root fast bulk 238.22 14100
+mt_sl_z snode fast bulk 147.58 17244
+mt_tc_z root fast bulk 132.78 14136
+mt_tc_z snode fast bulk 144.89 17240
+mt_sl_tc_z root fast bulk 240.23 13932
+mt_sl_tc_z snode fast bulk 150.99 17324
+st root fast bulk 80.92 14196
+st snode fast bulk 121.83 17208
+st unique fast bulk 42.33 8504
+st shared fast bulk 61.94 11408
+st_z root fast bulk 86.11 14092
+st_z snode fast bulk 122.83 17232
+mt root std bulk 146.83 12616
+mt snode std bulk 154.04 15704
+mt unique std bulk 68.53 8680
+mt shared std bulk 80.13 11064
+mt_sl root std bulk 253.14 12808
+mt_sl snode std bulk 153.05 15668
+mt_tc root std bulk 138.06 12792
+mt_tc snode std bulk 248.90 15696
+mt_tc unique std bulk 65.80 8736
+mt_tc shared std bulk 79.37 11148
+mt_sl_tc root std bulk 249.75 12828
+mt_sl_tc snode std bulk 157.21 15700
+mt_z root std bulk 144.19 12780
+mt_z snode std bulk 154.36 15672
+mt_sl_z root std bulk 254.54 12784
+mt_sl_z snode std bulk 151.01 15992
+mt_tc_z root std bulk 149.68 12796
+mt_tc_z snode std bulk 154.52 15580
+mt_sl_tc_z root std bulk 249.47 12660
+mt_sl_tc_z snode std bulk 149.52 15900
+st root std bulk 91.79 12644
+st snode std bulk 145.12 15692
+st unique std bulk 65.60 8680
+st shared std bulk 80.67 11064
+st_z root std bulk 91.73 12552
+st_z snode std bulk 140.96 15688
+mt root page_type bulk 134.28 12808
+mt snode page_type bulk 146.83 15988
+mt unique page_type bulk 47.78 7216
+mt shared page_type bulk 64.45 9408
+mt_sl root page_type bulk 241.26 12848
+mt_sl snode page_type bulk 145.02 15996
+mt_tc root page_type bulk 132.13 12772
+mt_tc snode page_type bulk 150.34 15840
+mt_tc unique page_type bulk 44.16 7104
+mt_tc shared page_type bulk 62.56 9572
+mt_sl_tc root page_type bulk 240.43 12760
+mt_sl_tc snode page_type bulk 146.08 15864
+mt_z root page_type bulk 129.95 12744
+mt_z snode page_type bulk 139.49 15996
+mt_sl_z root page_type bulk 240.87 12748
+mt_sl_z snode page_type bulk 146.40 15984
+mt_tc_z root page_type bulk 136.74 12736
+mt_tc_z snode page_type bulk 152.24 16000
+mt_sl_tc_z root page_type bulk 244.56 12812
+mt_sl_tc_z snode page_type bulk 149.53 15936
+st root page_type bulk 79.29 12644
+st snode page_type bulk 117.13 15932
+st unique page_type bulk 42.38 7036
+st shared page_type bulk 55.84 9576
+st_z root page_type bulk 76.02 12720
+st_z snode page_type bulk 120.90 15956
+mt root page_size bulk 133.99 12732
+mt snode page_size bulk 147.74 15956
+mt unique page_size bulk 47.99 7140
+mt shared page_size bulk 64.11 9476
+mt_sl root page_size bulk 242.73 12844
+mt_sl snode page_size bulk 143.32 15952
+mt_tc root page_size bulk 130.85 12844
+mt_tc snode page_size bulk 143.26 15992
+mt_tc unique page_size bulk 43.16 7232
+mt_tc shared page_size bulk 58.63 9656
+mt_sl_tc root page_size bulk 234.74 12836
+mt_sl_tc snode page_size bulk 144.07 15916
+mt_z root page_size bulk 130.32 12732
+mt_z snode page_size bulk 141.67 15956
+mt_sl_z root page_size bulk 232.13 12824
+mt_sl_z snode page_size bulk 146.59 15852
+mt_tc_z root page_size bulk 136.65 12664
+mt_tc_z snode page_size bulk 133.90 15876
+mt_sl_tc_z root page_size bulk 197.81 12792
+mt_sl_tc_z snode page_size bulk 124.14 15976
+st root page_size bulk 74.23 12680
+st snode page_size bulk 117.13 15944
+st unique page_size bulk 40.94 7148
+st shared page_size bulk 55.83 9564
+st_z root page_size bulk 76.44 12736
+st_z snode page_size bulk 117.67 15836
+mt root pool mixed 96522.25 28040
+mt snode pool mixed 94451.98 32572
+mt unique pool mixed 82864.48 19932
+mt shared pool mixed 93944.13 24068
+mt_sl root pool mixed 96188.92 27984
+mt_sl snode pool mixed 97358.82 32560
+mt_tc root pool mixed 93837.16 27988
+mt_tc snode pool mixed 93448.92 32496
+mt_tc unique pool mixed 79496.63 19872
+mt_tc shared pool mixed 93259.55 24044
+mt_sl_tc root pool mixed 92931.03 28080
+mt_sl_tc snode pool mixed 93152.36 32580
+mt_z root pool mixed 91004.78 27984
+mt_z snode pool mixed 94917.83 32472
+mt_sl_z root pool mixed 95247.29 28164
+mt_sl_z snode pool mixed 94548.36 32528
+mt_tc_z root pool mixed 93991.91 28020
+mt_tc_z snode pool mixed 97152.00 32556
+mt_sl_tc_z root pool mixed 93008.48 28088
+mt_sl_tc_z snode pool mixed 95109.58 32600
+st root pool mixed 93245.08 27872
+st snode pool mixed 95742.07 32492
+st unique pool mixed 81168.73 19796
+st shared pool mixed 93203.79 23960
+st_z root pool mixed 95961.37 27980
+st_z snode pool mixed 94868.34 32568
+mt root fast mixed 167.05 28008
+mt snode fast mixed 154.03 32660
+mt unique fast mixed 90.23 19952
+mt shared fast mixed 127.51 24228
+mt_sl root fast mixed 265.04 27936
+mt_sl snode fast mixed 166.99 32596
+mt_tc root fast mixed 167.73 27988
+mt_tc snode fast mixed 193.29 32548
+mt_tc unique fast mixed 82.21 20032
+mt_tc shared fast mixed 121.20 24140
+mt_sl_tc root fast mixed 246.77 28156
+mt_sl_tc snode fast mixed 185.04 32632
+mt_z root fast mixed 165.57 28156
+mt_z snode fast mixed 179.60 32628
+mt_sl_z root fast mixed 222.21 28120
+mt_sl_z snode fast mixed 180.01 32732
+mt_tc_z root fast mixed 164.55 28164
+mt_tc_z snode fast mixed 182.81 32512
+mt_sl_tc_z root fast mixed 254.18 28080
+mt_sl_tc_z snode fast mixed 152.96 32632
+st root fast mixed 113.67 28036
+st snode fast mixed 169.86 32620
+st unique fast mixed 70.77 19784
+st shared fast mixed 88.61 24036
+st_z root fast mixed 116.14 28032
+st_z snode fast mixed 155.44 32600
+mt root std mixed 177.66 24404
+mt snode std mixed 192.65 29292
+mt unique std mixed 89.43 17704
+mt shared std mixed 122.42 21132
+mt_sl root std mixed 277.39 24540
+mt_sl snode std mixed 180.68 29100
+mt_tc root std mixed 154.55 24456
+mt_tc snode std mixed 178.19 29100
+mt_tc unique std mixed 91.27 17688
+mt_tc shared std mixed 103.35 21096
+mt_sl_tc root std mixed 231.25 24440
+mt_sl_tc snode std mixed 180.04 29072
+mt_z root std mixed 159.51 24344
+mt_z snode std mixed 181.79 29188
+mt_sl_z root std mixed 281.28 24388
+mt_sl_z snode std mixed 215.63 29172
+mt_tc_z root std mixed 154.12 24356
+mt_tc_z snode std mixed 183.06 29164
+mt_sl_tc_z root std mixed 233.64 24436
+mt_sl_tc_z snode std mixed 179.00 29116
+st root std mixed 138.23 24296
+st snode std mixed 200.65 29012
+st unique std mixed 95.47 17652
+st shared std mixed 107.84 21056
+st_z root std mixed 123.31 24260
+st_z snode std mixed 202.35 29124
+mt root page_type mixed 133.20 23764
+mt snode page_type mixed 155.07 28368
+mt unique page_type mixed 67.43 16076
+mt shared page_type mixed 93.06 19928
+mt_sl root page_type mixed 257.50 23888
+mt_sl snode page_type mixed 154.02 28408
+mt_tc root page_type mixed 140.52 23764
+mt_tc snode page_type mixed 175.04 28408
+mt_tc unique page_type mixed 71.41 16164
+mt_tc shared page_type mixed 90.38 19912
+mt_sl_tc root page_type mixed 266.83 23932
+mt_sl_tc snode page_type mixed 187.04 28276
+mt_z root page_type mixed 154.62 23752
+mt_z snode page_type mixed 177.85 28480
+mt_sl_z root page_type mixed 246.43 23940
+mt_sl_z snode page_type mixed 139.65 28364
+mt_tc_z root page_type mixed 136.32 23880
+mt_tc_z snode page_type mixed 143.98 28432
+mt_sl_tc_z root page_type mixed 219.25 23748
+mt_sl_tc_z snode page_type mixed 176.78 28284
+st root page_type mixed 104.26 23728
+st snode page_type mixed 164.62 28332
+st unique page_type mixed 57.37 16232
+st shared page_type mixed 73.21 19796
+st_z root page_type mixed 91.18 23792
+st_z snode page_type mixed 130.54 28256
+mt root page_size mixed 138.66 23860
+mt snode page_size mixed 176.18 28428
+mt unique page_size mixed 73.02 16144
+mt shared page_size mixed 92.33 19924
+mt_sl root page_size mixed 259.18 23856
+mt_sl snode page_size mixed 163.89 28424
+mt_tc root page_size mixed 141.92 23828
+mt_tc snode page_size mixed 160.38 28292
+mt_tc unique page_size mixed 63.80 16288
+mt_tc shared page_size mixed 82.63 19928
+mt_sl_tc root page_size mixed 237.29 23872
+mt_sl_tc snode page_size mixed 171.93 28312
+mt_z root page_size mixed 129.22 23852
+mt_z snode page_size mixed 183.14 28408
+mt_sl_z root page_size mixed 266.19 23916
+mt_sl_z snode page_size mixed 177.06 28312
+mt_tc_z root page_size mixed 173.42 23888
+mt_tc_z snode page_size mixed 191.81 28352
+mt_sl_tc_z root page_size mixed 268.54 23968
+mt_sl_tc_z snode page_size mixed 151.18 28676
+st root page_size mixed 85.91 23792
+st snode page_size mixed 127.56 28268
+st unique page_size mixed 59.03 16144
+st shared page_size mixed 76.50 19844
+st_z root page_size mixed 94.41 23768
+st_z snode page_size mixed 134.20 28272
+mt root pool cycles 68277.06
+mt_sl root pool cycles 68502.23
+mt_tc root pool cycles 68075.75
+mt_sl_tc root pool cycles 68619.05
+mt_z root pool cycles 68239.62
+mt_sl_z root pool cycles 70082.01
+mt_tc_z root pool cycles 68676.81
+mt_sl_tc_z root pool cycles 68734.67
+st root pool cycles 68768.19
+st_z root pool cycles 68745.86
+mt root fast cycles 129.34
+mt_sl root fast cycles 662.48
+mt_tc root fast cycles 153.49
+mt_sl_tc root fast cycles 394.01
+mt_z root fast cycles 125.27
+mt_sl_z root fast cycles 395.00
+mt_tc_z root fast cycles 138.05
+mt_sl_tc_z root fast cycles 395.81
+st root fast cycles 54.23
+st_z root fast cycles 57.02
+mt root std cycles 138.15
+mt_sl root std cycles 425.41
+mt_tc root std cycles 137.06
+mt_sl_tc root std cycles 399.37
+mt_z root std cycles 131.69
+mt_sl_z root std cycles 396.75
+mt_tc_z root std cycles 136.94
+mt_sl_tc_z root std cycles 402.26
+st root std cycles 63.11
+st_z root std cycles 81.24
+mt root page_type cycles 143.83
+mt_sl root page_type cycles 458.29
+mt_tc root page_type cycles 144.51
+mt_sl_tc root page_type cycles 454.61
+mt_z root page_type cycles 143.15
+mt_sl_z root page_type cycles 452.08
+mt_tc_z root page_type cycles 135.75
+mt_sl_tc_z root page_type cycles 474.64
+st root page_type cycles 50.68
+st_z root page_type cycles 52.15
+mt root page_size cycles 141.88
+mt_sl root page_size cycles 450.45
+mt_tc root page_size cycles 135.62
+mt_sl_tc root page_size cycles 473.32
+mt_z root page_size cycles 147.40
+mt_sl_z root page_size cycles 462.16
+mt_tc_z root page_size cycles 134.00
+mt_sl_tc_z root page_size cycles 469.30
+st root page_size cycles 49.38
+st_z root page_size cycles 51.18
+mt root pool threads 503.93
+mt snode pool threads 284.48
+mt unique pool threads 230.53
+mt shared pool threads 448.47
+mt_sl root pool threads 324.03
+mt_sl snode pool threads 285.74
+mt_tc root pool threads 510.85
+mt_tc snode pool threads 268.88
+mt_tc unique pool threads 226.47
+mt_tc shared pool threads 438.89
+mt_sl_tc root pool threads 320.22
+mt_sl_tc snode pool threads 287.79
+mt_z root pool threads 456.13
+mt_z snode pool threads 294.54
+mt_sl_z root pool threads 372.73
+mt_sl_z snode pool threads 274.11
+mt_tc_z root pool threads 468.58
+mt_tc_z snode pool threads 285.34
+mt_sl_tc_z root pool threads 313.79
+mt_sl_tc_z snode pool threads 263.21
+mt root fast threads 363.20
+mt snode fast threads 206.65
+mt unique fast threads 224.45
+mt shared fast threads 342.84
+mt_sl root fast threads 287.00
+mt_sl snode fast threads 204.20
+mt_tc root fast threads 414.35
+mt_tc snode fast threads 220.52
+mt_tc unique fast threads 209.70
+mt_tc shared fast threads 301.51
+mt_sl_tc root fast threads 318.62
+mt_sl_tc snode fast threads 204.76
+mt_z root fast threads 381.01
+mt_z snode fast threads 240.54
+mt_sl_z root fast threads 285.13
+mt_sl_z snode fast threads 196.24
+mt_tc_z root fast threads 400.23
+mt_tc_z snode fast threads 250.98
+mt_sl_tc_z root fast threads 292.71
+mt_sl_tc_z snode fast threads 226.16
+mt root std threads 408.33
+mt snode std threads 29.75
+mt unique std threads 5.05
+mt shared std threads 6.00
+mt_sl root std threads 60.41
+mt_sl snode std threads 12.46
+mt_tc root std threads 282.59
+mt_tc snode std threads 23.77
+mt_tc unique std threads 4.54
+mt_tc shared std threads 20.24
+mt_sl_tc root std threads 34.42
+mt_sl_tc snode std threads 15.60
+mt_z root std threads 281.45
+mt_z snode std threads 12.40
+mt_sl_z root std threads 29.60
+mt_sl_z snode std threads 15.76
+mt_tc_z root std threads 326.23
+mt_tc_z snode std threads 15.11
+mt_sl_tc_z root std threads 40.88
+mt_sl_tc_z snode std threads 12.30
+mt root page_type threads 379.07
+mt snode page_type threads 232.65
+mt unique page_type threads 147.47
+mt shared page_type threads 163.63
+mt_sl root page_type threads 287.12
+mt_sl snode page_type threads 277.69
+mt_tc root page_type threads 308.51
+mt_tc snode page_type threads 13.05
+mt_tc unique page_type threads 4.39
+mt_tc shared page_type threads 3.03
+mt_sl_tc root page_type threads 28.44
+mt_sl_tc snode page_type threads 11.07
+mt_z root page_type threads 415.17
+mt_z snode page_type threads 236.81
+mt_sl_z root page_type threads 283.38
+mt_sl_z snode page_type threads 229.68
+mt_tc_z root page_type threads 305.58
+mt_tc_z snode page_type threads 23.07
+mt_sl_tc_z root page_type threads 45.80
+mt_sl_tc_z snode page_type threads 12.48
+mt root page_size threads 388.71
+mt snode page_size threads 247.34
+mt unique page_size threads 151.76
+mt shared page_size threads 187.71
+mt_sl root page_size threads 286.05
+mt_sl snode page_size threads 203.45
+mt_tc root page_size threads 308.92
+mt_tc snode page_size threads 12.40
+mt_tc unique page_size threads 4.03
+mt_tc shared page_size threads 2.77
+mt_sl_tc root page_size threads 30.17
+mt_sl_tc snode page_size threads 10.97
+mt_z root page_size threads 392.71
+mt_z snode page_size threads 258.15
+mt_sl_z root page_size threads 322.15
+mt_sl_z snode page_size threads 214.72
+mt_tc_z root page_size threads 276.22
+mt_tc_z snode page_size threads 20.95
+mt_sl_tc_z root page_size threads 33.26
+mt_sl_tc_z snode page_size threads 12.43
+mt root pool types 239.25 2188
+mt snode pool types 246.62 2264
+mt unique pool types 171.98 1952
+mt shared pool types 204.63 1924
+mt_sl root pool types 332.53 2264
+mt_sl snode pool types 263.38 2312
+mt_tc root pool types 248.92 2288
+mt_tc snode pool types 248.31 2320
+mt_tc unique pool types 168.28 2004
+mt_tc shared pool types 204.84 1888
+mt_sl_tc root pool types 342.90 2248
+mt_sl_tc snode pool types 250.94 2256
+mt_z root pool types 242.33 2288
+mt_z snode pool types 252.56 2280
+mt_sl_z root pool types 344.05 2200
+mt_sl_z snode pool types 249.51 2172
+mt_tc_z root pool types 244.37 2164
+mt_tc_z snode pool types 264.08 2264
+mt_sl_tc_z root pool types 373.62 2204
+mt_sl_tc_z snode pool types 251.92 2400
+st root pool types 188.00 2172
+st snode pool types 244.15 2200
+st unique pool types 159.20 1976
+st shared pool types 163.48 1972
+st_z root pool types 256.18 2084
+st_z snode pool types 242.56 2248
+mt root fast types 141.48 2288
+mt snode fast types 144.74 2260
+mt unique fast types 69.82 1944
+mt shared fast types 100.97 2084
+mt_sl root fast types 281.24 2252
+mt_sl snode fast types 177.45 2416
+mt_tc root fast types 159.29 2288
+mt_tc snode fast types 188.05 2352
+mt_tc unique fast types 76.01 1960
+mt_tc shared fast types 114.51 2040
+mt_sl_tc root fast types 289.94 2332
+mt_sl_tc snode fast types 172.20 2344
+mt_z root fast types 324.43 2172
+mt_z snode fast types 171.31 2204
+mt_sl_z root fast types 285.45 2328
+mt_sl_z snode fast types 174.38 2352
+mt_tc_z root fast types 163.15 2236
+mt_tc_z snode fast types 174.00 2208
+mt_sl_tc_z root fast types 278.11 2332
+mt_sl_tc_z snode fast types 169.08 2224
+st root fast types 104.27 2204
+st snode fast types 125.14 2264
+st unique fast types 46.26 1820
+st shared fast types 60.67 1940
+st_z root fast types 85.60 2288
+st_z snode fast types 127.84 2240
+mt root std types 140.07 2244
+mt snode std types 150.25 2224
+mt unique std types 78.99 1904
+mt shared std types 77.59 1904
+mt_sl root std types 246.33 2328
+mt_sl snode std types 147.32 2240
+mt_tc root std types 137.20 2324
+mt_tc snode std types 140.47 2272
+mt_tc unique std types 61.52 1916
+mt_tc shared std types 73.52 1952
+mt_sl_tc root std types 223.26 2212
+mt_sl_tc snode std types 141.10 2280
+mt_z root std types 131.81 2416
+mt_z snode std types 140.76 2288
+mt_sl_z root std types 224.46 2232
+mt_sl_z snode std types 142.23 2304
+mt_tc_z root std types 131.85 2416
+mt_tc_z snode std types 149.49 2264
+mt_sl_tc_z root std types 299.91 2224
+mt_sl_tc_z snode std types 174.80 2132
+st root std types 111.46 2264
+st snode std types 137.22 2268
+st unique std types 72.87 1976
+st shared std types 89.19 1852
+st_z root std types 92.43 2264
+st_z snode std types 126.81 2292
+mt root page_type types 391.53 3940
+mt snode page_type types 338.63 4240
+mt unique page_type types 299.23 3792
+mt shared page_type types 260.72 3812
+mt_sl root page_type types 421.87 4312
+mt_sl snode page_type types 335.19 4152
+mt_tc root page_type types 312.59 3848
+mt_tc snode page_type types 820.89 4248
+mt_tc unique page_type types 286.64 3876
+mt_tc shared page_type types 260.00 3768
+mt_sl_tc root page_type types 428.60 4196
+mt_sl_tc snode page_type types 359.88 4168
+mt_z root page_type types 309.99 3752
+mt_z snode page_type types 335.27 4064
+mt_sl_z root page_type types 429.82 4240
+mt_sl_z snode page_type types 333.25 4216
+mt_tc_z root page_type types 346.42 3968
+mt_tc_z snode page_type types 328.03 4160
+mt_sl_tc_z root page_type types 502.89 4312
+mt_sl_tc_z snode page_type types 402.73 4040
+st root page_type types 321.36 3824
+st snode page_type types 366.59 4140
+st unique page_type types 302.71 3812
+st shared page_type types 302.35 3668
+st_z root page_type types 324.47 3848
+st_z snode page_type types 355.78 4120
+mt root page_size types 130.43 2204
+mt snode page_size types 160.61 2328
+mt unique page_size types 57.35 1984
+mt shared page_size types 89.66 1984
+mt_sl root page_size types 265.06 2244
+mt_sl snode page_size types 168.42 2272
+mt_tc root page_size types 148.62 2320
+mt_tc snode page_size types 167.59 2280
+mt_tc unique page_size types 69.93 1996
+mt_tc shared page_size types 79.40 2052
+mt_sl_tc root page_size types 261.87 2380
+mt_sl_tc snode page_size types 164.73 2324
+mt_z root page_size types 166.41 2276
+mt_z snode page_size types 163.07 2340
+mt_sl_z root page_size types 272.30 2464
+mt_sl_z snode page_size types 169.97 2300
+mt_tc_z root page_size types 145.01 2236
+mt_tc_z snode page_size types 165.33 2284
+mt_sl_tc_z root page_size types 272.37 2416
+mt_sl_tc_z snode page_size types 173.35 2256
+st root page_size types 84.42 2248
+st snode page_size types 138.50 2192
+st unique page_size types 59.24 1944
+st shared page_size types 74.71 1948
+st_z root page_size types 100.71 2316
+st_z snode page_size types 138.23 2288
+mt raw pool raw_churn 42.78
+mt_tc raw pool raw_churn 41.07
+st raw pool raw_churn 27.11
+mt raw fast raw_churn 17.58
+mt_tc raw fast raw_churn 20.58
+st raw fast raw_churn 3.53
+mt raw std raw_churn 16.12
+mt_tc raw std raw_churn 15.73
+st raw std raw_churn 16.11
+mt raw page_type raw_churn 19.53
+mt_tc raw page_type raw_churn 5.47
+st raw page_type raw_churn 4.01
+mt raw page_size raw_churn 17.05
+mt_tc raw page_size raw_churn 5.34
+st raw page_size raw_churn 4.22
+mt raw pool raw_batch 70717.00
+mt_tc raw pool raw_batch 72521.97
+st raw pool raw_batch 72338.63
+mt raw fast raw_batch 32.04
+mt_tc raw fast raw_batch 30.68
+st raw fast raw_batch 26.65
+mt raw std raw_batch 34.29
+mt_tc raw std raw_batch 33.55
+st raw std raw_batch 33.79
+mt raw page_type raw_batch 28.90
+mt_tc raw page_type raw_batch 28.61
+st raw page_type raw_batch 23.79
+mt raw page_size raw_batch 24.05
+mt_tc raw page_size raw_batch 23.71
+st raw page_size raw_batch 20.62
+mt root pool churn 78.02
+mt snode pool churn 84.59
+mt unique pool churn 57.88
+mt shared pool churn 68.67
+mt_sl root pool churn 144.52
+mt_sl snode pool churn 82.60
+mt_tc root pool churn 81.73
+mt_tc snode pool churn 67.91
+mt_tc unique pool churn 45.10
+mt_tc shared pool churn 62.67
+mt_sl_tc root pool churn 126.95
+mt_sl_tc snode pool churn 67.24
+mt_z root pool churn 76.00
+mt_z snode pool churn 72.45
+mt_sl_z root pool churn 143.60
+mt_sl_z snode pool churn 81.23
+mt_tc_z root pool churn 78.62
+mt_tc_z snode pool churn 68.95
+mt_sl_tc_z root pool churn 127.32
+mt_sl_tc_z snode pool churn 68.67
+st root pool churn 35.60
+st snode pool churn 65.76
+st unique pool churn 29.41
+st shared pool churn 32.23
+st_z root pool churn 41.57
+st_z snode pool churn 54.34
+mt root fast churn 57.57
+mt snode fast churn 47.17
+mt unique fast churn 32.64
+mt shared fast churn 50.17
+mt_sl root fast churn 146.98
+mt_sl snode fast churn 58.82
+mt_tc root fast churn 62.37
+mt_tc snode fast churn 47.51
+mt_tc unique fast churn 27.78
+mt_tc shared fast churn 53.17
+mt_sl_tc root fast churn 121.74
+mt_sl_tc snode fast churn 47.90
+mt_z root fast churn 59.11
+mt_z snode fast churn 48.27
+mt_sl_z root fast churn 130.20
+mt_sl_z snode fast churn 57.92
+mt_tc_z root fast churn 63.49
+mt_tc_z snode fast churn 46.31
+mt_sl_tc_z root fast churn 115.52
+mt_sl_tc_z snode fast churn 47.36
+st root fast churn 10.61
+st snode fast churn 27.84
+st unique fast churn 4.08
+st shared fast churn 5.80
+st_z root fast churn 16.84
+st_z snode fast churn 35.36
+mt root std churn 57.59
+mt snode std churn 46.23
+mt unique std churn 15.98
+mt shared std churn 17.65
+mt_sl root std churn 120.37
+mt_sl snode std churn 57.55
+mt_tc root std churn 59.82
+mt_tc snode std churn 45.91
+mt_tc unique std churn 15.49
+mt_tc shared std churn 18.00
+mt_sl_tc root std churn 114.33
+mt_sl_tc snode std churn 45.53
+mt_z root std churn 53.64
+mt_z snode std churn 45.56
+mt_sl_z root std churn 111.04
+mt_sl_z snode std churn 46.75
+mt_tc_z root std churn 52.97
+mt_tc_z snode std churn 45.54
+mt_sl_tc_z root std churn 124.82
+mt_sl_tc_z snode std churn 57.91
+st root std churn 26.87
+st snode std churn 46.63
+st unique std churn 15.80
+st shared std churn 24.15
+st_z root std churn 26.48
+st_z snode std churn 46.86
+mt root page_type churn 57.57
+mt snode page_type churn 50.52
+mt unique page_type churn 16.84
+mt shared page_type churn 20.08
+mt_sl root page_type churn 113.68
+mt_sl snode page_type churn 50.42
+mt_tc root page_type churn 44.13
+mt_tc snode page_type churn 38.93
+mt_tc unique page_type churn 7.72
+mt_tc shared page_type churn 10.18
+mt_sl_tc root page_type churn 111.27
+mt_sl_tc snode page_type churn 37.77
+mt_z root page_type churn 56.78
+mt_z snode page_type churn 49.85
+mt_sl_z root page_type churn 117.87
+mt_sl_z snode page_type churn 51.80
+mt_tc_z root page_type churn 44.55
+mt_tc_z snode page_type churn 37.28
+mt_sl_tc_z root page_type churn 105.04
+mt_sl_tc_z snode page_type churn 38.34
+st root page_type churn 9.37
+st snode page_type churn 27.72
+st unique page_type churn 5.63
+st shared page_type churn 13.09
+st_z root page_type churn 10.55
+st_z snode page_type churn 34.17
+mt root page_size churn 59.18
+mt snode page_size churn 51.72
+mt unique page_size churn 20.76
+mt shared page_size churn 24.84
+mt_sl root page_size churn 120.16
+mt_sl snode page_size churn 50.33
+mt_tc root page_size churn 44.61
+mt_tc snode page_size churn 38.64
+mt_tc unique page_size churn 6.41
+mt_tc shared page_size churn 8.47
+mt_sl_tc root page_size churn 105.96
+mt_sl_tc snode page_size churn 38.13
+mt_z root page_size churn 58.91
+mt_z snode page_size churn 50.66
+mt_sl_z root page_size churn 116.79
+mt_sl_z snode page_size churn 53.94
+mt_tc_z root page_size churn 59.40
+mt_tc_z snode page_size churn 43.81
+mt_sl_tc_z root page_size churn 105.63
+mt_sl_tc_z snode page_size churn 42.51
+st root page_size churn 9.28
+st snode page_size churn 28.26
+st unique page_size churn 5.73
+st shared page_size churn 9.12
+st_z root page_size churn 10.40
+st_z snode page_size churn 28.51
+mt root pool bulk 141870.95 14076
+mt snode pool bulk 141909.85 17272
+mt unique pool bulk 85265.46 8572
+mt shared pool bulk 135412.72 11476
+mt_sl root pool bulk 141696.77 13932
+mt_sl snode pool bulk 140567.57 17248
+mt_tc root pool bulk 140463.24 14116
+mt_tc snode pool bulk 142368.92 17144
+mt_tc unique pool bulk 84609.81 8512
+mt_tc shared pool bulk 134651.78 11364
+mt_sl_tc root pool bulk 142496.58 14052
+mt_sl_tc snode pool bulk 141627.41 17228
+mt_z root pool bulk 138963.99 14012
+mt_z snode pool bulk 145849.39 17252
+mt_sl_z root pool bulk 140932.60 14172
+mt_sl_z snode pool bulk 173783.55 17248
+mt_tc_z root pool bulk 156445.28 13948
+mt_tc_z snode pool bulk 150915.25 17204
+mt_sl_tc_z root pool bulk 148594.70 14048
+mt_sl_tc_z snode pool bulk 145101.28 17212
+st root pool bulk 145369.05 13952
+st snode pool bulk 154167.59 17168
+st unique pool bulk 88319.90 8456
+st shared pool bulk 144505.99 11364
+st_z root pool bulk 148053.48 13920
+st_z snode pool bulk 149358.90 17236
+mt root fast bulk 138.31 14064
+mt snode fast bulk 150.98 17316
+mt unique fast bulk 65.51 8488
+mt shared fast bulk 85.83 11476
+mt_sl root fast bulk 198.29 14088
+mt_sl snode fast bulk 155.18 17272
+mt_tc root fast bulk 124.16 14016
+mt_tc snode fast bulk 155.57 17320
+mt_tc unique fast bulk 54.31 8528
+mt_tc shared fast bulk 106.51 11468
+mt_sl_tc root fast bulk 252.35 14108
+mt_sl_tc snode fast bulk 163.38 17372
+mt_z root fast bulk 266.66 14112
+mt_z snode fast bulk 154.65 17392
+mt_sl_z root fast bulk 243.81 13972
+mt_sl_z snode fast bulk 160.63 17248
+mt_tc_z root fast bulk 132.41 14048
+mt_tc_z snode fast bulk 173.60 17232
+mt_sl_tc_z root fast bulk 236.76 14032
+mt_sl_tc_z snode fast bulk 146.23 17264
+st root fast bulk 79.53 13964
+st snode fast bulk 118.74 17256
+st unique fast bulk 40.46 8484
+st shared fast bulk 55.83 11320
+st_z root fast bulk 83.78 13936
+st_z snode fast bulk 125.63 17304
+mt root std bulk 138.77 12764
+mt snode std bulk 148.52 15672
+mt unique std bulk 64.67 8644
+mt shared std bulk 80.78 11100
+mt_sl root std bulk 251.71 12800
+mt_sl snode std bulk 151.23 16000
+mt_tc root std bulk 128.91 12776
+mt_tc snode std bulk 159.56 15620
+mt_tc unique std bulk 65.82 8760
+mt_tc shared std bulk 79.58 11040
+mt_sl_tc root std bulk 255.84 12732
+mt_sl_tc snode std bulk 144.56 15984
+mt_z root std bulk 149.26 12816
+mt_z snode std bulk 155.99 15588
+mt_sl_z root std bulk 254.62 12872
+mt_sl_z snode std bulk 155.24 15960
+mt_tc_z root std bulk 124.89 12744
+mt_tc_z snode std bulk 124.46 15648
+mt_sl_tc_z root std bulk 242.56 12800
+mt_sl_tc_z snode std bulk 154.43 16068
+st root std bulk 91.90 12620
+st snode std bulk 142.57 15652
+st unique std bulk 65.55 8712
+st shared std bulk 80.45 11032
+st_z root std bulk 89.45 12716
+st_z snode std bulk 136.81 15684
+mt root page_type bulk 130.99 12704
+mt snode page_type bulk 141.01 15976
+mt unique page_type bulk 46.73 7088
+mt shared page_type bulk 61.69 9456
+mt_sl root page_type bulk 231.78 12832
+mt_sl snode page_type bulk 140.08 15952
+mt_tc root page_type bulk 126.66 12672
+mt_tc snode page_type bulk 146.16 15968
+mt_tc unique page_type bulk 36.57 7184
+mt_tc shared page_type bulk 53.07 9696
+mt_sl_tc root page_type bulk 243.48 12840
+mt_sl_tc snode page_type bulk 148.50 15964
+mt_z root page_type bulk 131.31 12856
+mt_z snode page_type bulk 138.21 15924
+mt_sl_z root page_type bulk 224.59 12748
+mt_sl_z snode page_type bulk 125.50 15920
+mt_tc_z root page_type bulk 117.36 12684
+mt_tc_z snode page_type bulk 131.39 15932
+mt_sl_tc_z root page_type bulk 212.69 12768
+mt_sl_tc_z snode page_type bulk 197.74 15900
+st root page_type bulk 69.90 12756
+st snode page_type bulk 105.14 15956
+st unique page_type bulk 37.28 7256
+st shared page_type bulk 56.24 9536
+st_z root page_type bulk 79.78 12692
+st_z snode page_type bulk 126.87 15828
+mt root page_size bulk 136.72 12800
+mt snode page_size bulk 148.43 15988
+mt unique page_size bulk 49.14 7232
+mt shared page_size bulk 65.49 9596
+mt_sl root page_size bulk 246.23 12828
+mt_sl snode page_size bulk 145.95 15984
+mt_tc root page_size bulk 140.20 12748
+mt_tc snode page_size bulk 151.79 16000
+mt_tc unique page_size bulk 44.41 7204
+mt_tc shared page_size bulk 62.75 9476
+mt_sl_tc root page_size bulk 220.19 12824
+mt_sl_tc snode page_size bulk 148.25 15980
+mt_z root page_size bulk 120.21 12716
+mt_z snode page_size bulk 127.89 15960
+mt_sl_z root page_size bulk 202.45 12740
+mt_sl_z snode page_size bulk 119.26 15856
+mt_tc_z root page_size bulk 131.86 12660
+mt_tc_z snode page_size bulk 165.02 15932
+mt_sl_tc_z root page_size bulk 236.68 12716
+mt_sl_tc_z snode page_size bulk 138.27 15944
+st root page_size bulk 78.46 12816
+st snode page_size bulk 116.44 15872
+st unique page_size bulk 41.38 7148
+st shared page_size bulk 48.44 9448
+st_z root page_size bulk 65.71 12764
+st_z snode page_size bulk 95.47 15880
+mt root pool mixed 102665.97 28052
+mt snode pool mixed 107589.49 32608
+mt unique pool mixed 95758.12 19796
+mt shared pool mixed 108187.02 24100
+mt_sl root pool mixed 104153.53 28044
+mt_sl snode pool mixed 103323.37 32580
+mt_tc root pool mixed 108828.01 28020
+mt_tc snode pool mixed 103002.49 32664
+mt_tc unique pool mixed 86915.91 19876
+mt_tc shared pool mixed 102723.55 24088
+mt_sl_tc root pool mixed 101407.07 28068
+mt_sl_tc snode pool mixed 104909.52 32568
+mt_z root pool mixed 100772.06 27996
+mt_z snode pool mixed 100167.09 32592
+mt_sl_z root pool mixed 124783.93 28028
+mt_sl_z snode pool mixed 113132.24 32520
+mt_tc_z root pool mixed 99156.50 28000
+mt_tc_z snode pool mixed 107704.03 32560
+mt_sl_tc_z root pool mixed 108887.09 28088
+mt_sl_tc_z snode pool mixed 97778.35 32584
+st root pool mixed 103890.53 27984
+st snode pool mixed 105651.60 32628
+st unique pool mixed 94803.40 19800
+st shared pool mixed 100964.96 24020
+st_z root pool mixed 115592.53 27992
+st_z snode pool mixed 117809.73 32560
+mt root fast mixed 168.63 28036
+mt snode fast mixed 185.53 32536
+mt unique fast mixed 91.52 19996
+mt shared fast mixed 119.84 24248
+mt_sl root fast mixed 265.86 28048
+mt_sl snode fast mixed 185.59 32500
+mt_tc root fast mixed 158.48 28104
+mt_tc snode fast mixed 181.99 32544
+mt_tc unique fast mixed 84.21 19804
+mt_tc shared fast mixed 131.65 24120
+mt_sl_tc root fast mixed 252.28 27952
+mt_sl_tc snode fast mixed 181.85 32536
+mt_z root fast mixed 178.35 28116
+mt_z snode fast mixed 241.89 32596
+mt_sl_z root fast mixed 270.42 28036
+mt_sl_z snode fast mixed 159.15 32632
+mt_tc_z root fast mixed 145.67 28072
+mt_tc_z snode fast mixed 179.43 32628
+mt_sl_tc_z root fast mixed 256.29 28080
+mt_sl_tc_z snode fast mixed 180.99 32564
+st root fast mixed 111.98 28040
+st snode fast mixed 156.32 32556
+st unique fast mixed 73.09 19740
+st shared fast mixed 95.35 24168
+st_z root fast mixed 121.02 28060
+st_z snode fast mixed 165.70 32532
+mt root std mixed 178.46 24308
+mt snode std mixed 205.42 29080
+mt unique std mixed 107.11 17680
+mt shared std mixed 119.60 21212
+mt_sl root std mixed 278.30 24468
+mt_sl snode std mixed 251.29 29236
+mt_tc root std mixed 182.83 24360
+mt_tc snode std mixed 220.00 29156
+mt_tc unique std mixed 120.13 17616
+mt_tc shared std mixed 116.66 21144
+mt_sl_tc root std mixed 285.07 24316
+mt_sl_tc snode std mixed 215.57 29124
+mt_z root std mixed 150.98 24472
+mt_z snode std mixed 206.77 29200
+mt_sl_z root std mixed 271.68 24364
+mt_sl_z snode std mixed 201.07 29196
+mt_tc_z root std mixed 180.49 24320
+mt_tc_z snode std mixed 241.16 29176
+mt_sl_tc_z root std mixed 311.13 24548
+mt_sl_tc_z snode std mixed 207.31 29140
+st root std mixed 129.32 24288
+st snode std mixed 199.34 29012
+st unique std mixed 111.49 17648
+st shared std mixed 115.54 21032
+st_z root std mixed 141.31 24292
+st_z snode std mixed 183.25 29092
+mt root page_type mixed 155.97 23812
+mt snode page_type mixed 157.92 28440
+mt unique page_type mixed 62.56 16076
+mt shared page_type mixed 92.21 19792
+mt_sl root page_type mixed 266.14 23928
+mt_sl snode page_type mixed 176.50 28432
+mt_tc root page_type mixed 153.02 23840
+mt_tc snode page_type mixed 165.78 28412
+mt_tc unique page_type mixed 81.95 16176
+mt_tc shared page_type mixed 90.35 19828
+mt_sl_tc root page_type mixed 254.43 23828
+mt_sl_tc snode page_type mixed 164.04 28316
+mt_z root page_type mixed 136.61 23952
+mt_z snode page_type mixed 172.74 28356
+mt_sl_z root page_type mixed 239.45 23804
+mt_sl_z snode page_type mixed 168.62 28336
+mt_tc_z root page_type mixed 287.82 23768
+mt_tc_z snode page_type mixed 162.52 28252
+mt_sl_tc_z root page_type mixed 249.75 23816
+mt_sl_tc_z snode page_type mixed 156.51 28300
+st root page_type mixed 98.91 23848
+st snode page_type mixed 143.70 28436
+st unique page_type mixed 67.84 16096
+st shared page_type mixed 82.73 19868
+st_z root page_type mixed 104.53 23784
+st_z snode page_type mixed 155.89 28368
+mt root page_size mixed 178.63 23760
+mt snode page_size mixed 217.35 28276
+mt unique page_size mixed 77.19 16288
+mt shared page_size mixed 128.32 19960
+mt_sl root page_size mixed 269.32 23992
+mt_sl snode page_size mixed 156.44 28288
+mt_tc root page_size mixed 143.37 23768
+mt_tc snode page_size mixed 172.43 28400
+mt_tc unique page_size mixed 70.03 16276
+mt_tc shared page_size mixed 90.60 19944
+mt_sl_tc root page_size mixed 269.02 23876
+mt_sl_tc snode page_size mixed 159.63 28364
+mt_z root page_size mixed 140.45 23824
+mt_z snode page_size mixed 162.50 28384
+mt_sl_z root page_size mixed 246.41 23848
+mt_sl_z snode page_size mixed 161.73 28376
+mt_tc_z root page_size mixed 172.09 23876
+mt_tc_z snode page_size mixed 179.75 28396
+mt_sl_tc_z root page_size mixed 265.35 23876
+mt_sl_tc_z snode page_size mixed 177.60 28352
+st root page_size mixed 98.50 23904
+st snode page_size mixed 122.53 28332
+st unique page_size mixed 67.83 16244
+st shared page_size mixed 84.81 19780
+st_z root page_size mixed 104.68 23808
+st_z snode page_size mixed 148.09 28372
+mt root pool cycles 73379.49
+mt_sl root pool cycles 70264.48
+mt_tc root pool cycles 71028.03
+mt_sl_tc root pool cycles 73365.98
+mt_z root pool cycles 69421.76
+mt_sl_z root pool cycles 69951.65
+mt_tc_z root pool cycles 69493.72
+mt_sl_tc_z root pool cycles 70639.02
+st root pool cycles 68682.95
+st_z root pool cycles 70191.05
+mt root fast cycles 163.56
+mt_sl root fast cycles 488.18
+mt_tc root fast cycles 153.91
+mt_sl_tc root fast cycles 625.75
+mt_z root fast cycles 160.60
+mt_sl_z root fast cycles 485.81
+mt_tc_z root fast cycles 127.10
+mt_sl_tc_z root fast cycles 393.12
+st root fast cycles 71.09
+st_z root fast cycles 65.10
+mt root std cycles 164.74
+mt_sl root std cycles 489.97
+mt_tc root std cycles 164.75
+mt_sl_tc root std cycles 493.56
+mt_z root std cycles 159.51
+mt_sl_z root std cycles 491.26
+mt_tc_z root std cycles 165.42
+mt_sl_tc_z root std cycles 494.78
+st root std cycles 77.05
+st_z root std cycles 79.92
+mt root page_type cycles 156.70
+mt_sl root page_type cycles 463.55
+mt_tc root page_type cycles 138.52
+mt_sl_tc root page_type cycles 470.50
+mt_z root page_type cycles 124.39
+mt_sl_z root page_type cycles 462.02
+mt_tc_z root page_type cycles 142.37
+mt_sl_tc_z root page_type cycles 477.35
+st root page_type cycles 55.34
+st_z root page_type cycles 54.63
+mt root page_size cycles 148.95
+mt_sl root page_size cycles 515.35
+mt_tc root page_size cycles 135.78
+mt_sl_tc root page_size cycles 457.82
+mt_z root page_size cycles 148.14
+mt_sl_z root page_size cycles 469.68
+mt_tc_z root page_size cycles 140.06
+mt_sl_tc_z root page_size cycles 478.32
+st root page_size cycles 52.67
+st_z root page_size cycles 54.10
+mt root pool threads 450.97
+mt snode pool threads 282.78
+mt unique pool threads 305.66
+mt shared pool threads 372.47
+mt_sl root pool threads 337.17
+mt_sl snode pool threads 247.58
+mt_tc root pool threads 454.12
+mt_tc snode pool threads 276.69
+mt_tc unique pool threads 248.47
+mt_tc shared pool threads 377.61
+mt_sl_tc root pool threads 353.42
+mt_sl_tc snode pool threads 235.41
+mt_z root pool threads 476.66
+mt_z snode pool threads 308.77
+mt_sl_z root pool threads 321.40
+mt_sl_z snode pool threads 311.32
+mt_tc_z root pool threads 484.63
+mt_tc_z snode pool threads 280.54
+mt_sl_tc_z root pool threads 315.85
+mt_sl_tc_z snode pool threads 294.75
+mt root fast threads 404.12
+mt snode fast threads 211.34
+mt unique fast threads 211.07
+mt shared fast threads 292.35
+mt_sl root fast threads 292.47
+mt_sl snode fast threads 211.47
+mt_tc root fast threads 385.38
+mt_tc snode fast threads 216.41
+mt_tc unique fast threads 243.22
+mt_tc shared fast threads 286.56
+mt_sl_tc root fast threads 295.48
+mt_sl_tc snode fast threads 196.45
+mt_z root fast threads 406.06
+mt_z snode fast threads 243.80
+mt_sl_z root fast threads 288.40
+mt_sl_z snode fast threads 246.85
+mt_tc_z root fast threads 393.81
+mt_tc_z snode fast threads 206.78
+mt_sl_tc_z root fast threads 261.66
+mt_sl_tc_z snode fast threads 206.95
+mt root std threads 297.66
+mt snode std threads 25.47
+mt unique std threads 7.87
+mt shared std threads 4.78
+mt_sl root std threads 29.68
+mt_sl snode std threads 15.54
+mt_tc root std threads 288.64
+mt_tc snode std threads 12.35
+mt_tc unique std threads 5.12
+mt_tc shared std threads 5.77
+mt_sl_tc root std threads 34.35
+mt_sl_tc snode std threads 18.17
+mt_z root std threads 279.27
+mt_z snode std threads 29.01
+mt_sl_z root std threads 31.10
+mt_sl_z snode std threads 12.73
+mt_tc_z root std threads 256.21
+mt_tc_z snode std threads 12.37
+mt_sl_tc_z root std threads 35.24
+mt_sl_tc_z snode std threads 15.14
+mt root page_type threads 415.12
+mt snode page_type threads 202.46
+mt unique page_type threads 185.60
+mt shared page_type threads 137.20
+mt_sl root page_type threads 279.53
+mt_sl snode page_type threads 216.64
+mt_tc root page_type threads 248.32
+mt_tc snode page_type threads 12.35
+mt_tc unique page_type threads 2.11
+mt_tc shared page_type threads 2.39
+mt_sl_tc root page_type threads 27.13
+mt_sl_tc snode page_type threads 10.94
+mt_z root page_type threads 417.98
+mt_z snode page_type threads 222.62
+mt_sl_z root page_type threads 299.52
+mt_sl_z snode page_type threads 219.79
+mt_tc_z root page_type threads 292.36
+mt_tc_z snode page_type threads 16.19
+mt_sl_tc_z root page_type threads 50.74
+mt_sl_tc_z snode page_type threads 11.39
+mt root page_size threads 375.25
+mt snode page_size threads 224.72
+mt unique page_size threads 166.70
+mt shared page_size threads 166.50
+mt_sl root page_size threads 273.40
+mt_sl snode page_size threads 219.94
+mt_tc root page_size threads 241.59
+mt_tc snode page_size threads 12.39
+mt_tc unique page_size threads 2.64
+mt_tc shared page_size threads 5.38
+mt_sl_tc root page_size threads 27.67
+mt_sl_tc snode page_size threads 12.37
+mt_z root page_size threads 371.93
+mt_z snode page_size threads 217.78
+mt_sl_z root page_size threads 295.59
+mt_sl_z snode page_size threads 209.40
+mt_tc_z root page_size threads 249.04
+mt_tc_z snode page_size threads 10.11
+mt_sl_tc_z root page_size threads 32.46
+mt_sl_tc_z snode page_size threads 24.72
+mt root pool types 255.59 2228
+mt snode pool types 256.99 2304
+mt unique pool types 165.86 1920
+mt shared pool types 238.15 1948
+mt_sl root pool types 388.61 2372
+mt_sl snode pool types 295.28 2224
+mt_tc root pool types 285.76 2096
+mt_tc snode pool types 296.98 2368
+mt_tc unique pool types 247.68 1944
+mt_tc shared pool types 248.49 1936
+mt_sl_tc root pool types 409.80 2252
+mt_sl_tc snode pool types 286.91 2272
+mt_z root pool types 286.93 2172
+mt_z snode pool types 284.69 2220
+mt_sl_z root pool types 392.98 2112
+mt_sl_z snode pool types 285.29 2292
+mt_tc_z root pool types 290.43 2164
+mt_tc_z snode pool types 286.95 2316
+mt_sl_tc_z root pool types 405.41 2252
+mt_sl_tc_z snode pool types 282.96 2304
+st root pool types 214.79 2084
+st snode pool types 267.40 2108
+st unique pool types 171.87 1864
+st shared pool types 188.32 1904
+st_z root pool types 215.31 2104
+st_z snode pool types 255.14 2320
+mt root fast types 167.62 2180
+mt snode fast types 174.27 2324
+mt unique fast types 75.02 1920
+mt shared fast types 112.06 1944
+mt_sl root fast types 240.22 2260
+mt_sl snode fast types 136.62 2200
+mt_tc root fast types 141.31 2204
+mt_tc snode fast types 146.93 2304
+mt_tc unique fast types 73.41 1880
+mt_tc shared fast types 95.61 2072
+mt_sl_tc root fast types 243.47 2296
+mt_sl_tc snode fast types 154.31 2264
+mt_z root fast types 134.62 2268
+mt_z snode fast types 150.25 2288
+mt_sl_z root fast types 229.19 2220
+mt_sl_z snode fast types 157.32 2264
+mt_tc_z root fast types 161.84 2280
+mt_tc_z snode fast types 173.22 2356
+mt_sl_tc_z root fast types 287.70 2352
+mt_sl_tc_z snode fast types 170.48 2196
+st root fast types 99.98 2316
+st snode fast types 150.02 2336
+st unique fast types 58.74 1948
+st shared fast types 72.21 1928
+st_z root fast types 109.89 2248
+st_z snode fast types 153.24 2276
+mt root std types 163.44 2364
+mt snode std types 160.44 2256
+mt unique std types 64.14 1972
+mt shared std types 81.02 1796
+mt_sl root std types 283.02 2304
+mt_sl snode std types 174.90 2320
+mt_tc root std types 163.14 2244
+mt_tc snode std types 179.34 2176
+mt_tc unique std types 80.11 1944
+mt_tc shared std types 89.85 2020
+mt_sl_tc root std types 309.07 2428
+mt_sl_tc snode std types 175.31 2320
+mt_z root std types 161.36 2348
+mt_z snode std types 176.32 2252
+mt_sl_z root std types 284.88 2352
+mt_sl_z snode std types 174.43 2316
+mt_tc_z root std types 167.09 2300
+mt_tc_z snode std types 176.18 2316
+mt_sl_tc_z root std types 284.80 2348
+mt_sl_tc_z snode std types 178.93 2356
+st root std types 106.00 2376
+st snode std types 164.67 2364
+st unique std types 65.26 1992
+st shared std types 77.64 1888
+st_z root std types 90.31 2252
+st_z snode std types 141.59 2260
+mt root page_type types 334.14 3888
+mt snode page_type types 346.59 4108
+mt unique page_type types 283.33 3688
+mt shared page_type types 275.93 3792
+mt_sl root page_type types 443.26 4172
+mt_sl snode page_type types 344.40 4204
+mt_tc root page_type types 329.88 3940
+mt_tc snode page_type types 344.61 4232
+mt_tc unique page_type types 273.01 3896
+mt_tc shared page_type types 274.67 3876
+mt_sl_tc root page_type types 442.02 4316
+mt_sl_tc snode page_type types 342.73 4224
+mt_z root page_type types 357.97 3848
+mt_z snode page_type types 396.53 4240
+mt_sl_z root page_type types 550.78 4260
+mt_sl_z snode page_type types 388.86 4208
+mt_tc_z root page_type types 449.61 3988
+mt_tc_z snode page_type types 384.69 4164
+mt_sl_tc_z root page_type types 499.66 4224
+mt_sl_tc_z snode page_type types 389.16 4116
+st root page_type types 316.83 3828
+st snode page_type types 362.96 4212
+st unique page_type types 297.31 3812
+st shared page_type types 313.08 3900
+st_z root page_type types 315.29 3852
+st_z snode page_type types 370.85 4148
+mt root page_size types 146.57 2412
+mt snode page_size types 172.16 2260
+mt unique page_size types 65.30 1964
+mt shared page_size types 83.40 1996
+mt_sl root page_size types 275.60 2368
+mt_sl snode page_size types 167.70 2324
+mt_tc root page_size types 158.59 2320
+mt_tc snode page_size types 204.95 2196
+mt_tc unique page_size types 63.84 1912
+mt_tc shared page_size types 75.67 2072
+mt_sl_tc root page_size types 258.93 2412
+mt_sl_tc snode page_size types 143.22 2364
+mt_z root page_size types 151.72 2356
+mt_z snode page_size types 308.75 2136
+mt_sl_z root page_size types 243.42 2308
+mt_sl_z snode page_size types 152.32 2288
+mt_tc_z root page_size types 153.51 2344
+mt_tc_z snode page_size types 167.42 2332
+mt_sl_tc_z root page_size types 270.39 2404
+mt_sl_tc_z snode page_size types 156.03 2208
+st root page_size types 76.81 2408
+st snode page_size types 140.23 2292
+st unique page_size types 60.16 1908
+st shared page_size types 83.02 1904
+st_z root page_size types 95.92 2336
+st_z snode page_size types 134.43 2268
