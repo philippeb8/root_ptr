@@ -470,6 +470,39 @@ template <typename T, typename PoolAllocator = BOOST_ROOT_PTR_ALLOCATOR<T> >
 
 
         /**
+            @brief Allocates a node from the static allocator, as the transformer
+            calls it: every allocation function takes the proxy second, so a
+            plain @c new @c T becomes @c new @c (__y()) @c node<T>{...}.
+        */
+
+        void * operator new (size_t s, node_proxy const &)
+        {
+            return static_pool().allocate(1);
+        }
+
+        void operator delete (void * p, node_proxy const &)
+        {
+            static_pool().deallocate(static_cast<node *>(p), 1);
+        }
+
+
+        /**
+            @brief Placement allocation: perfectly forwarded to @c T's own
+            placement @c operator @c new, with the node's size.
+
+            Every placement new-expression @c new @c (args...) @c T is emitted as
+            @c new @c (args...) @c node<T>, so @c T declares the placement forms it
+            supports, e.g. @c operator @c new(size_t, node<T> *).
+        */
+
+        template <class... U>
+            void * operator new (size_t s, U &&... u)
+            {
+                return T::operator new (s, std::forward<U>(u)...);
+            }
+
+
+        /**
             @brief Deallocates a node from the static allocator.
 
             @param p Address of the node.
@@ -639,6 +672,23 @@ template <typename T, size_t S, typename PoolAllocator>
             void * p = a.allocate(1);
 
             return p;
+        }
+
+
+        /**
+            @brief Allocates a node from the static allocator, as the transformer
+            calls it: every allocation function takes the proxy second, so a
+            plain @c new @c T becomes @c new @c (__y()) @c node<T>{...}.
+        */
+
+        void * operator new (size_t s, node_proxy const &)
+        {
+            return static_pool().allocate(1);
+        }
+
+        void operator delete (void * p, node_proxy const &)
+        {
+            static_pool().deallocate(static_cast<node *>(p), 1);
         }
 
 

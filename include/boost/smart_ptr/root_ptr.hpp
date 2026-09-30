@@ -36,8 +36,10 @@
 #include <new.h>
 #endif
 
+#include <algorithm>
 #include <cstdint>
 #include <cstdlib>
+#include <thread>
 
 #include <array>
 #include <vector>
@@ -78,6 +80,226 @@ inline std::recursive_mutex & static_recursive_mutex()
 
     return mutex_;
 }
+#endif
+
+
+#if defined(BOOST_ROOT_PTR_STRIPED_LOCKS) && ! defined(BOOST_DISABLE_THREADS)
+#define BOOST_ROOT_PTR_STRIPES_ACTIVE
+
+namespace smart_ptr
+{
+namespace detail
+{
+
+/**
+    @brief One lock of the striped table.
+
+    With @c BOOST_ROOT_PTR_STRIPED_LOCKS, a root's ring links (@c root_tag_),
+    node pointer (@c po_) and element pointer (@c pi_) are guarded by the stripe
+    its address hashes to, instead of by one global mutex. A spin lock: every
+    critical section is a few pointer writes.
+*/
+struct alignas(64) stripe
+{
+    std::atomic<bool> busy_{false};
+
+    void lock() noexcept
+    {
+        while (busy_.exchange(true, std::memory_order_acquire))
+            for (unsigned spin = 0; busy_.load(std::memory_order_relaxed); ++ spin)
+                if (spin >= 64)
+                    std::this_thread::yield();
+    }
+
+    bool try_lock() noexcept
+    {
+        return ! busy_.load(std::memory_order_relaxed) && ! busy_.exchange(true, std::memory_order_acquire);
+    }
+
+    void unlock() noexcept
+    {
+        busy_.store(false, std::memory_order_release);
+    }
+};
+
+/// Number of stripes (a power of two).
+constexpr std::size_t stripe_bits = 10;
+
+/// The stripe table.
+inline stripe * stripes()
+{
+    static stripe table[std::size_t(1) << stripe_bits];
+
+    return table;
+}
+
+/// Index of the stripe guarding the object at @p p.
+inline std::size_t stripe_of(void const * p) noexcept
+{
+    return std::size_t((std::uint64_t(reinterpret_cast<std::uintptr_t>(p) >> 4) * 0x9E3779B97F4A7C15ull) >> (64 - stripe_bits));
+}
+
+/** @brief Holds the stripe of one object. */
+struct stripe_guard
+{
+    stripe & s_;
+
+    explicit stripe_guard(void const * p) : s_(stripes()[stripe_of(p)]) { s_.lock(); }
+    ~stripe_guard() { s_.unlock(); }
+
+    stripe_guard(stripe_guard const &) = delete;
+    stripe_guard & operator = (stripe_guard const &) = delete;
+};
+
+/**
+    @brief A set of stripes, locked in index order.
+
+    Every thread takes stripes in increasing index order and never waits for
+    one while holding another outside such a set, so no two threads can
+    deadlock.
+*/
+class stripe_set
+{
+    std::size_t index_[8];
+    unsigned size_ = 0;
+    bool locked_ = false;
+
+public:
+    stripe_set() = default;
+    stripe_set(stripe_set const &) = delete;
+    stripe_set & operator = (stripe_set const &) = delete;
+
+    ~stripe_set() { unlock(); }
+
+    void add(void const * p) noexcept
+    {
+        std::size_t i = stripe_of(p);
+
+        for (unsigned k = 0; k < size_; ++ k)
+            if (index_[k] == i)
+                return;
+
+        index_[size_ ++] = i;
+    }
+
+    void lock() noexcept
+    {
+        std::sort(index_, index_ + size_);
+
+        for (unsigned k = 0; k < size_; ++ k)
+            stripes()[index_[k]].lock();
+
+        locked_ = true;
+    }
+
+    void unlock() noexcept
+    {
+        if (locked_)
+            for (unsigned k = size_; k -- > 0;)
+                stripes()[index_[k]].unlock();
+
+        locked_ = false;
+    }
+
+    void clear() noexcept
+    {
+        unlock();
+        size_ = 0;
+    }
+
+    /**
+        @brief Adds the stripes of @p n objects without waiting: each is taken
+        with @c try_lock. Requires the set to be locked; on failure the whole
+        set is released and emptied, and @c false returned.
+    */
+    bool try_extend(intrusive_list_node * const * p, unsigned n) noexcept
+    {
+        for (unsigned k = 0; k < n; ++ k)
+        {
+            std::size_t i = stripe_of(p[k]);
+            bool held = false;
+
+            for (unsigned j = 0; j < size_; ++ j)
+                if (index_[j] == i)
+                    held = true;
+
+            if (held)
+                continue;
+
+            if (! stripes()[i].try_lock())
+            {
+                clear();
+                return false;
+            }
+
+            index_[size_ ++] = i;
+        }
+
+        return true;
+    }
+};
+
+/**
+    @brief Locks the stripes of @p a and @p b and of their ring neighbours.
+
+    The neighbours are read under each node's own stripe, the whole set is
+    then locked in order, and the links are checked again: a neighbour that
+    changed in between means another thread moved the ring, and the lock is
+    retried. @p a and @p b must be alive (owned or referenced by the caller);
+    a neighbour is only dereferenced once it is proven to be still linked.
+*/
+inline void lock_rings(stripe_set & set, intrusive_list_node * a, intrusive_list_node * b = nullptr)
+{
+    for (;;)
+    {
+        // Fast path: take the stripes of a and b (in order), which freezes
+        // their links, then try the neighbours' stripes without waiting.
+        set.clear();
+        set.add(a);
+
+        if (b)
+            set.add(b);
+
+        set.lock();
+
+        intrusive_list_node * const near[4] = { a->prev, a->next, b ? b->prev : a, b ? b->next : a };
+
+        if (set.try_extend(near, 4))
+            return;
+
+        // A neighbour's stripe is busy: lock the whole neighbourhood in order,
+        // then check that the links did not change while nothing was held
+        // (the set is empty again: try_extend released it).
+        set.add(a);
+        set.add(near[0]);
+        set.add(near[1]);
+
+        if (b)
+        {
+            set.add(b);
+            set.add(near[2]);
+            set.add(near[3]);
+        }
+
+        set.lock();
+
+        if (a->prev == near[0] && a->next == near[1] && (! b || (b->prev == near[2] && b->next == near[3])))
+            return;
+    }
+}
+
+} // namespace detail
+} // namespace smart_ptr
+
+/// Guards the calling root's own pointers: its stripe.
+#define BOOST_ROOT_PTR_SELF_GUARD() ::boost::smart_ptr::detail::stripe_guard boost_root_ptr_guard_(& this->root_tag_)
+
+#elif ! defined(BOOST_DISABLE_THREADS)
+/// Guards the calling root's own pointers: the global mutex.
+#define BOOST_ROOT_PTR_SELF_GUARD() std::scoped_lock boost_root_ptr_guard_(::boost::static_recursive_mutex())
+
+#else
+#define BOOST_ROOT_PTR_SELF_GUARD() ((void) 0)
 #endif
 
 
@@ -158,7 +380,7 @@ struct node_proxy
     ~node_proxy() noexcept(false)
     {
         {
-#ifndef BOOST_DISABLE_THREADS
+#if ! defined(BOOST_DISABLE_THREADS) && ! defined(BOOST_ROOT_PTR_STRIPES_ACTIVE)
             std::scoped_lock guard(static_recursive_mutex());
 #endif
 
@@ -203,6 +425,10 @@ struct node_proxy
     /** @brief Releases or delegates a series of proxies. */
 
     void reset();
+
+    /** @brief Hands the roots that outlive this scope to the parent proxy. */
+
+    void delegate() const;
 };
 
 
@@ -279,9 +505,27 @@ struct root_core
     value_type * po_;
 
 
+    /**
+        @brief Owns @p p without joining any proxy's root set, like a copy.
+
+        For a node that holds no roots, so it can never be part of a cycle: the
+        holder of a @c std::shared_ptr (see root_ptr's constructor from one).
+    */
+    struct ringless_tag {};
+
+    root_core(value_type * p, ringless_tag)
+    : po_(p)
+    {
+    }
+
     explicit root_core(node_proxy const & x)
     : po_(nullptr)
     {
+#ifdef BOOST_ROOT_PTR_STRIPES_ACTIVE
+        smart_ptr::detail::stripe_set set;
+        smart_ptr::detail::lock_rings(set, & x.root_set_, & root_tag_);
+#endif
+
         x.root_set_.push_back(& root_tag_);
     }
 
@@ -291,7 +535,10 @@ struct root_core
         {
             using namespace smart_ptr::detail;
             
-#ifndef BOOST_DISABLE_THREADS
+#ifdef BOOST_ROOT_PTR_STRIPES_ACTIVE
+            stripe_set set;
+            lock_rings(set, & x.root_set_, & root_tag_);
+#elif ! defined(BOOST_DISABLE_THREADS)
             std::scoped_lock guard(static_recursive_mutex());
 #endif
 
@@ -304,6 +551,45 @@ struct root_core
         @param p Pointer to share.
     */
 
+#ifdef BOOST_ROOT_PTR_STRIPES_ACTIVE
+    root_core(root_core const & p)
+    : po_(nullptr)
+    {
+        smart_ptr::detail::stripe_set set;
+        smart_ptr::detail::lock_rings(set, & root_tag_, & p.root_tag_);
+
+        root_tag_.push_back(& p.root_tag_);
+        po_ = p.share();
+    }
+
+    // The node is released only after every stripe is unlocked: its destructor
+    // may destroy roots of its own, which lock their own neighbourhoods.
+    ~root_core()
+    {
+        value_type * old;
+
+        {
+            smart_ptr::detail::stripe_set set;
+            smart_ptr::detail::lock_rings(set, & root_tag_);
+
+            root_tag_.erase();
+            old = std::exchange(po_, nullptr);
+        }
+
+        if (old)
+            old->release();
+    }
+
+#if defined(BOOST_HAS_RVALUE_REFS)
+    root_core(root_core && p)
+    : po_(nullptr)
+    {
+        smart_ptr::detail::stripe_guard g(& p.root_tag_);
+
+        po_ = std::exchange(p.po_, nullptr);
+    }
+#endif
+#else
     root_core(root_core const & p)
     : po_(p.share())
     {
@@ -332,12 +618,16 @@ struct root_core
     {
     }
 #endif
+#endif
 
     template <typename V, typename PoolAllocator>
         root_core & operator = (node<V, PoolAllocator> * p)
         {
             using namespace smart_ptr::detail;
             
+#ifdef BOOST_ROOT_PTR_STRIPES_ACTIVE
+            return assign_node(p, [] { });
+#else
 #ifndef BOOST_DISABLE_THREADS
             std::scoped_lock guard(static_recursive_mutex());
 #endif
@@ -345,6 +635,7 @@ struct root_core
             reset(p);
 
             return * this;
+#endif
         }
 
 
@@ -357,6 +648,9 @@ struct root_core
     template <typename V>
         root_core & operator = (root_core const & p)
         {
+#ifdef BOOST_ROOT_PTR_STRIPES_ACTIVE
+            return assign(p, [] { });
+#else
 #ifndef BOOST_DISABLE_THREADS
             std::scoped_lock guard(static_recursive_mutex());
 #endif
@@ -366,6 +660,7 @@ struct root_core
             reset(p.share());
 
             return * this;
+#endif
         }
 
 
@@ -377,6 +672,9 @@ struct root_core
 
     root_core & operator = (root_core const & p)
     {
+#ifdef BOOST_ROOT_PTR_STRIPES_ACTIVE
+        return assign(p, [] { });
+#else
 #ifndef BOOST_DISABLE_THREADS
         std::scoped_lock guard(static_recursive_mutex());
 #endif
@@ -386,7 +684,74 @@ struct root_core
         reset(p.share());
 
         return * this;
+#endif
     }
+
+
+    /**
+        @brief Shares @p p's node, running @p also under the same locks.
+
+        @p also updates the derived pointer's element pointer, so a reader never
+        sees the new node with the old element or the reverse.
+    */
+    template <typename F>
+        root_core & assign(root_core const & p, F && also)
+        {
+#ifdef BOOST_ROOT_PTR_STRIPES_ACTIVE
+            value_type * old;
+
+            {
+                smart_ptr::detail::stripe_set set;
+                smart_ptr::detail::lock_rings(set, & root_tag_, & p.root_tag_);
+
+                also();
+                root_tag_.push_back(& p.root_tag_);
+                old = std::exchange(po_, p.share());
+            }
+
+            if (old)
+                old->release();
+
+            return * this;
+#else
+#ifndef BOOST_DISABLE_THREADS
+            std::scoped_lock guard(static_recursive_mutex());
+#endif
+
+            also();
+
+            return * this = p;
+#endif
+        }
+
+    /** @brief Manages the new node @p p, running @p also under the same lock. */
+    template <typename V, typename PoolAllocator, typename F>
+        root_core & assign_node(node<V, PoolAllocator> * p, F && also)
+        {
+#ifdef BOOST_ROOT_PTR_STRIPES_ACTIVE
+            value_type * old;
+
+            {
+                smart_ptr::detail::stripe_guard g(& root_tag_);
+
+                also();
+                old = std::exchange(po_, p);
+            }
+
+            if (old)
+                old->release();
+
+            return * this;
+#else
+#ifndef BOOST_DISABLE_THREADS
+            std::scoped_lock guard(static_recursive_mutex());
+#endif
+
+            also();
+
+            return this->template operator = <V, PoolAllocator>(p);
+#endif
+        }
     
 
     value_type * get() const
@@ -422,6 +787,143 @@ struct root_core
 };
 
 
+/**
+    When a scope ends, the roots still linked to its proxy are either members of
+    nodes, or roots outside any node: a returned value, a member of an object
+    that outlives the scope. A node referenced from outside the ring - its
+    reference count exceeds the references held by member roots in the ring, or
+    a root outside any node points to it - is still in use, and so is every node
+    reachable from it through member roots in the ring. Their roots move to the
+    parent proxy and are reconsidered when its scope ends. What is left cannot
+    be reached from outside - garbage, possibly cyclic - and reset() releases it.
+
+    Without this, the proxy of a function released the node the function
+    returned, and the members of a node that escaped through an assignment.
+
+    The caller holds the global mutex, or every stripe.
+*/
+
+inline void node_proxy::delegate() const
+{
+    using namespace smart_ptr::detail;
+
+    if (! parent_ || root_set_.empty())
+        return;
+
+    std::vector<root_core *> roots;
+
+    for (intrusive_list_node * i = root_set_.next; i != & root_set_; i = i->next)
+        roots.push_back(classof(& root_core::root_tag_, static_cast<intrusive_list *>(i)));
+
+    // The nodes the roots point to, with the extent of each element.
+    struct extent
+    {
+        char const * begin;
+        char const * end;
+        root_core::value_type * node;
+        long internal;
+        bool marked;
+    };
+
+    std::vector<extent> nodes;
+    nodes.reserve(roots.size());
+
+    for (root_core * r : roots)
+        if (r->po_)
+            nodes.push_back({nullptr, nullptr, r->po_, 0, false});
+
+    std::sort(nodes.begin(), nodes.end(), [](extent const & a, extent const & b) { return a.node < b.node; });
+    nodes.erase(std::unique(nodes.begin(), nodes.end(), [](extent const & a, extent const & b) { return a.node == b.node; }), nodes.end());
+
+    for (extent & e : nodes)
+    {
+        e.begin = static_cast<char const *>(e.node->data());
+        e.end = e.begin + e.node->size_bytes();
+    }
+
+    // By node, to find a root's target; by address, to find the node a root lives in.
+    auto target = [&](root_core const * r) -> std::ptrdiff_t
+    {
+        if (! r->po_)
+            return -1;
+
+        auto k = std::lower_bound(nodes.begin(), nodes.end(), r->po_, [](extent const & e, root_core::value_type const * n) { return e.node < n; });
+
+        return k - nodes.begin();
+    };
+
+    std::vector<std::size_t> by_address(nodes.size());
+
+    for (std::size_t k = 0; k < nodes.size(); ++ k)
+        by_address[k] = k;
+
+    std::sort(by_address.begin(), by_address.end(), [&](std::size_t a, std::size_t b) { return nodes[a].begin < nodes[b].begin; });
+
+    auto container = [&](root_core const * r) -> std::ptrdiff_t
+    {
+        char const * p = reinterpret_cast<char const *>(r);
+        auto k = std::upper_bound(by_address.begin(), by_address.end(), p, [&](char const * q, std::size_t n) { return q < nodes[n].begin; });
+
+        if (k == by_address.begin())
+            return -1;
+
+        -- k;
+
+        return p < nodes[* k].end ? std::ptrdiff_t(* k) : -1;
+    };
+
+    std::vector<std::ptrdiff_t> to(roots.size()), in(roots.size());
+    std::vector<std::vector<std::size_t>> members(nodes.size());
+
+    for (std::size_t i = 0; i < roots.size(); ++ i)
+    {
+        to[i] = target(roots[i]);
+        in[i] = container(roots[i]);
+
+        if (in[i] >= 0)
+        {
+            members[in[i]].push_back(i);
+
+            if (to[i] >= 0)
+                ++ nodes[to[i]].internal;
+        }
+    }
+
+    // Referenced from outside the ring, then everything reachable from those.
+    std::vector<std::size_t> work;
+
+    auto mark = [&](std::ptrdiff_t k)
+    {
+        if (k >= 0 && ! nodes[k].marked)
+        {
+            nodes[k].marked = true;
+            work.push_back(std::size_t(k));
+        }
+    };
+
+    for (std::size_t k = 0; k < nodes.size(); ++ k)
+        if (nodes[k].node->use_count() > nodes[k].internal)
+            mark(std::ptrdiff_t(k));
+
+    for (std::size_t i = 0; i < roots.size(); ++ i)
+        if (in[i] < 0)
+            mark(to[i]);
+
+    while (! work.empty())
+    {
+        std::size_t k = work.back();
+        work.pop_back();
+
+        for (std::size_t i : members[k])
+            mark(to[i]);
+    }
+
+    for (std::size_t i = 0; i < roots.size(); ++ i)
+        if (in[i] < 0 || nodes[in[i]].marked)
+            parent_->root_set_.push_back(& roots[i]->root_tag_);
+}
+
+
 inline void node_proxy::reset()
 {
     using namespace smart_ptr::detail;
@@ -431,12 +933,92 @@ inline void node_proxy::reset()
     {
         destroying(true);
 
+#ifdef BOOST_ROOT_PTR_STRIPES_ACTIVE
+        // The analysis needs one consistent view of the ring: every stripe, in
+        // index order like any stripe_set, and only if there is a ring at all.
+        bool any;
+        {
+            stripe_guard g(& root_set_);
+            any = ! root_set_.empty();
+        }
+
+        if (any && parent_)
+        {
+            stripe * t = stripes();
+
+            for (std::size_t k = 0; k < (std::size_t(1) << stripe_bits); ++ k)
+                t[k].lock();
+
+            delegate();
+
+            for (std::size_t k = std::size_t(1) << stripe_bits; k -- > 0;)
+                t[k].unlock();
+        }
+
+        // The first root is read while the head's stripe is held: it cannot
+        // leave the ring (or be freed) while it is linked after the head, so
+        // its successor can be read safely - with a try_lock, since waiting
+        // for its stripe while holding the head's could deadlock. The node is
+        // released after every stripe is unlocked.
+        for (;;)
+        {
+            intrusive_list_node * first, * after;
+            stripe & h = stripes()[stripe_of(& root_set_)];
+
+            h.lock();
+            first = root_set_.next;
+
+            if (first == & root_set_)
+            {
+                h.unlock();
+                break;
+            }
+
+            stripe & f = stripes()[stripe_of(first)];
+
+            if (& f != & h && ! f.try_lock())
+            {
+                h.unlock();
+                std::this_thread::yield();
+                continue;
+            }
+
+            after = first->next;
+
+            if (& f != & h)
+                f.unlock();
+            h.unlock();
+
+            root_core::value_type * old;
+
+            {
+                stripe_set set;
+                set.add(& root_set_);
+                set.add(first);
+                set.add(after);
+                set.lock();
+
+                if (root_set_.next != first || first->next != after)
+                    continue;
+
+                root_core * m = classof(& root_core::root_tag_, static_cast<intrusive_list *>(first));
+                m->root_tag_.erase();
+                old = std::exchange(m->po_, nullptr);
+            }
+
+            if (old)
+                old->release();
+        }
+#else
+        delegate();
+
         while (! root_set_.empty())
         {
             intrusive_list::iterator<root_core, & root_core::root_tag_> m = root_set_.begin();
             m->root_tag_.erase();
             m->reset();
         }
+#endif
 
         destroying(false);
     }
@@ -447,23 +1029,6 @@ namespace smart_ptr
 {
 namespace detail
 {
-
-/**
-    @brief Whether @c U is a complete type at this point.
-
-    Only used to decide whether the pointee compatibility check can reach a verdict.
-*/
-
-template <typename U, typename = void>
-    struct is_complete : std::false_type
-    {
-    };
-
-template <typename U>
-    struct is_complete<U, decltype(void(sizeof(U)))> : std::true_type
-    {
-    };
-
 
 /**
     @brief Whether both @c V and @c T are complete at this point.
@@ -583,9 +1148,7 @@ template <>
         ~root_ptr()
         {
 #ifdef BOOST_REPORT
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
+            BOOST_ROOT_PTR_SELF_GUARD();
 
             if (base::base::get() && ! base::cyclic() && base::base::get()->explicit_delete_ == false)
             {
@@ -755,6 +1318,26 @@ template <typename T>
             }
 
         /**
+            @brief Shares the object of a @c std::shared_ptr.
+
+            A node holds a copy of @p p, so the object lives as long as this
+            pointer or a copy of it does. The proxy is not needed.
+        */
+
+        template <typename V, typename = typename std::enable_if<smart_ptr::detail::pointee_convertible<V, T>::value>::type>
+            root_ptr(std::shared_ptr<V> const & p)
+            : base(new node<std::shared_ptr<V>>(p), typename base::ringless_tag())
+            , pi_(fcxxss_pointer_cast_cv<T>(p.get()))
+            {
+            }
+
+        template <typename V, typename = typename std::enable_if<smart_ptr::detail::pointee_convertible<V, T>::value>::type>
+            root_ptr(node_proxy const &, std::shared_ptr<V> const & p)
+            : root_ptr(p)
+            {
+            }
+
+        /**
             @brief Static cast from another pointer.
 
             @param p Pointer to convert.
@@ -766,9 +1349,7 @@ template <typename T>
             , pi_(static_cast<T *>(p.pi_))
             {
 #ifndef BOOST_NO_EXCEPTIONS
-#ifndef BOOST_DISABLE_THREADS
-                std::scoped_lock guard(static_recursive_mutex());
-#endif
+                BOOST_ROOT_PTR_SELF_GUARD();
 
                 if (! pi_)
                 {
@@ -792,9 +1373,7 @@ template <typename T>
             , pi_(dynamic_cast<T *>(p.pi_))
             {
 #ifndef BOOST_NO_EXCEPTIONS
-#ifndef BOOST_DISABLE_THREADS
-                std::scoped_lock guard(static_recursive_mutex());
-#endif
+                BOOST_ROOT_PTR_SELF_GUARD();
 
                 if (! pi_)
                 {
@@ -816,9 +1395,7 @@ template <typename T>
 
         root_ptr & operator = (std::nullptr_t)
         {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
+            BOOST_ROOT_PTR_SELF_GUARD();
 
             pi_ = nullptr;
 
@@ -827,55 +1404,37 @@ template <typename T>
 
         root_ptr & operator = (root_ptr<std::nullptr_t> const & p)
         {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
+            base::assign(p, [&] { pi_ = nullptr; });
 
-            pi_ = nullptr;
-
-            return static_cast<root_ptr &>(base::operator = (p));
+            return * this;
         }
 
         template <typename V, typename PoolAllocator>
             root_ptr & operator = (node<V, PoolAllocator> * p)
             {
-#ifndef BOOST_DISABLE_THREADS
-                std::scoped_lock guard(static_recursive_mutex());
-#endif
+                base::assign_node(p, [&] { pi_ = static_cast<V *>(const_cast<void *>(p->data())); });
 
-                pi_ = static_cast<V *>(const_cast<void *>(p->data()));
-
-                return static_cast<root_ptr &>(base::template operator = <V, PoolAllocator>(p));
+                return * this;
             }
 
         template <typename V>
             root_ptr & operator = (root_ptr<V> const & p)
             {
-#ifndef BOOST_DISABLE_THREADS
-                std::scoped_lock guard(static_recursive_mutex());
-#endif
+                base::assign(p, [&] { pi_ = p.pi_; });
 
-                pi_ = p.pi_;
-
-                return static_cast<root_ptr &>(base::template operator = <V>(p));
+                return * this;
             }
 
             root_ptr & operator = (root_ptr const & p)
             {
-#ifndef BOOST_DISABLE_THREADS
-                std::scoped_lock guard(static_recursive_mutex());
-#endif
+                base::assign(p, [&] { pi_ = p.pi_; });
 
-                pi_ = p.pi_;
-
-                return static_cast<root_ptr &>(base::operator = (p));
+                return * this;
             }
 
         T & operator * () const
         {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
+            BOOST_ROOT_PTR_SELF_GUARD();
 
 #ifdef BOOST_REPORT
             if (base::base::get() && base::base::get()->explicit_delete_ == true)
@@ -900,9 +1459,7 @@ template <typename T>
 
         T * operator -> () const
         {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
+            BOOST_ROOT_PTR_SELF_GUARD();
 
 #ifdef BOOST_REPORT
             if (base::base::get() && base::base::get()->explicit_delete_ == true)
@@ -950,9 +1507,7 @@ template <typename T>
         operator T * ()
         {
 #ifdef BOOST_REPORT
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
+            BOOST_ROOT_PTR_SELF_GUARD();
 
             if (base::base::get() && base::base::get()->explicit_delete_ == true)
             {
@@ -975,9 +1530,7 @@ template <typename T>
         operator T * () const
         {
 #ifdef BOOST_REPORT
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
+            BOOST_ROOT_PTR_SELF_GUARD();
 
             if (base::base::get() && base::base::get()->explicit_delete_ == true)
             {
@@ -992,42 +1545,44 @@ template <typename T>
 
         root_ptr & operator ++ ()
         {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
+            BOOST_ROOT_PTR_SELF_GUARD();
 
             return ++ pi_, * this;
         }
 
         root_ptr & operator -- ()
         {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
+            BOOST_ROOT_PTR_SELF_GUARD();
 
             return -- pi_, * this;
         }
 
         root_ptr operator ++ (int)
         {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
+            // Copy first: the copy takes stripes of its own, which must not be
+            // requested while this pointer's stripe is held.
             root_ptr temp(* this);
 
-            return ++ pi_, temp;
+            {
+                BOOST_ROOT_PTR_SELF_GUARD();
+                ++ pi_;
+            }
+
+            return temp;
         }
 
         root_ptr operator -- (int)
         {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
-
+            // Copy first: the copy takes stripes of its own, which must not be
+            // requested while this pointer's stripe is held.
             root_ptr temp(* this);
 
-            return -- pi_, temp;
+            {
+                BOOST_ROOT_PTR_SELF_GUARD();
+                -- pi_;
+            }
+
+            return temp;
         }
 
         ptrdiff_t operator - (root_ptr const & o) const
@@ -1067,9 +1622,7 @@ template <typename T>
         template <typename V, typename = typename std::enable_if<std::is_integral<V>::value>::type>
             root_ptr & operator += (V i)
             {
-#ifndef BOOST_DISABLE_THREADS
-                std::scoped_lock guard(static_recursive_mutex());
-#endif
+                BOOST_ROOT_PTR_SELF_GUARD();
 
                 pi_ += i;
 
@@ -1079,9 +1632,7 @@ template <typename T>
         template <typename V, typename = typename std::enable_if<std::is_integral<V>::value>::type>
             root_ptr & operator -= (V i)
             {
-#ifndef BOOST_DISABLE_THREADS
-                std::scoped_lock guard(static_recursive_mutex());
-#endif
+                BOOST_ROOT_PTR_SELF_GUARD();
 
                 pi_ -= i;
 
@@ -1137,9 +1688,7 @@ template <typename T>
         ~root_ptr()
         {
 #ifdef BOOST_REPORT
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
+            BOOST_ROOT_PTR_SELF_GUARD();
 
             if (base::base::get() && ! base::cyclic() && base::base::get()->explicit_delete_ == false)
             {
@@ -1256,6 +1805,21 @@ template <>
             }
 #endif
 
+        /** @brief Shares the object of a @c std::shared_ptr; see root_ptr<T>. */
+
+        template <typename V>
+            root_ptr(std::shared_ptr<V> const & p)
+            : base(new node<std::shared_ptr<V>>(p), typename base::ringless_tag())
+            , pi_(const_cast<void *>(static_cast<void const *>(p.get())))
+            {
+            }
+
+        template <typename V>
+            root_ptr(node_proxy const &, std::shared_ptr<V> const & p)
+            : root_ptr(p)
+            {
+            }
+
         root_ptr(node_proxy const & x)
         : base(x)
         , pi_(nullptr)
@@ -1360,9 +1924,7 @@ template <>
 
         root_ptr & operator = (std::nullptr_t)
         {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
+            BOOST_ROOT_PTR_SELF_GUARD();
 
             pi_ = nullptr;
 
@@ -1371,36 +1933,24 @@ template <>
 
         root_ptr & operator = (root_ptr<std::nullptr_t> const & p)
         {
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
+            base::assign(p, [&] { pi_ = nullptr; });
 
-            pi_ = nullptr;
-
-            return static_cast<root_ptr &>(base::operator = (p));
+            return * this;
         }
 
         template <typename V, typename PoolAllocator>
             root_ptr & operator = (node<V, PoolAllocator> * p)
             {
-#ifndef BOOST_DISABLE_THREADS
-                std::scoped_lock guard(static_recursive_mutex());
-#endif
+                base::assign_node(p, [&] { pi_ = static_cast<V *>(p->data()); });
 
-                pi_ = static_cast<V *>(p->data());
-
-                return static_cast<root_ptr &>(base::template operator = <V, PoolAllocator>(p));
+                return * this;
             }
 
             root_ptr & operator = (root_ptr const & p)
             {
-#ifndef BOOST_DISABLE_THREADS
-                std::scoped_lock guard(static_recursive_mutex());
-#endif
+                base::assign(p, [&] { pi_ = p.pi_; });
 
-                pi_ = p.pi_;
-
-                return static_cast<root_ptr &>(base::template operator = <void>(p));
+                return * this;
             }
 
         root_ptr<root_ptr<void>> operator & ()
@@ -1452,9 +2002,7 @@ template <>
         operator uintptr_t () const
         {
 #ifdef BOOST_REPORT
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
+            BOOST_ROOT_PTR_SELF_GUARD();
 
             if (base::base::get() && base::base::get()->explicit_delete_ == true)
             {
@@ -1515,9 +2063,7 @@ template <>
         ~root_ptr()
         {
 #ifdef BOOST_REPORT
-#ifndef BOOST_DISABLE_THREADS
-            std::scoped_lock guard(static_recursive_mutex());
-#endif
+            BOOST_ROOT_PTR_SELF_GUARD();
 
             if (base::base::get() && ! base::cyclic() && base::base::get()->explicit_delete_ == false)
             {
@@ -1614,9 +2160,7 @@ template <typename T, size_t S>
         template <typename V>
             T & operator [] (V const n)
             {
-#ifndef BOOST_DISABLE_THREADS
-                std::scoped_lock guard(static_recursive_mutex());
-#endif
+                BOOST_ROOT_PTR_SELF_GUARD();
 
 #ifdef BOOST_REPORT
                 if (S <= n)
@@ -1637,9 +2181,7 @@ template <typename T, size_t S>
         template <typename V>
             T & operator [] (V const n) const
             {
-#ifndef BOOST_DISABLE_THREADS
-                std::scoped_lock guard(static_recursive_mutex());
-#endif
+                BOOST_ROOT_PTR_SELF_GUARD();
 
 #ifdef BOOST_REPORT
                 if (S <= n)
@@ -2249,6 +2791,23 @@ template <typename T, typename... A>
     };
 
 /**
+    @brief A placement argument written inside a template.
+
+    Placement allocation functions take converted parameters, but a dependent
+    argument's type is unknown when the call is emitted: a raw object pointer
+    is rooted at @p y, anything else is passed through.
+*/
+template <typename U>
+    inline decltype(auto) place_arg(node_proxy const & y, U && u)
+    {
+        using D = std::decay_t<U>;
+        if constexpr (std::is_pointer<D>::value && !std::is_function<std::remove_pointer_t<D>>::value)
+            return root_ptr<std::remove_pointer_t<D>>(y, u);
+        else
+            return std::forward<U>(u);
+    }
+
+/**
     @brief In-place counterpart of @c make.
 
     Constructs at @p p with the same ladder as @c make and returns the
@@ -2306,102 +2865,6 @@ template <typename T, typename I>
             return std::forward<T>(t).__operator_subscript(__y, std::forward<I>(i));
         else
             return std::forward<T>(t)[std::forward<I>(i)];
-    }
-
-/**
-    @brief Converts an argument for an allocation function.
-
-    Allocation functions keep their written types, so a @c root_ptr
-    argument is converted back to a raw pointer.
-*/
-// One function with if constexpr: an overload pair would never select the
-// root_ptr form for a non-const lvalue.
-template <typename U>
-    inline decltype(auto) alloc_arg(U && u)
-    {
-        using D = typename std::decay<U>::type;
-        if constexpr (! std::is_pointer<D>::value &&
-                      std::is_convertible<D, void *>::value)
-            return static_cast<void *>(u);          // root_ptr via operator T *
-        else
-            return std::forward<U>(u);
-    }
-
-/** @brief Address given to a placement new: the last pointer among its arguments. */
-template <typename U>
-    inline void * as_void_ptr(U && u)
-    {
-        using D = typename std::decay<U>::type;
-        if constexpr (std::is_pointer<D>::value)
-            return const_cast<void *>(static_cast<void const *>(u));
-        else if constexpr (std::is_convertible<D, void *>::value)
-            return static_cast<void *>(u);
-        else
-            return nullptr;
-    }
-
-template <typename... A>
-    inline void * placement_address(A &&... a)
-    {
-        void * r = nullptr;
-        ((as_void_ptr(a) ? (r = as_void_ptr(a)) : r), ...);
-        return r;
-    }
-
-template <typename T, typename... A>
-    struct has_proxy_alloc
-    {
-        template <typename U>
-            static auto probe(int)
-                -> decltype(U::operator new(sizeof(U),
-                                            std::declval<node_proxy const &>(),
-                                            std::declval<A>()...),
-                            std::true_type());
-        template <typename>
-            static std::false_type probe(...);
-
-        static constexpr bool value = decltype(probe<T>(0))::value;
-    };
-
-template <typename T, typename... A>
-    struct has_plain_alloc
-    {
-        template <typename U>
-            static auto probe(int)
-                -> decltype(U::operator new(sizeof(U), std::declval<A>()...),
-                            std::true_type());
-        template <typename>
-            static std::false_type probe(...);
-
-        static constexpr bool value = decltype(probe<T>(0))::value;
-    };
-
-template <typename T, typename... A>
-    inline void * allocate_at_raw(node_proxy const & __y, A &&... a)
-    {
-        if constexpr (has_proxy_alloc<T, A...>::value)
-            return T::operator new(sizeof(T), __y, std::forward<A>(a)...);
-        else if constexpr (has_plain_alloc<T, A...>::value)
-            return T::operator new(sizeof(T), std::forward<A>(a)...);
-        else
-            // No member form. Every placement operator new returns its address argument,
-            // so return that directly.
-            return placement_address(std::forward<A>(a)...);
-    }
-
-/**
-    @brief Allocation half of a placement new.
-
-    Emitted as @c ::new @c (allocate_at<T>(__y, args...)) @c T(ctorargs...),
-    so the class's own placement operator new still runs, with the proxy
-    when it takes one, and the global placement new only constructs. The
-    arguments are normalized first, so the probes and the calls see the
-    same types.
-*/
-template <typename T, typename... A>
-    inline void * allocate_at(node_proxy const & __y, A &&... a)
-    {
-        return allocate_at_raw<T>(__y, alloc_arg(std::forward<A>(a))...);
     }
 
 } // namespace boost
@@ -2472,6 +2935,98 @@ template <typename T>
 #if defined(_MSC_VER)
 #pragma warning( pop )
 #endif
+
+
+/**
+    @name Proxy-taking twins of the standard global allocation functions.
+
+    Every allocation function a transformed program declares takes the
+    node_proxy as its second parameter, so the transformer prints every
+    new-expression as @c new @c (__y(), args...) and lets C++'s own lookup pick
+    the function. These let that lookup reach the standard global forms, which
+    cannot change: each forwards to the form without the proxy - including a
+    program's own replacement of the replaceable ones.
+*/
+///@{
+inline void * operator new (std::size_t s, boost::node_proxy const &)
+{
+    return ::operator new(s);
+}
+
+inline void * operator new[] (std::size_t s, boost::node_proxy const &)
+{
+    return ::operator new[](s);
+}
+
+inline void * operator new (std::size_t s, boost::node_proxy const &, std::nothrow_t const & t) noexcept
+{
+    return ::operator new(s, t);
+}
+
+inline void * operator new[] (std::size_t s, boost::node_proxy const &, std::nothrow_t const & t) noexcept
+{
+    return ::operator new[](s, t);
+}
+
+inline void * operator new (std::size_t s, boost::node_proxy const &, std::align_val_t a)
+{
+    return ::operator new(s, a);
+}
+
+inline void * operator new[] (std::size_t s, boost::node_proxy const &, std::align_val_t a)
+{
+    return ::operator new[](s, a);
+}
+
+inline void * operator new (std::size_t, boost::node_proxy const &, void * p) noexcept
+{
+    return p;
+}
+
+inline void * operator new[] (std::size_t, boost::node_proxy const &, void * p) noexcept
+{
+    return p;
+}
+
+// The matching placement deletes, called if a constructor throws.
+inline void operator delete (void * p, boost::node_proxy const &) noexcept
+{
+    ::operator delete(p);
+}
+
+inline void operator delete[] (void * p, boost::node_proxy const &) noexcept
+{
+    ::operator delete[](p);
+}
+
+inline void operator delete (void * p, boost::node_proxy const &, std::nothrow_t const & t) noexcept
+{
+    ::operator delete(p, t);
+}
+
+inline void operator delete[] (void * p, boost::node_proxy const &, std::nothrow_t const & t) noexcept
+{
+    ::operator delete[](p, t);
+}
+
+inline void operator delete (void * p, boost::node_proxy const &, std::align_val_t a) noexcept
+{
+    ::operator delete(p, a);
+}
+
+inline void operator delete[] (void * p, boost::node_proxy const &, std::align_val_t a) noexcept
+{
+    ::operator delete[](p, a);
+}
+
+inline void operator delete (void *, boost::node_proxy const &, void *) noexcept
+{
+}
+
+inline void operator delete[] (void *, boost::node_proxy const &, void *) noexcept
+{
+}
+///@}
 
 
 #endif // #ifndef BOOST_NODE_PTR_INCLUDED
