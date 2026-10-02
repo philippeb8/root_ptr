@@ -29,6 +29,8 @@
 #ifndef BOOST_SMART_PTR_PAGE_ALLOCATOR_HPP_INCLUDED
 #define BOOST_SMART_PTR_PAGE_ALLOCATOR_HPP_INCLUDED
 
+#include <boost/config.hpp>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -51,6 +53,30 @@ namespace smart_ptr
 {
 namespace detail
 {
+
+/**
+    @brief Mutex of every pool.
+
+    A no-op when Boost is configured without thread support
+    (@c BOOST_DISABLE_THREADS), as for Boost.Pool and root_ptr itself.
+*/
+#if defined(BOOST_HAS_THREADS)
+typedef std::mutex page_mutex;
+#else
+struct page_mutex
+{
+    void lock() noexcept { }
+    void unlock() noexcept { }
+};
+#endif
+
+/**
+    @brief Per-thread caches of free blocks, opt-in with
+    @c BOOST_PAGE_ALLOCATOR_THREAD_CACHE; ignored without thread support.
+*/
+#if defined(BOOST_HAS_THREADS) && defined(BOOST_PAGE_ALLOCATOR_THREAD_CACHE)
+#define BOOST_PAGE_ALLOCATOR_CACHE_ACTIVE
+#endif
 
 /// Alignment of every block and page.
 constexpr std::size_t page_alignment = alignof(std::max_align_t);
@@ -87,6 +113,7 @@ struct page_pool_stats
     std::size_t pages = 0;          ///< Pages obtained so far; they are never returned.
     std::size_t blocks_per_page = 0;///< Blocks carved from each page.
     std::size_t live = 0;           ///< Blocks currently allocated.
+    std::size_t cached = 0;         ///< Free blocks held by thread caches (@c BOOST_PAGE_ALLOCATOR_THREAD_CACHE).
 };
 
 /**
@@ -95,6 +122,14 @@ struct page_pool_stats
     Free blocks form a singly linked list threaded through the blocks
     themselves, so allocation and deallocation are O(1) and need no header.
     @c Tag separates pools that would otherwise share a block size.
+
+    With @c BOOST_PAGE_ALLOCATOR_THREAD_CACHE (and thread support), every
+    thread that allocates keeps a small stack of free blocks per pool:
+    allocation and deallocation take no lock until the stack runs empty or
+    grows past its cap, and then move a batch at once. Blocks are
+    interchangeable, so a block may be freed by any thread. A thread returns
+    its blocks when it exits; a thread that never allocated from a pool frees
+    into the shared list directly.
 
     Instances are created on first use and never destroyed: a node may be
     released during static destruction, after a static pool would be gone.
@@ -107,9 +142,9 @@ template <std::size_t BlockSize, std::size_t PageSize, typename Tag>
 
         struct free_block { free_block * next; };
 
-        std::mutex mutex_;
+        page_mutex mutex_;
         free_block * free_ = nullptr;
-        page_pool_stats stats_;
+        page_pool_stats stats_;         // with thread caches, 'live' counts every block off the shared list
 
         page_pool()
         {
@@ -131,6 +166,133 @@ template <std::size_t BlockSize, std::size_t PageSize, typename Tag>
             ++ stats_.pages;
         }
 
+        /// Takes one block from the shared list; the mutex is held.
+        free_block * pop_shared()
+        {
+            if (! free_)
+                grow();
+
+            free_block * b = free_;
+            free_ = b->next;
+            ++ stats_.live;
+            return b;
+        }
+
+        /// Returns one block to the shared list.
+        void push_shared(void * p) noexcept
+        {
+            std::lock_guard<page_mutex> guard(mutex_);
+
+            free_block * b = static_cast<free_block *>(p);
+            b->next = free_;
+            free_ = b;
+            -- stats_.live;
+        }
+
+#if defined(BOOST_PAGE_ALLOCATOR_CACHE_ACTIVE)
+        /// Blocks a thread keeps: 16 KiB worth, at least 8 and at most 256.
+        static constexpr std::size_t cache_max = 16 * 1024 / BlockSize < 8 ? 8 : 16 * 1024 / BlockSize > 256 ? 256 : 16 * 1024 / BlockSize;
+
+        /// Blocks moved between a thread's stack and the shared list at once.
+        static constexpr std::size_t cache_batch = cache_max / 2;
+
+        enum cache_state : unsigned char { unused, active, retired };
+
+        /**
+            @brief A thread's free blocks of this pool.
+
+            Constant-initialized and trivially destructible, so it stays usable
+            after the thread's other thread_local objects are destroyed.
+        */
+        struct thread_cache
+        {
+            free_block * head = nullptr;
+            std::atomic<std::size_t> count{0};  ///< Written by the owner only; read by stats().
+            cache_state state = unused;
+            thread_cache * prev = nullptr;      ///< Registry of the pool, under its mutex.
+            thread_cache * next = nullptr;
+        };
+
+        /// Returns the thread's blocks when the thread exits.
+        struct cache_flusher
+        {
+            ~cache_flusher() { instance().retire(local()); }
+        };
+
+        thread_cache * caches_ = nullptr;
+
+        static thread_cache & local() noexcept
+        {
+            static thread_local thread_cache c;
+
+            return c;
+        }
+
+        /// First allocation of this thread: registers its cache and its flusher.
+        void enroll(thread_cache & c)
+        {
+            static thread_local cache_flusher flusher;
+            (void) flusher;
+
+            std::lock_guard<page_mutex> guard(mutex_);
+
+            c.next = caches_;
+            if (caches_)
+                caches_->prev = & c;
+            caches_ = & c;
+            c.state = active;
+        }
+
+        /// Refills the empty cache of this thread with a batch.
+        void refill(thread_cache & c)
+        {
+            std::lock_guard<page_mutex> guard(mutex_);
+
+            for (std::size_t i = 0; i < cache_batch; ++ i)
+            {
+                free_block * b = pop_shared();
+                b->next = c.head;
+                c.head = b;
+            }
+            c.count.store(cache_batch, std::memory_order_relaxed);
+        }
+
+        /// Returns the first @p n blocks of this thread's cache to the shared list.
+        void drain(thread_cache & c, std::size_t n) noexcept
+        {
+            free_block * first = c.head, * last = first;
+
+            for (std::size_t i = 1; i < n; ++ i)
+                last = last->next;
+            c.head = last->next;
+            c.count.store(c.count.load(std::memory_order_relaxed) - n, std::memory_order_relaxed);
+
+            std::lock_guard<page_mutex> guard(mutex_);
+
+            last->next = free_;
+            free_ = first;
+            stats_.live -= n;
+        }
+
+        /// The thread exits: returns every block and leaves the registry.
+        void retire(thread_cache & c) noexcept
+        {
+            if (std::size_t n = c.count.load(std::memory_order_relaxed))
+                drain(c, n);
+
+            std::lock_guard<page_mutex> guard(mutex_);
+
+            if (c.prev)
+                c.prev->next = c.next;
+            else
+                caches_ = c.next;
+            if (c.next)
+                c.next->prev = c.prev;
+            c.prev = c.next = nullptr;
+            c.state = retired;
+        }
+#endif
+
     public:
         page_pool(page_pool const &) = delete;
         page_pool & operator = (page_pool const &) = delete;
@@ -146,34 +308,72 @@ template <std::size_t BlockSize, std::size_t PageSize, typename Tag>
         /** @brief Allocates one block. */
         void * allocate()
         {
-            std::lock_guard<std::mutex> guard(mutex_);
+#if defined(BOOST_PAGE_ALLOCATOR_CACHE_ACTIVE)
+            thread_cache & c = local();
 
-            if (! free_)
-                grow();
+            if (! c.head)
+            {
+                if (c.state == retired)
+                {
+                    std::lock_guard<page_mutex> guard(mutex_);
 
-            free_block * b = free_;
-            free_ = b->next;
-            ++ stats_.live;
+                    return pop_shared();
+                }
+                if (c.state == unused)
+                    enroll(c);
+                refill(c);
+            }
+
+            free_block * b = c.head;
+            c.head = b->next;
+            c.count.store(c.count.load(std::memory_order_relaxed) - 1, std::memory_order_relaxed);
             return b;
+#else
+            std::lock_guard<page_mutex> guard(mutex_);
+
+            return pop_shared();
+#endif
         }
 
-        /** @brief Returns a block obtained from allocate(). */
+        /** @brief Returns a block obtained from allocate(), by any thread. */
         void deallocate(void * p) noexcept
         {
-            std::lock_guard<std::mutex> guard(mutex_);
+#if defined(BOOST_PAGE_ALLOCATOR_CACHE_ACTIVE)
+            thread_cache & c = local();
+
+            if (c.state != active)
+                return push_shared(p);
 
             free_block * b = static_cast<free_block *>(p);
-            b->next = free_;
-            free_ = b;
-            -- stats_.live;
+            b->next = c.head;
+            c.head = b;
+
+            std::size_t n = c.count.load(std::memory_order_relaxed) + 1;
+            c.count.store(n, std::memory_order_relaxed);
+            if (n >= cache_max)
+                drain(c, cache_batch);
+#else
+            push_shared(p);
+#endif
         }
 
-        /** @brief Snapshot of the statistics. */
+        /**
+            @brief Snapshot of the statistics.
+
+            Blocks held by thread caches count as free (@c cached), not as
+            live. The snapshot is exact only while no thread allocates.
+        */
         page_pool_stats stats()
         {
-            std::lock_guard<std::mutex> guard(mutex_);
+            std::lock_guard<page_mutex> guard(mutex_);
 
-            return stats_;
+            page_pool_stats s = stats_;
+#if defined(BOOST_PAGE_ALLOCATOR_CACHE_ACTIVE)
+            for (thread_cache * c = caches_; c; c = c->next)
+                s.cached += c->count.load(std::memory_order_relaxed);
+            s.live -= s.cached;
+#endif
+            return s;
         }
     };
 
