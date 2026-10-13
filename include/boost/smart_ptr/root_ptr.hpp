@@ -2467,7 +2467,9 @@ template <typename T>
 /**
     @brief Calls @p f with the proxy when it accepts one, and without it otherwise.
 
-    Serves templates whose instantiations disagree about the proxy.
+    Serves templates whose instantiations disagree about the proxy. This form
+    takes any callable object: a function object, a closure, or a function
+    pointer held in a variable.
 */
 
 template <typename F, typename... A>
@@ -2477,6 +2479,47 @@ template <typename F, typename... A>
             return f(y, std::forward<A>(a)...);
         else
             return f(std::forward<A>(a)...);
+    }
+
+/**
+    @brief The same for a function named by its address: @c proxy_call(y, @c &f, @c args...).
+
+    The pointer's parameters and the call's arguments are separate packs: the
+    proxy is in one and not in the other, and an argument may be an lvalue or
+    need a conversion.
+*/
+
+template <typename R, typename... P, typename... B>
+    inline R proxy_call(node_proxy const & y, R (* p)(P...), B &&... b)
+    {
+        if constexpr (std::is_invocable_v<R (*)(P...), node_proxy const &, B &&...>)
+            return (* p)(y, std::forward<B>(b)...);
+        else
+            return (* p)(std::forward<B>(b)...);
+    }
+
+/**
+    @brief The same for a member function: @c proxy_call(y, @c object, @c &C::f, @c args...).
+
+    @c C may be a base of the object's class.
+*/
+
+template <typename O, typename R, typename C, typename... P, typename... B>
+    inline R proxy_call(node_proxy const & y, O && o, R (C::* p)(P...), B &&... b)
+    {
+        if constexpr (std::is_invocable_v<R (C::*)(P...), O &&, node_proxy const &, B &&...>)
+            return (std::forward<O>(o).*p)(y, std::forward<B>(b)...);
+        else
+            return (std::forward<O>(o).*p)(std::forward<B>(b)...);
+    }
+
+template <typename O, typename R, typename C, typename... P, typename... B>
+    inline R proxy_call(node_proxy const & y, O && o, R (C::* p)(P...) const, B &&... b)
+    {
+        if constexpr (std::is_invocable_v<R (C::*)(P...) const, O &&, node_proxy const &, B &&...>)
+            return (std::forward<O>(o).*p)(y, std::forward<B>(b)...);
+        else
+            return (std::forward<O>(o).*p)(std::forward<B>(b)...);
     }
 
 /** @brief Pointer arithmetic with the integer on the left (@c i @c + @c p). */
@@ -2693,23 +2736,6 @@ template <typename T, typename... A>
         else
             return std::make_shared<T>(std::forward<A>(a)...);
     }
-
-/**
-    @brief Compile-time error for @c new @c T handed to a system smart pointer.
-
-    Such a pointer would later @c delete an address inside a @c node. Use
-    @c std::make_unique or @c WTF::makeUnique instead. Marked unavailable
-    rather than using @c static_assert, which is disabled by default.
-*/
-
-template <typename T, typename... A>
-    root_ptr<T> new_into_system_owner_use_make_unique(node_proxy const &, A &&...)
-        __attribute__((unavailable(
-            "'new T(args)' handed to a system owning smart pointer would be "
-            "freed with a plain 'delete' on a boost::node interior pointer. "
-            "Write std::make_unique<T>(args...) instead (or WTF::makeUnique<T>) "
-            "- there the allocation happens inside a header the transformer "
-            "leaves alone, so the smart pointer owns a plain 'new'")));
 
 /**
     @brief One proxy-aware user conversion for a single constructor argument.
